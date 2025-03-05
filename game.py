@@ -1,16 +1,19 @@
-import pygame
-import sys
-import time
-import random
-from pygame.locals import *
+# Import necessary libraries
+import pygame # main game development library
+import sys # provides system-specific functions
+import time # for tracking time and creating delays
+import random # for generating random values
+from pygame.locals import * # Contains pygame constants like event types (QUIT, MOUSEBUTTONDOWN)
 
 # Initialize pygame
 pygame.init()
 
 # Screen dimensions
-SCREEN_WIDTH = 800
+SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
-FPS = 60
+
+# Set the frame rate
+FPS = 60  # Frames per second (higher values like 60 FPS result in smoother animations)
 
 # Colors
 WHITE = (255, 255, 255)
@@ -23,14 +26,14 @@ GRAY = (200, 200, 200)
 LIGHT_BLUE = (173, 216, 230)
 
 # Font
-font_small = pygame.font.SysFont('Arial', 20)
-font_medium = pygame.font.SysFont('Arial', 24)
-font_large = pygame.font.SysFont('Arial', 32)
-font_title = pygame.font.SysFont('Arial', 48, bold=True)
+font_small = pygame.font.SysFont('Abadi', 20)
+font_medium = pygame.font.SysFont('Abadi', 24)
+font_large = pygame.font.SysFont('Abadi', 32)
+font_title = pygame.font.SysFont('Abadi', 40, bold=True)
 
 # Set up the screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption('Personality Assessment Game')
+pygame.display.set_caption('Persona Companion')
 clock = pygame.time.Clock()
 
 # Personality traits scores (starting at neutral 50%)
@@ -42,40 +45,64 @@ personality = {
     'neuroticism': 50      # Emotional sensitivity vs. stability
 }
 
-# Player character
+# Player character class
 class Player:
     def __init__(self):
-        self.width = 40
-        self.height = 60
+        # set player dimensions
+        self.width = 80
+        self.height = 100
+
+        # Initial position (center of the screen)
         self.x = SCREEN_WIDTH // 2
         self.y = SCREEN_HEIGHT // 2
+
+        # Movement speed
         self.speed = 5
+
+        # Default player color (used as a fallback if no image is available)
         self.color = BLUE
-        self.decision_times = []  # To track how long decisions take
-        self.risk_choices = 0     # Track risky vs safe choices
-        self.social_choices = 0   # Track social interaction choices
-        self.help_others = 0      # Track helping behavior
+
+        # Tracking player behavior
+        self.decision_times = []  # Stores time taken for decisions
+        self.risk_choices = 0  # Counts risky decisions
+        self.social_choices = 0  # Counts social interactions
+        self.help_others = 0  # Counts how often the player helps others
         
+        # Attempt to load player character image
+        try:
+            self.image = pygame.image.load('images/player_character.png')
+            self.image = pygame.transform.scale(self.image, (self.width, self.height))
+        except pygame.error:
+            # Fallback if the image cannot be loaded
+            self.image = None
+            print("Could not load player image - using a simple shape instead.")
+
     def draw(self):
-        # Draw the player
-        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
-        # Add some details to make it look like a person
-        pygame.draw.circle(screen, self.color, (self.x + self.width // 2, self.y - 15), 20)
-        
+        if self.image:
+            # Draw the player image if it was successfully loaded
+            screen.blit(self.image, (self.x, self.y))
+        else:
+            # Draw a simple rectangle and circle as a fallback character representation
+            pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
+            pygame.draw.circle(screen, self.color, (self.x + self.width // 2, self.y - 15), 20)
+
     def move(self, dx, dy):
-        # Move player with boundaries check
+        """ Moves the player while keeping it within screen boundaries. """
         new_x = self.x + dx
         new_y = self.y + dy
-        
+
+        # Ensure the player stays within the screen bounds
         if 0 <= new_x <= SCREEN_WIDTH - self.width:
             self.x = new_x
         if 0 <= new_y <= SCREEN_HEIGHT - self.height:
             self.y = new_y
-            
+
     def reset_position(self):
+        """ Resets the player to the center of the screen. """
         self.x = SCREEN_WIDTH // 2
         self.y = SCREEN_HEIGHT // 2
 
+######################## Hier weitermachen mit erklären #########################################
 # NPC class for social interactions
 class NPC:
     def __init__(self, x, y, color=GREEN, request_type="help"):
@@ -221,10 +248,162 @@ class StartScreen:
     def is_start_clicked(self, mouse_pos, mouse_click):
         return self.start_button.is_clicked(mouse_pos, mouse_click)
 
+def generate_companion_description(personality_traits):
+    """
+    Generates a detailed description of the digital companion based on the 
+    player's personality profile.
+    """
+    # Get personality values
+    openness = personality_traits['openness']
+    conscientiousness = personality_traits['conscientiousness']
+    extraversion = personality_traits['extraversion']
+    agreeableness = personality_traits['agreeableness']
+    neuroticism = personality_traits['neuroticism']
+    
+    # Base companion type
+    if openness > 70:
+        companion_type = "Curious Creature"
+        base_form = "a shape-shifting creature"
+        if extraversion > 65:
+            color_theme = "vibrant, shifting rainbow colors"
+        else:
+            color_theme = "gentle blue-green hues that slowly transform"
+        
+        special_features = []
+        if conscientiousness > 60:
+            special_features.append("intricate patterns that reorganize themselves")
+        if agreeableness > 60:
+            special_features.append("warm, glowing eyes that show genuine care")
+        if neuroticism > 60:
+            special_features.append("calming aura that pulses softly when you're stressed")
+        else:
+            special_features.append("playful energy that encourages exploration")
+            
+    elif conscientiousness > 70:
+        companion_type = "Organized Helper"
+        base_form = "a geometric companion"
+        color_theme = "clean blue and white tones"
+        
+        special_features = []
+        special_features.append("a clearly organized interface")
+        if extraversion > 60:
+            special_features.append("an enthusiastic digital assistant voice")
+        else:
+            special_features.append("subtle, non-intrusive reminder animations")
+        if neuroticism > 60:
+            special_features.append("calming ambient sounds when scheduling activities")
+            
+    elif extraversion > 70:
+        companion_type = "Energetic Companion"
+        base_form = "a vibrant, star-shaped being"
+        color_theme = "bright yellow and orange hues"
+        
+        special_features = []
+        special_features.append("dynamic animations that celebrate your achievements")
+        if openness > 60:
+            special_features.append("constantly evolving appearance")
+        if agreeableness > 60:
+            special_features.append("expressions that mirror your emotions")
+            
+    elif agreeableness > 70:
+        companion_type = "Supportive Friend"
+        base_form = "a heart-shaped companion"
+        color_theme = "warm pink and soft purple tones"
+        
+        special_features = []
+        special_features.append("a comforting, gentle pulse when you need encouragement")
+        if conscientiousness > 60:
+            special_features.append("thoughtful reminders decorated with hearts")
+        if neuroticism > 60:
+            special_features.append("calming animations that help during anxious moments")
+            
+    elif neuroticism > 70:
+        companion_type = "Calming Presence"
+        base_form = "a flowing, water-like entity"
+        color_theme = "soothing teal and gentle blue shades"
+        
+        special_features = []
+        special_features.append("wave-like movements that encourage deep breathing")
+        if openness > 60:
+            special_features.append("adaptable form that responds to your mood")
+        if agreeableness > 60:
+            special_features.append("comforting expressions that validate your feelings")
+            
+    else:
+        companion_type = "Balanced Buddy"
+        base_form = "a rounded, symmetrical companion"
+        color_theme = "balanced blend of blue and green"
+        
+        special_features = []
+        special_features.append("stable, reliable animations")
+        special_features.append("adaptable interface that adjusts to your needs")
+        if extraversion > 55:
+            special_features.append("friendly expressions that encourage interaction")
+        else:
+            special_features.append("respectful distance that honors your space")
+    
+    # Build the description
+    description = f"Your digital companion takes the form of {base_form} with {color_theme}. "
+    
+    # Add special features
+    if special_features:
+        if len(special_features) == 1:
+            description += f"It features {special_features[0]}. "
+        elif len(special_features) == 2:
+            description += f"It features {special_features[0]} and {special_features[1]}. "
+        else:
+            features_text = ", ".join(special_features[:-1]) + f", and {special_features[-1]}"
+            description += f"It features {features_text}. "
+    
+    # Add behaviors based on strongest personality traits
+    behaviors = []
+    
+    # Find the two highest traits
+    trait_values = {
+        'openness': openness,
+        'conscientiousness': conscientiousness,
+        'extraversion': extraversion,
+        'agreeableness': agreeableness,
+        'neuroticism': neuroticism
+    }
+    sorted_traits = sorted(trait_values.items(), key=lambda x: x[1], reverse=True)
+    top_traits = sorted_traits[:2]
+    
+    for trait, value in top_traits:
+        if trait == 'openness' and value > 60:
+            behaviors.append("continually evolves its appearance to keep you engaged and inspired")
+        elif trait == 'conscientiousness' and value > 60:
+            behaviors.append("provides structured support and gentle reminders to help you stay on track")
+        elif trait == 'extraversion' and value > 60:
+            behaviors.append("responds enthusiastically to your interactions and celebrates your progress")
+        elif trait == 'agreeableness' and value > 60:
+            behaviors.append("offers warm encouragement and validates your efforts with genuine care")
+        elif trait == 'neuroticism' and value > 60:
+            behaviors.append("provides calming support during challenging moments and helps manage stress")
+        elif trait == 'openness':
+            behaviors.append("offers new perspectives and creative approaches to your therapy")
+        elif trait == 'conscientiousness':
+            behaviors.append("helps you organize your therapy steps in a manageable way")
+        elif trait == 'extraversion':
+            behaviors.append("provides just the right amount of social interaction to keep you motivated")
+        elif trait == 'agreeableness':
+            behaviors.append("responds to your needs with understanding and support")
+        elif trait == 'neuroticism':
+            behaviors.append("creates a stable, predictable environment for your therapy")
+    
+    if behaviors:
+        if len(behaviors) == 1:
+            description += f"This companion {behaviors[0]}."
+        else:
+            description += f"This companion {behaviors[0]} and {behaviors[1]}."
+    
+    return description
+
 class ResultScreen:
     def __init__(self, personality_scores):
         self.personality = personality_scores
         self.restart_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 60, "Play Again")
+        self.companion_description = generate_companion_description(personality_scores)
         
     def draw(self):
         screen.fill(WHITE)
@@ -267,9 +446,38 @@ class ResultScreen:
         # Display recommended companion based on traits
         companion = self.get_recommended_companion()
         comp_surf = font_medium.render(f"Recommended Digital Companion: {companion}", True, BLUE)
-        screen.blit(comp_surf, (100, y_pos + 20))
+        screen.blit(comp_surf, (100, y_pos))
+        
+        # Draw companion description with word wrap
+        description_lines = self.wrap_text(self.companion_description, 600)
+        desc_y_pos = y_pos + 40
+        for line in description_lines:
+            desc_surf = font_small.render(line, True, BLACK)
+            screen.blit(desc_surf, (100, desc_y_pos))
+            desc_y_pos += 25
         
         self.restart_button.draw()
+    
+    def wrap_text(self, text, max_width):
+        """Break text into lines that fit within a specified width."""
+        words = text.split()
+        lines = []
+        current_line = ""
+        
+        for word in words:
+            test_line = current_line + word + " "
+            text_width, _ = font_small.size(test_line)
+            
+            if text_width < max_width:
+                current_line = test_line
+            else:
+                lines.append(current_line)
+                current_line = word + " "
+                
+        if current_line:
+            lines.append(current_line)
+            
+        return lines
     
     def get_recommended_companion(self):
         # Determine which companion would be best based on personality traits
@@ -293,7 +501,6 @@ class ResultScreen:
     def is_restart_clicked(self, mouse_pos, mouse_click):
         return self.restart_button.is_clicked(mouse_pos, mouse_click)
 
-# Game stages
 class MovementStage:
     def __init__(self):
         self.player = Player()
