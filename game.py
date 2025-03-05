@@ -102,7 +102,7 @@ class Player:
         self.x = SCREEN_WIDTH // 2
         self.y = SCREEN_HEIGHT // 2
 
-######################## Hier weitermachen mit erklären #########################################
+######################## das später noch anschauen #########################################
 # NPC class for social interactions
 class NPC:
     def __init__(self, x, y, color=GREEN, request_type="help"):
@@ -126,6 +126,7 @@ class NPC:
                 self.y < player.y + player.height and
                 self.y + self.height > player.y)
 
+######################## das später noch anschauen #########################################
 # Path/obstacle class for movement choices
 class Path:
     def __init__(self, x, y, width, height, path_type="safe"):
@@ -145,6 +146,8 @@ class Path:
                 self.x + self.width > player.x and
                 self.y < player.y + player.height and
                 self.y + self.height > player.y)
+
+######################## das später noch anschauen #########################################
 
 # Button class for UI
 class Button:
@@ -176,6 +179,8 @@ class Button:
     def is_clicked(self, mouse_pos, mouse_click):
         # Check if button is clicked
         return self.rect.collidepoint(mouse_pos) and mouse_click
+
+######################## das später noch anschauen #########################################
 
 # Decision scenario class
 class Scenario:
@@ -223,142 +228,172 @@ class Scenario:
             buttons.append(btn)
         return buttons
 
+######################## das später noch anschauen #########################################
+
 # Game Screens
+
+# StartScreen class - The initial screen before the game starts
 class StartScreen:
     def __init__(self):
-        self.title = "Personality Assessment Game"
-        self.subtitle = "Discover your personality traits through gameplay"
+        """
+        Initializes the start screen with a title, subtitle, and a start button.
+        """
+        self.title = "Persona Companion"  # Main game title
+        self.subtitle = "Discover your personality and find your ideal companion – through gameplay!"  # Subtitle with a brief game description
+
+        # Create the "Start Game" button at the center of the screen
         self.start_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 50, 200, 60, "Start Game")
-        
+
+######################## das später noch anschauen #########################################
     def draw(self):
+        """ Renders the start screen including the title, subtitle, and start button. """
+        # Fill the screen with a white background
         screen.fill(WHITE)
+
+        # Render and display the title text
         title_surf = font_title.render(self.title, True, BLUE)
         title_rect = title_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3))
         screen.blit(title_surf, title_rect)
-        
+
+        # Render and display the subtitle text
         subtitle_surf = font_medium.render(self.subtitle, True, BLACK)
         subtitle_rect = subtitle_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3 + 60))
         screen.blit(subtitle_surf, subtitle_rect)
-        
+
+        # Draw the start button
         self.start_button.draw()
-        
+
+######################## das später noch anschauen #########################################
+
     def update(self, mouse_pos):
+        """ Updates the button color when the mouse hovers over it. """
         self.start_button.update(mouse_pos)
-        
+
     def is_start_clicked(self, mouse_pos, mouse_click):
+        """
+        Checks if the start button has been clicked.
+
+        Parameters:
+        - mouse_pos: The current position of the mouse.
+        - mouse_click: Boolean indicating if the mouse button was clicked.
+
+        Returns:
+        - True if the start button is clicked, False otherwise.
+        """
         return self.start_button.is_clicked(mouse_pos, mouse_click)
 
+######################## das später noch anschauen #########################################
 def generate_companion_description(personality_traits):
     """
     Generates a detailed description of the digital companion based on the 
     player's personality profile.
     """
-    # Get personality values
+    # Retrieve personality trait values
     openness = personality_traits['openness']
     conscientiousness = personality_traits['conscientiousness']
     extraversion = personality_traits['extraversion']
     agreeableness = personality_traits['agreeableness']
     neuroticism = personality_traits['neuroticism']
     
-    # Base companion type
+    # Determine the companion's base type based on dominant traits
     if openness > 70:
-        companion_type = "Curious Creature"
-        base_form = "a shape-shifting creature"
+        companion_type = "Neugieriges Wesen"  # Curious Creature
+        base_form = "eine formverändernde Kreatur"  # a shape-shifting creature
         if extraversion > 65:
-            color_theme = "vibrant, shifting rainbow colors"
+            color_theme = "leuchtenden, sich ständig verändernden Regenbogenfarben"  # vibrant, shifting rainbow colors
         else:
-            color_theme = "gentle blue-green hues that slowly transform"
+            color_theme = "sanften Blau-Grün-Tönen, die sich langsam verändern"  # gentle blue-green hues that slowly transform
         
         special_features = []
         if conscientiousness > 60:
-            special_features.append("intricate patterns that reorganize themselves")
+            special_features.append("komplexe Muster, die sich selbst neu anordnen")  # intricate patterns that reorganize themselves
         if agreeableness > 60:
-            special_features.append("warm, glowing eyes that show genuine care")
+            special_features.append("warme, leuchtende Augen, die echte Fürsorge zeigen")  # warm, glowing eyes that show genuine care
         if neuroticism > 60:
-            special_features.append("calming aura that pulses softly when you're stressed")
+            special_features.append("eine beruhigende Aura, die sanft pulsiert, wenn du gestresst bist")  # calming aura that pulses softly when you're stressed
         else:
-            special_features.append("playful energy that encourages exploration")
+            special_features.append("eine verspielte Energie, die zur Erkundung einlädt")  # playful energy that encourages exploration
             
     elif conscientiousness > 70:
-        companion_type = "Organized Helper"
-        base_form = "a geometric companion"
-        color_theme = "clean blue and white tones"
+        companion_type = "Organisierter Helfer"  # Organized Helper
+        base_form = "ein geometrischer Begleiter"  # a geometric companion
+        color_theme = "klaren Blau- und Weißtönen"  # clean blue and white tones
         
         special_features = []
-        special_features.append("a clearly organized interface")
+        special_features.append("eine klar strukturierte Benutzeroberfläche")  # a clearly organized interface
         if extraversion > 60:
-            special_features.append("an enthusiastic digital assistant voice")
+            special_features.append("eine begeisterte digitale Assistentenstimme")  # an enthusiastic digital assistant voice
         else:
-            special_features.append("subtle, non-intrusive reminder animations")
+            special_features.append("dezente, unaufdringliche Erinnerungsanimationen")  # subtle, non-intrusive reminder animations
         if neuroticism > 60:
-            special_features.append("calming ambient sounds when scheduling activities")
+            special_features.append("beruhigende Umgebungsgeräusche beim Planen von Aktivitäten")  # calming ambient sounds when scheduling activities
             
     elif extraversion > 70:
-        companion_type = "Energetic Companion"
-        base_form = "a vibrant, star-shaped being"
-        color_theme = "bright yellow and orange hues"
+        companion_type = "Energischer Begleiter"  # Energetic Companion
+        base_form = "ein lebhaftes, sternförmiges Wesen"  # a vibrant, star-shaped being
+        color_theme = "hellen Gelb- und Orangetönen"  # bright yellow and orange hues
         
         special_features = []
-        special_features.append("dynamic animations that celebrate your achievements")
+        special_features.append("dynamische Animationen, die deine Erfolge feiern")  # dynamic animations that celebrate your achievements
         if openness > 60:
-            special_features.append("constantly evolving appearance")
+            special_features.append("eine sich ständig weiterentwickelnde Erscheinung")  # constantly evolving appearance
         if agreeableness > 60:
-            special_features.append("expressions that mirror your emotions")
+            special_features.append("Ausdrücke, die deine Emotionen widerspiegeln")  # expressions that mirror your emotions
             
     elif agreeableness > 70:
-        companion_type = "Supportive Friend"
-        base_form = "a heart-shaped companion"
-        color_theme = "warm pink and soft purple tones"
+        companion_type = "Unterstützender Freund"  # Supportive Friend
+        base_form = "ein herzförmiger Begleiter"  # a heart-shaped companion
+        color_theme = "warmen Rosa- und sanften Lilatönen"  # warm pink and soft purple tones
         
         special_features = []
-        special_features.append("a comforting, gentle pulse when you need encouragement")
+        special_features.append("ein sanftes Pulsieren, das dir in schwierigen Momenten Mut macht")  # a comforting, gentle pulse when you need encouragement
         if conscientiousness > 60:
-            special_features.append("thoughtful reminders decorated with hearts")
+            special_features.append("liebevolle Erinnerungen, verziert mit Herzen")  # thoughtful reminders decorated with hearts
         if neuroticism > 60:
-            special_features.append("calming animations that help during anxious moments")
+            special_features.append("beruhigende Animationen, die in ängstlichen Momenten helfen")  # calming animations that help during anxious moments
             
     elif neuroticism > 70:
-        companion_type = "Calming Presence"
-        base_form = "a flowing, water-like entity"
-        color_theme = "soothing teal and gentle blue shades"
+        companion_type = "Beruhigende Präsenz"  # Calming Presence
+        base_form = "ein fließendes, wasserähnliches Wesen"  # a flowing, water-like entity
+        color_theme = "beruhigenden Türkis- und sanften Blautönen"  # soothing teal and gentle blue shades
         
         special_features = []
-        special_features.append("wave-like movements that encourage deep breathing")
+        special_features.append("wellenartige Bewegungen, die tiefes Atmen fördern")  # wave-like movements that encourage deep breathing
         if openness > 60:
-            special_features.append("adaptable form that responds to your mood")
+            special_features.append("eine anpassungsfähige Form, die auf deine Stimmung reagiert")  # adaptable form that responds to your mood
         if agreeableness > 60:
-            special_features.append("comforting expressions that validate your feelings")
+            special_features.append("tröstende Ausdrücke, die deine Gefühle anerkennen")  # comforting expressions that validate your feelings
             
     else:
-        companion_type = "Balanced Buddy"
-        base_form = "a rounded, symmetrical companion"
-        color_theme = "balanced blend of blue and green"
+        companion_type = "Ausgewogener Begleiter"  # Balanced Buddy
+        base_form = "ein abgerundeter, symmetrischer Begleiter"  # a rounded, symmetrical companion
+        color_theme = "ausgeglichenen Blau- und Grüntönen"  # balanced blend of blue and green
         
         special_features = []
-        special_features.append("stable, reliable animations")
-        special_features.append("adaptable interface that adjusts to your needs")
+        special_features.append("stabile, verlässliche Animationen")  # stable, reliable animations
+        special_features.append("eine anpassbare Benutzeroberfläche, die sich nach deinen Bedürfnissen richtet")  # adaptable interface that adjusts to your needs
         if extraversion > 55:
-            special_features.append("friendly expressions that encourage interaction")
+            special_features.append("freundliche Ausdrücke, die zur Interaktion ermutigen")  # friendly expressions that encourage interaction
         else:
-            special_features.append("respectful distance that honors your space")
+            special_features.append("respektvoller Abstand, der deinen Raum achtet")  # respectful distance that honors your space
     
     # Build the description
-    description = f"Your digital companion takes the form of {base_form} with {color_theme}. "
-    
+    description = f"Dein digitaler Begleiter nimmt die Form von {base_form} mit {color_theme} an. "
+
     # Add special features
     if special_features:
         if len(special_features) == 1:
-            description += f"It features {special_features[0]}. "
+            description += f"Es verfügt über {special_features[0]}. "
         elif len(special_features) == 2:
-            description += f"It features {special_features[0]} and {special_features[1]}. "
+            description += f"Es verfügt über {special_features[0]} und {special_features[1]}. "
         else:
-            features_text = ", ".join(special_features[:-1]) + f", and {special_features[-1]}"
-            description += f"It features {features_text}. "
-    
-    # Add behaviors based on strongest personality traits
+            features_text = ", ".join(special_features[:-1]) + f" und {special_features[-1]}"
+            description += f"Es verfügt über {features_text}. "
+
+    # Add behaviors based on dominant personality traits
     behaviors = []
-    
-    # Find the two highest traits
+
+    # Find the two strongest traits
     trait_values = {
         'openness': openness,
         'conscientiousness': conscientiousness,
@@ -368,37 +403,29 @@ def generate_companion_description(personality_traits):
     }
     sorted_traits = sorted(trait_values.items(), key=lambda x: x[1], reverse=True)
     top_traits = sorted_traits[:2]
-    
+
+    # Define behavior based on dominant traits
+    trait_behavior_map = {
+        'openness': "entwickelt sich ständig weiter und inspiriert dich mit neuen Ideen",
+        'conscientiousness': "unterstützt dich mit strukturierten Erinnerungen und hilfreichen Vorschlägen",
+        'extraversion': "reagiert enthusiastisch auf deine Aktionen und motiviert dich",
+        'agreeableness': "ermutigt dich mit positiver Verstärkung und zeigt Empathie",
+        'neuroticism': "bietet beruhigende Unterstützung und hilft dir, Stress zu bewältigen"
+    }
+
     for trait, value in top_traits:
-        if trait == 'openness' and value > 60:
-            behaviors.append("continually evolves its appearance to keep you engaged and inspired")
-        elif trait == 'conscientiousness' and value > 60:
-            behaviors.append("provides structured support and gentle reminders to help you stay on track")
-        elif trait == 'extraversion' and value > 60:
-            behaviors.append("responds enthusiastically to your interactions and celebrates your progress")
-        elif trait == 'agreeableness' and value > 60:
-            behaviors.append("offers warm encouragement and validates your efforts with genuine care")
-        elif trait == 'neuroticism' and value > 60:
-            behaviors.append("provides calming support during challenging moments and helps manage stress")
-        elif trait == 'openness':
-            behaviors.append("offers new perspectives and creative approaches to your therapy")
-        elif trait == 'conscientiousness':
-            behaviors.append("helps you organize your therapy steps in a manageable way")
-        elif trait == 'extraversion':
-            behaviors.append("provides just the right amount of social interaction to keep you motivated")
-        elif trait == 'agreeableness':
-            behaviors.append("responds to your needs with understanding and support")
-        elif trait == 'neuroticism':
-            behaviors.append("creates a stable, predictable environment for your therapy")
-    
+        if value > 60:
+            behaviors.append(trait_behavior_map[trait])
+
     if behaviors:
         if len(behaviors) == 1:
-            description += f"This companion {behaviors[0]}."
+            description += f"Dieser Begleiter {behaviors[0]}."
         else:
-            description += f"This companion {behaviors[0]} and {behaviors[1]}."
-    
+            description += f"Dieser Begleiter {behaviors[0]} und {behaviors[1]}."
+
     return description
 
+######################## das später noch anschauen #########################################
 class ResultScreen:
     def __init__(self, personality_scores):
         self.personality = personality_scores
@@ -501,6 +528,7 @@ class ResultScreen:
     def is_restart_clicked(self, mouse_pos, mouse_click):
         return self.restart_button.is_clicked(mouse_pos, mouse_click)
 
+######################## das später noch anschauen #########################################
 class MovementStage:
     def __init__(self):
         self.player = Player()
@@ -601,6 +629,7 @@ class MovementStage:
         timer_surf = font_medium.render(f"Time: {int(remaining_time)}s", True, RED)
         screen.blit(timer_surf, (SCREEN_WIDTH - 150, 20))
 
+######################## das später noch anschauen #########################################
 class PathChoiceStage:
     def __init__(self):
         self.player = Player()
@@ -724,6 +753,7 @@ class PathChoiceStage:
             text_surf = font_small.render(instruction, True, BLACK)
             screen.blit(text_surf, (20, 20 + i * 25))
 
+######################## das später noch anschauen #########################################
 class SocialInteractionStage:
     def __init__(self):
         self.player = Player()
@@ -925,6 +955,8 @@ class SocialInteractionStage:
             # Draw option buttons
             for button in self.buttons:
                 button.draw()
+
+######################## das später noch anschauen #########################################
 
 # Main game function
 def main():
