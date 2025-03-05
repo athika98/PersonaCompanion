@@ -6,3 +6,5 @@ transformers==4.37.2
 torch==2.6.0+cpu
 torchaudio==2.6.0+cpu
 torchvision==0.21.0+cpu
+plotly==6.0.0
+pygame==2.6.1
