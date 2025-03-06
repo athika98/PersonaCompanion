@@ -957,7 +957,6 @@ class SocialInteractionStage:
                 button.draw()
 
 ######################## das später noch anschauen #########################################
-
 # Main game function
 def main():
     global personality
