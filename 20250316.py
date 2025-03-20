@@ -112,6 +112,31 @@ class Game:
         self.game2_selection = None # Aktuelle Auswahl (a oder b)
         self.game2_transition_timer = 0  # Timer für Übergänge zwischen Fragen
         self.game2_state = "question"  # Zustand des Spiels (question, result)
+
+        # Game 3: Kreativitätsspiel
+        self.game3_current_pattern = 0
+        self.game3_choices = []
+        self.game3_state = "instruction"  # Zustände: instruction, pattern, result
+        self.game3_openness_score = 0
+        self.game3_choice = None
+        self.game3_transition_timer = 0
+
+        # Game 4: Organisationsspiel
+        self.game4_state = "instruction"
+        self.game4_conscientiousness_score = 0
+        self.game4_time_remaining = 60 * 45
+        self.game4_timer_active = False
+        self.game4_organized_items = []
+        self.game4_dragging_item = None
+        self.game4_drag_offset = (0, 0)
+        self.game4_categories = {}
+
+        self.game5_state = "instruction"
+        self.game5_agreeableness_score = 0
+        self.game5_round = 0
+        self.game5_choices = []
+        self.game5_slider_position = 50
+        self.game5_is_dragging = False
     
     def run(self):
         # Hauptspielschleife
@@ -148,6 +173,12 @@ class Game:
             self.game1_handle_event(event)
         elif self.state == GameState.GAME2:
             self.game2_handle_event(event)
+        elif self.state == GameState.GAME3:
+            self.game3_handle_event(event)
+        elif self.state == GameState.GAME4:
+            self.game4_handle_event(event)
+        elif self.state == GameState.GAME5:
+            self.game5_handle_event(event)
         elif self.state == GameState.GAME_OVER:
             self.game_over_handle_event(event)
     
@@ -283,9 +314,187 @@ class Game:
                 extraversion_percentage = int((self.game2_extraversion_score / len(self.game2_scenarios)) * 100)
                 self.personality_traits["extraversion"] = extraversion_percentage      
                 
-                # Move to next game or results
-                self.transition_to(GameState.GAME_OVER)
+                # Move to next game
+                self.transition_to(GameState.GAME3)
+                self.initialize_game3()
+
+    def game3_handle_event(self, event):
+        """Event-Handler für das Kreativitätsspiel"""
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = event.pos
+            
+            # Instruction screen - Start button
+            if self.game3_state == "instruction":
+                start_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50)
+                if start_button.collidepoint(mouse_x, mouse_y):
+                    self.game3_state = "pattern"
+                    return
+            
+            # Pattern screen - Option selection
+            elif self.game3_state == "pattern":
+                # Option boxes (A, B, C, D)
+                for i, option in enumerate(self.game3_patterns[self.game3_current_pattern]["options"]):
+                    option_rect = pygame.Rect(100 + (i % 2) * 300, 280 + (i // 2) * 120, 250, 100)
+                    if option_rect.collidepoint(mouse_x, mouse_y):
+                        self.game3_choice = option["name"]
+                        self.game3_openness_score += option["openness_value"]
+                        self.game3_choices.append({
+                            "pattern": self.game3_current_pattern,
+                            "choice": option["name"],
+                            "value": option["value"],
+                            "openness_value": option["openness_value"]
+                        })
+                        
+                        # Move to next pattern or results
+                        self.game3_current_pattern += 1
+                        if self.game3_current_pattern >= len(self.game3_patterns):
+                            self.game3_state = "result"
+                        return
+            
+            # Result screen - Continue button
+            elif self.game3_state == "result":
+                continue_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+                if continue_button.collidepoint(mouse_x, mouse_y):
+                    # Übergang zum Game-Over-Screen
+                    self.end_game3()            
+
+    def game4_handle_event(self, event):
+        """Event-Handler für das Organisationsspiel"""
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Linke Maustaste
+            mouse_x, mouse_y = event.pos
+            
+            # Instruction screen - Start button
+            if self.game4_state == "instruction":
+                start_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50)
+                if start_button.collidepoint(mouse_x, mouse_y):
+                    self.game4_state = "organize"
+                    self.game4_timer_active = True
+                    return
+            
+            # Organize screen - Drag and drop
+            elif self.game4_state == "organize" and self.game4_timer_active:
+                # Überprüfen, ob ein Objekt angeklickt wurde
+                for item in reversed(self.game4_items):  # Reversed, um oberste Objekte zuerst zu behandeln
+                    rect = pygame.Rect(item["pos"][0] - item["size"][0] // 2, 
+                                    item["pos"][1] - item["size"][1] // 2, 
+                                    item["size"][0], item["size"][1])
+                    if rect.collidepoint(mouse_x, mouse_y):
+                        self.game4_dragging_item = item
+                        self.game4_drag_offset = (mouse_x - item["pos"][0], mouse_y - item["pos"][1])
+                        # Bring das ausgewählte Item nach vorne
+                        self.game4_items.remove(item)
+                        self.game4_items.append(item)
+                        return
+            
+            # Result screen - Continue button
+            elif self.game4_state == "result":
+                continue_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+                if continue_button.collidepoint(mouse_x, mouse_y):
+                    # Speichere den Gewissenhaftigkeitswert und gehe zum nächsten Spiel
+                    self.end_game4()
+        
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:  # Maustaste losgelassen
+            if self.game4_state == "organize" and self.game4_dragging_item:
+                # Überprüfen, ob das Objekt in einen Container fallen gelassen wurde
+                mouse_x, mouse_y = event.pos
+                for container in self.game4_containers:
+                    if container["rect"].collidepoint(mouse_x, mouse_y):
+                        # Entferne das Item aus allen Kategorien
+                        for category_id in self.game4_categories:
+                            if self.game4_dragging_item["name"] in self.game4_categories[category_id]:
+                                self.game4_categories[category_id].remove(self.game4_dragging_item["name"])
+                        
+                        # Füge das Item der neuen Kategorie hinzu
+                        self.game4_categories[container["id"]].append(self.game4_dragging_item["name"])
+                        
+                        # Zentriere das Item im Container
+                        self.game4_dragging_item["pos"] = [
+                            container["rect"].centerx,
+                            container["rect"].centery - 10 * len(self.game4_categories[container["id"]]) 
+                        ]
+                        break
                 
+                self.game4_dragging_item = None
+        
+        elif event.type == pygame.MOUSEMOTION:
+            # Bewege das ausgewählte Objekt
+            if self.game4_state == "organize" and self.game4_dragging_item:
+                mouse_x, mouse_y = event.pos
+                self.game4_dragging_item["pos"] = [
+                    mouse_x - self.game4_drag_offset[0],
+                    mouse_y - self.game4_drag_offset[1]
+                ]
+
+    def game5_handle_event(self, event):
+        """Event-Handler für das Kooperationsspiel"""
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = event.pos
+            
+            # Instruction screen - Start button
+            if self.game5_state == "instruction":
+                start_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50)
+                if start_button.collidepoint(mouse_x, mouse_y):
+                    self.game5_state = "play"
+                    self.game5_round = 0
+                    return
+            
+            # Play screen - Slider interaction and continue button
+            elif self.game5_state == "play":
+                # Check if slider knob was clicked
+                slider = self.game5_slider
+                knob_x = slider["x"] - slider["width"] // 2 + (slider["width"] * self.game5_slider_position // 100)
+                knob_rect = pygame.Rect(knob_x - slider["knob_radius"], 
+                                    slider["y"] - slider["knob_radius"],
+                                    slider["knob_radius"] * 2, 
+                                    slider["knob_radius"] * 2)
+                
+                if knob_rect.collidepoint(mouse_x, mouse_y):
+                    self.game5_is_dragging = True
+                
+                # Check if continue button was clicked
+                continue_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+                if continue_button.collidepoint(mouse_x, mouse_y):
+                    # Record the choice
+                    self.game5_choices.append({
+                        "round": self.game5_round,
+                        "scenario": self.game5_scenarios[self.game5_round]["title"],
+                        "value": self.game5_slider_position
+                    })
+                    
+                    # Calculate score contribution
+                    # More generous choices (lower slider value) increase agreeableness
+                    cooperation_score = 100 - self.game5_slider_position  # Invert scale
+                    self.game5_agreeableness_score += cooperation_score
+                    
+                    # Move to next round or results
+                    self.game5_round += 1
+                    if self.game5_round >= len(self.game5_scenarios):
+                        self.game5_state = "result"
+                    else:
+                        # Reset slider position for next round
+                        self.game5_slider_position = 50
+            
+            # Result screen - Continue button
+            elif self.game5_state == "result":
+                continue_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+                if continue_button.collidepoint(mouse_x, mouse_y):
+                    # End the game and transition to the final screen
+                    self.end_game5()
+        
+        elif event.type == pygame.MOUSEBUTTONUP:
+            # Stop dragging the slider
+            self.game5_is_dragging = False
+        
+        elif event.type == pygame.MOUSEMOTION and self.game5_is_dragging and self.game5_state == "play":
+            # Update slider position
+            mouse_x, mouse_y = event.pos
+            slider = self.game5_slider
+            slider_start_x = slider["x"] - slider["width"] // 2
+            
+            # Calculate position within slider bounds
+            relative_x = max(0, min(slider["width"], mouse_x - slider_start_x))
+            self.game5_slider_position = int((relative_x / slider["width"]) * 100)
+
     def game_over_handle_event(self, event):
         """Event handler für den Game Over Screen"""
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -342,7 +551,7 @@ class Game:
         # Move to next game or results
         self.transition_to(GameState.GAME2)
         self.initialize_game2()
-    
+
     def initialize_game2(self):
         """Initialisiere das Entscheidungs-Spiel zur Bewertung der Extraversion"""
         self.game2_scenarios = [
@@ -404,6 +613,213 @@ class Game:
             }
         ]
     
+    def initialize_game3(self):
+        """Initialisiert das Kreativitätsspiel zur Messung der Offenheit für Erfahrungen"""
+        self.game3_current_pattern = 0
+        self.game3_choices = []
+        self.game3_state = "instruction"  # Zustände: instruction, pattern, result
+        self.game3_openness_score = 0
+        self.game3_choice = None
+        self.game3_transition_timer = 0
+        
+        # Definiere verschiedene Muster und deren Vervollständigungsoptionen
+        self.game3_patterns = [
+            {
+                "question": "Wie würdest du dieses Muster vervollständigen?",
+                "pattern_type": "line_sequence",
+                "options": [
+                    {"name": "A", "description": "Regelmäßige Fortsetzung", "value": "conventional", "openness_value": 0},
+                    {"name": "B", "description": "Symmetrische Anordnung", "value": "balanced", "openness_value": 1},
+                    {"name": "C", "description": "Überraschender Bruch", "value": "creative", "openness_value": 2},
+                    {"name": "D", "description": "Komplett neues Element", "value": "highly_creative", "openness_value": 3}
+                ]
+            },
+            {
+                "question": "Welche Farbanordnung gefällt dir am besten?",
+                "pattern_type": "color_arrangement",
+                "options": [
+                    {"name": "A", "description": "Harmonierende Farben", "value": "conventional", "openness_value": 0},
+                    {"name": "B", "description": "Komplementäre Kontraste", "value": "balanced", "openness_value": 1},
+                    {"name": "C", "description": "Unerwartete Farbkombination", "value": "creative", "openness_value": 2},
+                    {"name": "D", "description": "Experimentelle Farbwahl", "value": "highly_creative", "openness_value": 3}
+                ]
+            },
+            {
+                "question": "Wie würdest du diese Form ergänzen?",
+                "pattern_type": "shape_completion",
+                "options": [
+                    {"name": "A", "description": "Schließe die Form logisch ab", "value": "conventional", "openness_value": 0},
+                    {"name": "B", "description": "Füge ähnliche Elemente hinzu", "value": "balanced", "openness_value": 1},
+                    {"name": "C", "description": "Verbinde mit neuen Formen", "value": "creative", "openness_value": 2},
+                    {"name": "D", "description": "Transformiere in etwas Unerwartetes", "value": "highly_creative", "openness_value": 3}
+                ]
+            },
+            {
+                "question": "Welche Lösung spricht dich am meisten an?",
+                "pattern_type": "abstract_pattern",
+                "options": [
+                    {"name": "A", "description": "Ordnung und Struktur", "value": "conventional", "openness_value": 0},
+                    {"name": "B", "description": "Harmonische Balance", "value": "balanced", "openness_value": 1},
+                    {"name": "C", "description": "Kreative Neuinterpretation", "value": "creative", "openness_value": 2},
+                    {"name": "D", "description": "Völlige Abstraktion", "value": "highly_creative", "openness_value": 3}
+                ]
+            },
+            {
+                "question": "Wie würdest du diese Geschichte fortsetzen?",
+                "pattern_type": "narrative_completion",
+                "options": [
+                    {"name": "A", "description": "Logische Fortsetzung", "value": "conventional", "openness_value": 0},
+                    {"name": "B", "description": "Mit zusätzlichen Details", "value": "balanced", "openness_value": 1},
+                    {"name": "C", "description": "Überraschende Wendung", "value": "creative", "openness_value": 2},
+                    {"name": "D", "description": "Völlig unerwartetes Ende", "value": "highly_creative", "openness_value": 3}
+                ]
+            }
+        ]
+    
+    def end_game3(self):
+        """Ende von Game 3 und Übergang zum Game-Over-Screen"""
+        # Calculate and store the final openness score as percentage
+        max_possible_score = 3 * len(self.game3_patterns)
+        openness_percentage = int((self.game3_openness_score / max_possible_score) * 100)
+        self.personality_traits["openness"] = openness_percentage
+        
+        # Move to Game Over screen
+        self.transition_to(GameState.GAME4)
+        self.initialize_game4()
+
+    def initialize_game4(self):
+        """Initialisiert das Organisationsspiel zur Messung der Gewissenhaftigkeit"""
+        self.game4_state = "instruction"  # Zustände: instruction, organize, result
+        self.game4_conscientiousness_score = 0
+        self.game4_time_remaining = 60 * 45  # 45 Sekunden bei 60 FPS
+        self.game4_timer_active = False
+        self.game4_organized_items = []
+        self.game4_dragging_item = None
+        self.game4_drag_offset = (0, 0)
+        self.game4_categories = {}  # Zum Speichern, welche Objekte in welchen Kategorien landen
+        
+        # Definiere die zu organisierenden Objekte
+        self.game4_items = [
+            {"id": 1, "type": "book", "name": "Buch: Roman", "color": PASSION_PURPLE, "pos": [150, 250], "size": [80, 40], "original_category": "freizeit"},
+            {"id": 2, "type": "book", "name": "Buch: Fachbuch", "color": PASSION_PURPLE, "pos": [300, 180], "size": [80, 40], "original_category": "arbeit"},
+            {"id": 3, "type": "document", "name": "Dokument: Rechnung", "color": COOL_BLUE, "pos": [450, 330], "size": [70, 50], "original_category": "haushalt"},
+            {"id": 4, "type": "document", "name": "Dokument: Bericht", "color": COOL_BLUE, "pos": [200, 400], "size": [70, 50], "original_category": "arbeit"},
+            {"id": 5, "type": "tool", "name": "Werkzeug: Hammer", "color": ORANGE_PEACH, "pos": [550, 200], "size": [60, 45], "original_category": "haushalt"},
+            {"id": 6, "type": "tool", "name": "Werkzeug: Schere", "color": ORANGE_PEACH, "pos": [350, 280], "size": [60, 45], "original_category": "haushalt"},
+            {"id": 7, "type": "electronics", "name": "Elektronik: Laptop", "color": COOL_BLUE, "pos": [500, 380], "size": [85, 50], "original_category": "arbeit"},
+            {"id": 8, "type": "electronics", "name": "Elektronik: Kopfhörer", "color": JUICY_GREEN, "pos": [250, 330], "size": [65, 40], "original_category": "freizeit"},
+            {"id": 9, "type": "food", "name": "Essen: Apfel", "color": POMEGRANATE, "pos": [400, 230], "size": [50, 50], "original_category": "haushalt"},
+            {"id": 10, "type": "food", "name": "Essen: Schokolade", "color": CHERRY_PINK, "pos": [180, 180], "size": [55, 35], "original_category": "freizeit"}
+        ]
+        
+        # Definiere Kategoriebereiche (Container)
+        self.game4_containers = [
+            {"id": 1, "name": "Kategorie 1", "color": JUICY_GREEN, "rect": pygame.Rect(100, 450, 150, 100)},
+            {"id": 2, "name": "Kategorie 2", "color": COOL_BLUE, "rect": pygame.Rect(325, 450, 150, 100)},
+            {"id": 3, "name": "Kategorie 3", "color": PASSION_PURPLE, "rect": pygame.Rect(550, 450, 150, 100)}
+        ]
+        
+        # Ursprüngliche Kategorien für die Auswertung
+        self.game4_original_categories = {
+            "arbeit": ["Buch: Fachbuch", "Dokument: Bericht", "Elektronik: Laptop"],
+            "haushalt": ["Dokument: Rechnung", "Werkzeug: Hammer", "Werkzeug: Schere", "Essen: Apfel"],
+            "freizeit": ["Buch: Roman", "Elektronik: Kopfhörer", "Essen: Schokolade"]
+        }
+        
+        # Initialisiere die Kategorie-Zuweisungen
+        for container in self.game4_containers:
+            self.game4_categories[container["id"]] = []
+    
+    def end_game4(self):
+        """Ende von Game 4 und Übergang zu Game 5"""
+        # Calculate and store the final conscientiousness score
+        self.personality_traits["conscientiousness"] = self.game4_conscientiousness_score
+        
+        # Move to Game 5
+        self.transition_to(GameState.GAME5)
+        self.initialize_game5()
+
+    def initialize_game5(self):
+        """Initialisiert das Kooperationsspiel zur Messung der Verträglichkeit"""
+        self.game5_state = "instruction"  # Zustände: instruction, play, result
+        self.game5_agreeableness_score = 0
+        self.game5_round = 0
+        self.game5_choices = []
+        self.game5_total_rounds = 5
+        self.game5_transition_timer = 0
+        self.game5_slider_position = 50  # Schieberegler beginnt in der Mitte (0-100)
+        self.game5_is_dragging = False
+        
+        # Schieberegler-Eigenschaften
+        self.game5_slider = {
+            "x": SCREEN_WIDTH // 2,
+            "y": 350,
+            "width": 400,
+            "height": 20,
+            "knob_radius": 15,
+            "min_value": 0,
+            "max_value": 100
+        }
+        
+        # Definiere verschiedene Szenarien mit Ressourcenverteilung
+        self.game5_scenarios = [
+            {
+                "title": "Eiscreme-Sundae Party",
+                "description": "Du organisierst eine Sundae-Party! Wie verteilst du die Toppings?",
+                "resource": "Schokoladensoße",
+                "left_label": "Mehr für andere",
+                "right_label": "Mehr für dich",
+                "self_image": "self_icecream",  # Platzhalter für Bilder
+                "other_image": "others_icecream"
+            },
+            {
+                "title": "Projekt im Team",
+                "description": "Ihr habt ein Gruppenprojekt erfolgreich abgeschlossen. Wie verteilst du die Anerkennung?",
+                "resource": "Anerkennung",
+                "left_label": "Teamleistung betonen",
+                "right_label": "Eigene Leistung betonen",
+                "self_image": "self_project",
+                "other_image": "team_project"
+            },
+            {
+                "title": "Spieleabend",
+                "description": "Bei einem Spieleabend kannst du Punkte mit anderen teilen. Wie entscheidest du?",
+                "resource": "Spielpunkte",
+                "left_label": "Punkte teilen",
+                "right_label": "Punkte behalten",
+                "self_image": "self_game",
+                "other_image": "others_game"
+            },
+            {
+                "title": "Gemeinsames Kochen",
+                "description": "Beim gemeinsamen Kochen bleiben wenige Zutaten übrig. Wie verteilst du sie?",
+                "resource": "Leckere Zutaten",
+                "left_label": "Großzügig abgeben",
+                "right_label": "Für sich behalten",
+                "self_image": "self_cooking",
+                "other_image": "others_cooking"
+            },
+            {
+                "title": "Wissensaustausch",
+                "description": "Du hast wichtige Informationen, die anderen helfen könnten. Wie verhältst du dich?",
+                "resource": "Wertvolles Wissen",
+                "left_label": "Offen teilen",
+                "right_label": "Zurückhalten",
+                "self_image": "self_knowledge",
+                "other_image": "others_knowledge"
+            }
+        ]
+
+    def end_game5(self):
+        """Ende von Game 5 und Übergang zum Game-Over-Screen"""
+        # Calculate and store the final agreeableness score as percentage
+        max_possible_score = 100 * len(self.game5_scenarios)  # 100 points per round
+        agreeableness_percentage = int((self.game5_agreeableness_score / max_possible_score) * 100)
+        self.personality_traits["agreeableness"] = agreeableness_percentage
+        
+        # Move to Game Over screen
+        self.transition_to(GameState.GAME_OVER)
+
     def update(self):
         # Update animation values
         self.update_animations()
@@ -443,7 +859,13 @@ class Game:
                 self.game1_update()
             elif self.state == GameState.GAME2:
                 self.game2_update()
-    
+            elif self.state == GameState.GAME3:
+                self.game3_update()
+            elif self.state == GameState.GAME4:
+                self.game4_update()
+            elif self.state == GameState.GAME5:
+                self.game5_update()
+
     def update_animations(self):
         # Update pulse animation
         if self.pulse_growing:
@@ -532,6 +954,80 @@ class Game:
                     self.game2_state = "question"
                     self.game2_selection = None
     
+    def game3_update(self):
+        """Update logic for the creativity game"""
+        if self.game3_state == "pattern":
+            # Check if time is up for the current pattern
+            if self.game3_transition_timer > 0:
+                self.game3_transition_timer -= 1
+                if self.game3_transition_timer <= 0:
+                    # Move to next pattern
+                    self.game3_current_pattern += 1
+                    if self.game3_current_pattern >= len(self.game3_patterns):
+                        self.game3_state = "result"
+
+    def game4_update(self):
+        """Update-Logik für das Organisationsspiel"""
+        if self.game4_state == "organize" and self.game4_timer_active:
+            # Update timer
+            if self.game4_time_remaining > 0:
+                self.game4_time_remaining -= 1
+            else:
+                # Zeit ist abgelaufen, zum Ergebnis wechseln
+                self.game4_timer_active = False
+                self.calculate_conscientiousness_score()
+                self.game4_state = "result"
+
+    def game5_update(self):
+        """Update-Logik für das Kooperationsspiel"""
+        # Handle transitions or animations if needed
+        if self.game5_state == "play" and self.game5_transition_timer > 0:
+            self.game5_transition_timer -= 1
+
+    def calculate_conscientiousness_score(self):
+        """Berechnet den Gewissenhaftigkeitswert basierend auf der Organisation"""
+        # 1. Überprüfe, wie viele Objekte organisiert wurden (in Kategorien)
+        total_categorized = sum(len(items) for items in self.game4_categories.values())
+        organization_rate = min(1.0, total_categorized / len(self.game4_items))
+        
+        # 2. Überprüfe die Konsistenz der Kategorien
+        category_consistency = 0
+        for category_id, items in self.game4_categories.items():
+            if len(items) <= 1:  # Weniger als 2 Items - keine sinnvolle Kategorie
+                continue
+                
+            # Prüfe, ob Items derselben Originaltypen zusammen gruppiert wurden
+            item_types = {}
+            for item_name in items:
+                # Finde das originale Item
+                for item in self.game4_items:
+                    if item["name"] == item_name:
+                        # Zähle die Typen
+                        item_type = item["type"]
+                        item_types[item_type] = item_types.get(item_type, 0) + 1
+                        break
+            
+            # Berechne Konsistenz innerhalb dieser Kategorie
+            if len(item_types) > 0:
+                most_common_type_count = max(item_types.values())
+                category_consistency += most_common_type_count / len(items)
+        
+        # Normalisiere die Kategoriekonsistenz
+        if total_categorized > 0:
+            category_consistency = category_consistency / len([c for c in self.game4_categories.values() if len(c) > 0])
+        else:
+            category_consistency = 0
+        
+        # 3. Berechne den finalen Score (0-100)
+        # Höherer Wert für mehr Organisation und konsistentere Kategorisierung
+        organization_weight = 0.6
+        consistency_weight = 0.4
+        
+        final_score = int((organization_rate * organization_weight + 
+                        category_consistency * consistency_weight) * 100)
+                        
+        self.game4_conscientiousness_score = final_score
+
     def render(self):
         # Zeichnet den Hintergrund 
         self.screen.fill(BACKGROUND)  # Using creamy background color
@@ -927,41 +1423,816 @@ class Game:
             self.screen.blit(continue_text, (SCREEN_WIDTH // 2 - continue_text.get_width() // 2, SCREEN_HEIGHT - 65))
         
     def game3_render(self):
-        """Placeholder für das dritte Spiel"""
+        """Render-Funktion für das Kreativitätsspiel"""
+        # Draw creative background with flowing patterns
+        self.screen.fill(JUICY_GREEN)
+        
+        # Create a dynamic background pattern
+        for x in range(0, SCREEN_WIDTH, 40):
+            for y in range(0, SCREEN_HEIGHT, 40):
+                color_shift = int(20 * math.sin((x + y) / 100 + pygame.time.get_ticks() / 1000))
+                color = (
+                    min(255, JUICY_GREEN[0] + color_shift),
+                    min(255, JUICY_GREEN[1] - color_shift),
+                    min(255, JUICY_GREEN[2] + color_shift)
+                )
+                size = 3 + int(2 * math.cos((x - y) / 50 + pygame.time.get_ticks() / 800))
+                pygame.draw.circle(self.screen, color, (x, y), size)
+        
+        # Header
+        header_rect = pygame.Rect(0, 0, SCREEN_WIDTH, 100)
+        pygame.draw.rect(self.screen, PRIMARY, header_rect)
+        
+        # Game title
+        game_title = self.medium_font.render("Kreativitätsspiel", True, TEXT_LIGHT)
+        self.screen.blit(game_title, (SCREEN_WIDTH // 2 - game_title.get_width() // 2, 15))
+        
+        # User name display
+        name_text = self.small_font.render(f"Spieler: {self.user_name}", True, TEXT_LIGHT)
+        self.screen.blit(name_text, (SCREEN_WIDTH - 20 - name_text.get_width(), 15))
+        
+        # Different screens based on game state
+        if self.game3_state == "instruction":
+            self._render_game3_instructions()
+        elif self.game3_state == "pattern":
+            self._render_game3_pattern()
+        elif self.game3_state == "result":
+            self._render_game3_result()
+
+    def _render_game3_instructions(self):
+        """Zeigt den Anweisungsbildschirm für das Kreativitätsspiel"""
+        # Instruction box
+        instruction_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250)
+        pygame.draw.rect(self.screen, TEXT_LIGHT, instruction_rect, border_radius=20)
+        
+        # Title
+        instruction_title = self.medium_font.render("Wie kreativ bist du?", True, PRIMARY)
+        self.screen.blit(instruction_title, (SCREEN_WIDTH // 2 - instruction_title.get_width() // 2, 150))
+        
+        # Instructions text
+        instructions = [
+            "In diesem Spiel wirst du verschiedene unvollständige Muster sehen.",
+            "Wähle aus, wie du diese Muster vervollständigen würdest.",
+            "Es gibt keine richtigen oder falschen Antworten!",
+            "Wähle einfach die Option, die dir am besten gefällt oder",
+            "die deiner natürlichen Neigung entspricht."
+        ]
+        
+        y_pos = 200
+        for line in instructions:
+            text = self.small_font.render(line, True, TEXT_DARK)
+            self.screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, y_pos))
+            y_pos += 35
+        
+        # Example visualization
+        example_box = pygame.Rect(SCREEN_WIDTH // 2 - 150, 350, 300, 100)
+        pygame.draw.rect(self.screen, COOL_BLUE, example_box, border_radius=15)
+        
+        # Simple pattern example
+        example_text = self.small_font.render("Beispiel:", True, TEXT_LIGHT)
+        self.screen.blit(example_text, (SCREEN_WIDTH // 2 - example_text.get_width() // 2, 365))
+        
+        # Draw sample pattern
+        pygame.draw.circle(self.screen, CHERRY_PINK, (SCREEN_WIDTH // 2 - 60, 400), 15)
+        pygame.draw.circle(self.screen, CHERRY_PINK, (SCREEN_WIDTH // 2, 400), 10)
+        pygame.draw.circle(self.screen, CHERRY_PINK, (SCREEN_WIDTH // 2 + 50, 400), 5)
+        pygame.draw.circle(self.screen, LEMON_YELLOW, (SCREEN_WIDTH // 2 + 90, 400), 8, 1)  # Outline for missing circle
+        
+        # Start button
+        start_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50)
+        pygame.draw.rect(self.screen, POMEGRANATE, start_button, border_radius=15)
+        
+        start_text = self.medium_font.render("Start", True, TEXT_LIGHT)
+        self.screen.blit(start_text, (SCREEN_WIDTH // 2 - start_text.get_width() // 2, SCREEN_HEIGHT - 85))
+
+    def _render_game3_pattern(self):
+        """Zeigt das aktuelle zu vervollständigende Muster"""
+        current = self.game3_patterns[self.game3_current_pattern]
+        
+        # Progress indicator
+        progress_text = self.small_font.render(
+            f"Muster {self.game3_current_pattern + 1} von {len(self.game3_patterns)}", 
+            True, 
+            TEXT_LIGHT
+        )
+        self.screen.blit(progress_text, (20, 60))
+        
+        # Progress bar
+        progress_width = int(((self.game3_current_pattern + 1) / len(self.game3_patterns)) * (SCREEN_WIDTH - 40))
+        pygame.draw.rect(self.screen, COOL_BLUE, (20, 80, SCREEN_WIDTH - 40, 10), border_radius=5)
+        pygame.draw.rect(self.screen, HONEY_YELLOW, (20, 80, progress_width, 10), border_radius=5)
+        
+        # Question box
+        question_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, 50)
+        pygame.draw.rect(self.screen, ORANGE_PEACH, question_rect, border_radius=15)
+        
+        # Question text
+        question_text = self.medium_font.render(current["question"], True, TEXT_DARK)
+        self.screen.blit(question_text, (SCREEN_WIDTH // 2 - question_text.get_width() // 2, 140))
+        
+        # Pattern visualization based on type
+        self._render_game3_specific_pattern(current["pattern_type"])
+        
+        # Option boxes
+        for i, option in enumerate(current["options"]):
+            # 2x2 grid layout for options
+            option_rect = pygame.Rect(100 + (i % 2) * 300, 280 + (i // 2) * 120, 250, 100)
+            pygame.draw.rect(self.screen, PASSION_PURPLE, option_rect, border_radius=15)
+            
+            # Option letter (A, B, C, D)
+            option_letter = self.medium_font.render(option["name"], True, TEXT_LIGHT)
+            self.screen.blit(option_letter, (option_rect.x + 20, option_rect.y + 10))
+            
+            # Option description
+            option_desc = self.small_font.render(option["description"], True, TEXT_LIGHT)
+            self.screen.blit(option_desc, (option_rect.x + 20, option_rect.y + 50))
+
+    def _render_game3_specific_pattern(self, pattern_type):
+        """Renders different types of patterns based on the current challenge"""
+        pattern_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 190, 200, 70)
+        pygame.draw.rect(self.screen, TEXT_LIGHT, pattern_rect, border_radius=10)
+        
+        if pattern_type == "line_sequence":
+            # Draw a sequence of lines with missing element
+            start_x = SCREEN_WIDTH // 2 - 80
+            y = 225
+            for i in range(4):
+                if i < 3:  # Draw first 3 lines
+                    line_length = 20 - i * 5
+                    pygame.draw.line(self.screen, PRIMARY, (start_x + i*40, y - line_length // 2), 
+                                    (start_x + i*40, y + line_length // 2), 3)
+                else:  # Draw placeholder for missing line
+                    pygame.draw.rect(self.screen, LEMON_YELLOW, (start_x + i*40 - 5, y - 10, 10, 20), 1, border_radius=3)
+        
+        elif pattern_type == "color_arrangement":
+            # Draw color squares with missing color
+            start_x = SCREEN_WIDTH // 2 - 80
+            y = 225
+            colors = [PASSION_PURPLE, COOL_BLUE, JUICY_GREEN]
+            for i in range(4):
+                if i < 3:  # Draw first 3 colors
+                    pygame.draw.rect(self.screen, colors[i], (start_x + i*40 - 10, y - 10, 20, 20), border_radius=3)
+                else:  # Draw placeholder for missing color
+                    pygame.draw.rect(self.screen, TEXT_DARK, (start_x + i*40 - 10, y - 10, 20, 20), 1, border_radius=3)
+        
+        elif pattern_type == "shape_completion":
+            # Draw a partial shape
+            center_x, center_y = SCREEN_WIDTH // 2, 225
+            # Draw 3/4 of a circle
+            pygame.draw.arc(self.screen, CHERRY_PINK, (center_x-30, center_y-30, 60, 60), 
+                            0, 4.71, 3)  # Draw 270 degrees of a circle
+            # Draw dotted line for the missing part
+            for i in range(12):
+                angle = 4.71 + i * 0.11
+                x = center_x + 30 * math.cos(angle)
+                y = center_y + 30 * math.sin(angle)
+                pygame.draw.circle(self.screen, LEMON_YELLOW, (int(x), int(y)), 2)
+        
+        elif pattern_type == "abstract_pattern":
+            # Draw an abstract pattern with elements
+            center_x, center_y = SCREEN_WIDTH // 2, 225
+            
+            # Draw a few geometric elements
+            pygame.draw.polygon(self.screen, POMEGRANATE, 
+                            [(center_x-30, center_y-20), (center_x, center_y-40), (center_x+30, center_y-20)])
+            pygame.draw.rect(self.screen, COOL_BLUE, (center_x-20, center_y-10, 40, 20))
+            
+            # Draw dotted outline for missing element
+            pygame.draw.circle(self.screen, LEMON_YELLOW, (center_x, center_y+25), 15, 1)
+        
+        elif pattern_type == "narrative_completion":
+            # Represent a story with simple icons
+            start_x = SCREEN_WIDTH // 2 - 80
+            y = 225
+            
+            # Sun, cloud, rain icons
+            pygame.draw.circle(self.screen, HONEY_YELLOW, (start_x, y), 10)  # Sun
+            pygame.draw.ellipse(self.screen, TEXT_LIGHT, (start_x+30-15, y-7, 30, 15))  # Cloud
+            pygame.draw.ellipse(self.screen, COOL_BLUE, (start_x+70-10, y-5, 20, 10))  # Rain cloud
+            
+            # Question mark for what comes next
+            question_text = self.medium_font.render("?", True, LEMON_YELLOW)
+            self.screen.blit(question_text, (start_x+110-5, y-10))
+
+    def _render_game3_result(self):
+        """Zeigt die Ergebnisse des Kreativitätsspiels"""
+        # Results box
+        results_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250)
+        pygame.draw.rect(self.screen, TEXT_LIGHT, results_rect, border_radius=20)
+        
+        # Title
+        result_title = self.medium_font.render("Deine Kreativität", True, PRIMARY)
+        self.screen.blit(result_title, (SCREEN_WIDTH // 2 - result_title.get_width() // 2, 150))
+        
+        # Calculate openness percentage
+        max_possible_score = 3 * len(self.game3_patterns)
+        openness_percentage = int((self.game3_openness_score / max_possible_score) * 100)
+        
+        # Determine creativity level and description
+        if openness_percentage > 75:
+            creativity_level = "Sehr kreativ und offen für neue Erfahrungen"
+            description = "Du liebst es, Grenzen zu überschreiten und neue Wege zu entdecken."
+            details = "Deine Herangehensweise ist experimentell und unkonventionell."
+        elif openness_percentage > 50:
+            creativity_level = "Kreativ mit Balance"
+            description = "Du schätzt sowohl Kreativität als auch Struktur in einem ausgewogenen Verhältnis."
+            details = "Du bist offen für Neues, bewahrst aber einen Sinn für das Praktische."
+        elif openness_percentage > 25:
+            creativity_level = "Pragmatisch mit kreativen Elementen"
+            description = "Du bevorzugst bewährte Lösungen, bist aber offen für neue Ideen."
+            details = "Dein Ansatz ist größtenteils konventionell, mit gelegentlichen kreativen Impulsen."
+        else:
+            creativity_level = "Strukturiert und konventionell"
+            description = "Du schätzt Beständigkeit, Ordnung und bewährte Methoden."
+            details = "Dein systematischer Ansatz hilft dir, zuverlässige Lösungen zu finden."
+        
+        # Render results text
+        level_text = self.medium_font.render(creativity_level, True, PRIMARY)
+        self.screen.blit(level_text, (SCREEN_WIDTH // 2 - level_text.get_width() // 2, 190))
+        
+        description_text = self.small_font.render(description, True, TEXT_DARK)
+        self.screen.blit(description_text, (SCREEN_WIDTH // 2 - description_text.get_width() // 2, 230))
+        
+        details_text = self.small_font.render(details, True, TEXT_DARK)
+        self.screen.blit(details_text, (SCREEN_WIDTH // 2 - details_text.get_width() // 2, 260))
+        
+        # Draw creativity scale
+        scale_width = SCREEN_WIDTH - 300
+        scale_height = 30
+        scale_x = 150
+        scale_y = 300
+        
+        # Scale background
+        pygame.draw.rect(self.screen, COOL_BLUE, (scale_x, scale_y, scale_width, scale_height), border_radius=15)
+        
+        # Scale fill based on score
+        fill_width = int(scale_width * openness_percentage / 100)
+        pygame.draw.rect(self.screen, POMEGRANATE, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
+        
+        # Scale labels
+        conventional_text = self.small_font.render("Konventionell", True, TEXT_DARK)
+        creative_text = self.small_font.render("Kreativ", True, TEXT_DARK)
+        
+        self.screen.blit(conventional_text, (scale_x, scale_y + scale_height + 10))
+        self.screen.blit(creative_text, (scale_x + scale_width - creative_text.get_width(), scale_y + scale_height + 10))
+        
+        # Display percentage
+        percent_text = self.medium_font.render(f"{openness_percentage}%", True, PRIMARY)
+        self.screen.blit(percent_text, (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
+        
+        # Shows choice summary
+        summary_title = self.small_font.render("Deine Entscheidungen:", True, TEXT_DARK)
+        self.screen.blit(summary_title, (scale_x, 370))
+        
+        # Display choice summary
+        y_pos = 400
+        for i, choice in enumerate(self.game3_choices):
+            summary_text = self.small_font.render(
+                f"Muster {i+1}: Option {choice['choice']} ({choice['value'].capitalize()})", 
+                True,
+                self._get_value_color(choice["value"])
+            )
+            self.screen.blit(summary_text, (scale_x + 20, y_pos))
+            y_pos += 30
+        
+        # Continue button
+        continue_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+        pygame.draw.rect(self.screen, POMEGRANATE, continue_button, border_radius=15)
+        
+        continue_text = self.medium_font.render("Weiter", True, TEXT_LIGHT)
+        self.screen.blit(continue_text, (SCREEN_WIDTH // 2 - continue_text.get_width() // 2, SCREEN_HEIGHT - 65))
+
+    def _get_value_color(self, value):
+        """Returns a color based on the creativity value"""
+        if value == "conventional":
+            return COOL_BLUE
+        elif value == "balanced":
+            return HONEY_YELLOW
+        elif value == "creative":
+            return ORANGE_PEACH
+        elif value == "highly_creative":
+            return POMEGRANATE
+        return TEXT_DARK
+
+    def game4_render(self):
+        """Render-Funktion für das Organisationsspiel"""
+        # Zeichne strukturierten Hintergrund mit subtilen Linien
         self.screen.fill(LEMON_YELLOW)
         
-        # Game area placeholder
-        game_area = pygame.Rect(50, 100, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 150)
-        pygame.draw.rect(self.screen, TEXT_LIGHT, game_area, border_radius=20)
+        # Hintergrundmuster für ein organisiertes Aussehen
+        for x in range(0, SCREEN_WIDTH, 40):
+            for y in range(0, SCREEN_HEIGHT, 40):
+                # Sehr helle Linien für ein Rastereffekt
+                line_color = (LEMON_YELLOW[0] - 20, LEMON_YELLOW[1] - 20, LEMON_YELLOW[2] - 20)
+                pygame.draw.line(self.screen, line_color, (x, 0), (x, SCREEN_HEIGHT), 1)
+                pygame.draw.line(self.screen, line_color, (0, y), (SCREEN_WIDTH, y), 1)
         
-        # Placeholder text
-        coming_soon = self.font.render("Spiel 3 in Entwicklung...", True, PRIMARY)
-        self.screen.blit(coming_soon, (SCREEN_WIDTH // 2 - coming_soon.get_width() // 2, SCREEN_HEIGHT // 2 - coming_soon.get_height() // 2))
-    
-    def game4_render(self):
-        """Placeholder für das vierte Spiel"""
-        self.screen.fill(ORANGE_PEACH)
+        # Header
+        header_rect = pygame.Rect(0, 0, SCREEN_WIDTH, 100)
+        pygame.draw.rect(self.screen, PRIMARY, header_rect)
         
-        # Game area placeholder
-        game_area = pygame.Rect(50, 100, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 150)
-        pygame.draw.rect(self.screen, TEXT_LIGHT, game_area, border_radius=20)
+        # Game title
+        game_title = self.medium_font.render("Organisationsspiel", True, TEXT_LIGHT)
+        self.screen.blit(game_title, (SCREEN_WIDTH // 2 - game_title.get_width() // 2, 15))
         
-        # Placeholder text
-        coming_soon = self.font.render("Spiel 4 in Entwicklung...", True, PRIMARY)
-        self.screen.blit(coming_soon, (SCREEN_WIDTH // 2 - coming_soon.get_width() // 2, SCREEN_HEIGHT // 2 - coming_soon.get_height() // 2))
+        # User name display
+        name_text = self.small_font.render(f"Spieler: {self.user_name}", True, TEXT_LIGHT)
+        self.screen.blit(name_text, (SCREEN_WIDTH - 20 - name_text.get_width(), 15))
+        
+        # Different screens based on game state
+        if self.game4_state == "instruction":
+            self._render_game4_instructions()
+        elif self.game4_state == "organize":
+            self._render_game4_organize()
+        elif self.game4_state == "result":
+            self._render_game4_result()
+
+    def _render_game4_instructions(self):
+        """Zeigt den Anweisungsbildschirm für das Organisationsspiel"""
+        # Instruction box
+        instruction_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250)
+        pygame.draw.rect(self.screen, TEXT_LIGHT, instruction_rect, border_radius=20)
+        
+        # Title
+        instruction_title = self.medium_font.render("Wie organisiert bist du?", True, PRIMARY)
+        self.screen.blit(instruction_title, (SCREEN_WIDTH // 2 - instruction_title.get_width() // 2, 150))
+        
+        # Instructions text
+        instructions = [
+            "In diesem Spiel geht es darum, verschiedene Objekte zu organisieren.",
+            "Ziehe die Objekte in die drei Kategorien unten auf dem Bildschirm.",
+            "Du kannst selbst entscheiden, nach welchen Kriterien du sortierst.",
+            "Sei kreativ oder strukturiert - zeige deinen persönlichen Organisationsstil!",
+            "Du hast 45 Sekunden Zeit."
+        ]
+        
+        y_pos = 200
+        for line in instructions:
+            text = self.small_font.render(line, True, TEXT_DARK)
+            self.screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, y_pos))
+            y_pos += 35
+        
+        # Example visualization
+        example_box = pygame.Rect(SCREEN_WIDTH // 2 - 200, 350, 400, 100)
+        pygame.draw.rect(self.screen, COOL_BLUE, example_box, border_radius=15)
+        
+        # Simple organization example with example items
+        example_title = self.small_font.render("Beispiel:", True, TEXT_LIGHT)
+        self.screen.blit(example_title, (SCREEN_WIDTH // 2 - example_title.get_width() // 2, 360))
+        
+        # Draw example objects
+        pygame.draw.rect(self.screen, PASSION_PURPLE, (SCREEN_WIDTH // 2 - 160, 390, 60, 40), border_radius=5)
+        pygame.draw.rect(self.screen, POMEGRANATE, (SCREEN_WIDTH // 2 - 80, 390, 60, 40), border_radius=5)
+        pygame.draw.rect(self.screen, JUICY_GREEN, (SCREEN_WIDTH // 2, 390, 60, 40), border_radius=5)
+        pygame.draw.rect(self.screen, CHERRY_PINK, (SCREEN_WIDTH // 2 + 80, 390, 60, 40), border_radius=5)
+        
+        # Start button
+        start_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50)
+        pygame.draw.rect(self.screen, POMEGRANATE, start_button, border_radius=15)
+        
+        start_text = self.medium_font.render("Start", True, TEXT_LIGHT)
+        self.screen.blit(start_text, (SCREEN_WIDTH // 2 - start_text.get_width() // 2, SCREEN_HEIGHT - 85))
+
+    def _render_game4_organize(self):
+        """Zeigt den Organisationsbildschirm mit draggable Items"""
+        # Timer anzeigen
+        time_text = self.medium_font.render(f"Zeit: {self.game4_time_remaining // 60} Sekunden", True, TEXT_LIGHT)
+        self.screen.blit(time_text, (20, 60))
+        
+        # Anweisungstext
+        instruction_text = self.small_font.render("Ziehe die Objekte in die Kategorien!", True, TEXT_LIGHT)
+        self.screen.blit(instruction_text, (SCREEN_WIDTH // 2 - instruction_text.get_width() // 2, 60))
+        
+        # Zeichne Kategoriebereiche
+        for container in self.game4_containers:
+            pygame.draw.rect(self.screen, container["color"], container["rect"], border_radius=10)
+            pygame.draw.rect(self.screen, TEXT_DARK, container["rect"], 2, border_radius=10)  # Umrandung
+            
+            # Kategoriename
+            container_text = self.small_font.render(container["name"], True, TEXT_DARK)
+            self.screen.blit(container_text, (container["rect"].centerx - container_text.get_width() // 2, 
+                                            container["rect"].y + 10))
+        
+        # Zeichne Objekte
+        for item in self.game4_items:
+            # Item-Rechteck
+            item_rect = pygame.Rect(item["pos"][0] - item["size"][0] // 2, 
+                                item["pos"][1] - item["size"][1] // 2, 
+                                item["size"][0], item["size"][1])
+            pygame.draw.rect(self.screen, item["color"], item_rect, border_radius=5)
+            pygame.draw.rect(self.screen, TEXT_DARK, item_rect, 2, border_radius=5)  # Umrandung
+            
+            # Item-Name (gekürzt, wenn nötig)
+            short_name = item["name"] if len(item["name"]) < 15 else item["name"][:12] + "..."
+            item_text = self.small_font.render(short_name, True, TEXT_DARK)
+            
+            # Skaliere Text, wenn er zu groß ist
+            if item_text.get_width() > item["size"][0] - 10:
+                # Kleinerer Font für lange Namen
+                tiny_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 42)
+                item_text = tiny_font.render(short_name, True, TEXT_DARK)
+            
+            text_x = item["pos"][0] - item_text.get_width() // 2
+            text_y = item["pos"][1] - item_text.get_height() // 2
+            self.screen.blit(item_text, (text_x, text_y))
+        
+        # Anzeige der bereits kategorisierten Objekte
+        y_offset = 120
+        for container_id, items in self.game4_categories.items():
+            if items:  # Wenn es Items in dieser Kategorie gibt
+                category_text = self.small_font.render(f"Kategorie {container_id}: {len(items)} Objekte", True, TEXT_DARK)
+                self.screen.blit(category_text, (20, y_offset))
+                y_offset += 25
+        
+        # Fortschrittsbalken für die Zeit
+        progress_width = int((self.game4_time_remaining / (60 * 45)) * (SCREEN_WIDTH - 100))
+        pygame.draw.rect(self.screen, COOL_BLUE, (50, SCREEN_HEIGHT - 30, SCREEN_WIDTH - 100, 10), border_radius=5)
+        pygame.draw.rect(self.screen, POMEGRANATE, (50, SCREEN_HEIGHT - 30, progress_width, 10), border_radius=5)
+
+    def _render_game4_result(self):
+        """Zeigt die Ergebnisse des Organisationsspiels"""
+        # Results box
+        results_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250)
+        pygame.draw.rect(self.screen, TEXT_LIGHT, results_rect, border_radius=20)
+        
+        # Title
+        result_title = self.medium_font.render("Deine Organisationsfähigkeit", True, PRIMARY)
+        self.screen.blit(result_title, (SCREEN_WIDTH // 2 - result_title.get_width() // 2, 150))
+        
+        # Determine organization level and description based on score
+        if self.game4_conscientiousness_score > 75:
+            organization_level = "Sehr strukturiert und organisiert"
+            description = "Du hast einen klaren, systematischen Ansatz zur Organisation."
+            details = "Deine Kategorien sind logisch und konsistent strukturiert."
+        elif self.game4_conscientiousness_score > 50:
+            organization_level = "Gut organisiert mit flexiblen Elementen"
+            description = "Du kombinierst Struktur mit kreativen Organisationsansätzen."
+            details = "Deine Kategorien zeigen ein gutes Gleichgewicht zwischen Ordnung und Flexibilität."
+        elif self.game4_conscientiousness_score > 25:
+            organization_level = "Flexibel mit einigen organisierten Elementen"
+            description = "Du bevorzugst einen lockereren Ansatz zur Organisation."
+            details = "Deine Kategorien folgen weniger strengen Regeln, aber zeigen einige Strukturen."
+        else:
+            organization_level = "Spontan und flexibel"
+            description = "Du organisierst auf eine freie, unkonventionelle Weise."
+            details = "Deine Kategorien zeigen ein kreatives, weniger strukturiertes Denken."
+        
+        # Render results text
+        level_text = self.medium_font.render(organization_level, True, PRIMARY)
+        self.screen.blit(level_text, (SCREEN_WIDTH // 2 - level_text.get_width() // 2, 190))
+        
+        description_text = self.small_font.render(description, True, TEXT_DARK)
+        self.screen.blit(description_text, (SCREEN_WIDTH // 2 - description_text.get_width() // 2, 230))
+        
+        details_text = self.small_font.render(details, True, TEXT_DARK)
+        self.screen.blit(details_text, (SCREEN_WIDTH // 2 - details_text.get_width() // 2, 260))
+        
+        # Draw organization scale
+        scale_width = SCREEN_WIDTH - 300
+        scale_height = 30
+        scale_x = 150
+        scale_y = 300
+        
+        # Scale background
+        pygame.draw.rect(self.screen, COOL_BLUE, (scale_x, scale_y, scale_width, scale_height), border_radius=15)
+        
+        # Scale fill based on score
+        fill_width = int(scale_width * self.game4_conscientiousness_score / 100)
+        pygame.draw.rect(self.screen, POMEGRANATE, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
+        
+        # Scale labels
+        flexible_text = self.small_font.render("Flexibel", True, TEXT_DARK)
+        structured_text = self.small_font.render("Strukturiert", True, TEXT_DARK)
+        
+        self.screen.blit(flexible_text, (scale_x, scale_y + scale_height + 10))
+        self.screen.blit(structured_text, (scale_x + scale_width - structured_text.get_width(), scale_y + scale_height + 10))
+        
+        # Display percentage
+        percent_text = self.medium_font.render(f"{self.game4_conscientiousness_score}%", True, PRIMARY)
+        self.screen.blit(percent_text, (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
+        
+        # Summary of categories
+        summary_title = self.small_font.render("Deine Kategorien:", True, TEXT_DARK)
+        self.screen.blit(summary_title, (scale_x, 370))
+        
+        # Display category summary
+        y_pos = 400
+        for container_id, items in self.game4_categories.items():
+            if items:  # Wenn Items in dieser Kategorie sind
+                summary_text = self.small_font.render(
+                    f"Kategorie {container_id}: {len(items)} Objekte", 
+                    True,
+                    self.game4_containers[container_id-1]["color"]
+                )
+                self.screen.blit(summary_text, (scale_x + 20, y_pos))
+                y_pos += 30
+        
+        # Continue button
+        continue_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+        pygame.draw.rect(self.screen, POMEGRANATE, continue_button, border_radius=15)
+        
+        continue_text = self.medium_font.render("Weiter", True, TEXT_LIGHT)
+        self.screen.blit(continue_text, (SCREEN_WIDTH // 2 - continue_text.get_width() // 2, SCREEN_HEIGHT - 65))
     
     def game5_render(self):
-        """Placeholder für das fünfte Spiel"""
+        """Render-Funktion für das Kooperationsspiel"""
+        # Draw colorful background with floating shapes
         self.screen.fill(CHERRY_PINK)
         
-        # Game area placeholder
-        game_area = pygame.Rect(50, 100, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 150)
-        pygame.draw.rect(self.screen, TEXT_LIGHT, game_area, border_radius=20)
+        # Create a vibrant background pattern
+        for x in range(0, SCREEN_WIDTH, 40):
+            for y in range(0, SCREEN_HEIGHT, 40):
+                color_shift = int(20 * math.sin((x + y) / 100 + pygame.time.get_ticks() / 1000))
+                color = (
+                    min(255, CHERRY_PINK[0] - color_shift),
+                    min(255, CHERRY_PINK[1] + color_shift),
+                    min(255, CHERRY_PINK[2] - color_shift)
+                )
+                pygame.draw.circle(self.screen, color, (x, y), 3)
         
-        # Placeholder text
-        coming_soon = self.font.render("Spiel 5 in Entwicklung...", True, PRIMARY)
-        self.screen.blit(coming_soon, (SCREEN_WIDTH // 2 - coming_soon.get_width() // 2, SCREEN_HEIGHT // 2 - coming_soon.get_height() // 2))
-    
+        # Header
+        header_rect = pygame.Rect(0, 0, SCREEN_WIDTH, 100)
+        pygame.draw.rect(self.screen, PRIMARY, header_rect)
+        
+        # Game title
+        game_title = self.medium_font.render("Kooperations-Challenge", True, TEXT_LIGHT)
+        self.screen.blit(game_title, (SCREEN_WIDTH // 2 - game_title.get_width() // 2, 15))
+        
+        # User name display
+        name_text = self.small_font.render(f"Spieler: {self.user_name}", True, TEXT_LIGHT)
+        self.screen.blit(name_text, (SCREEN_WIDTH - 20 - name_text.get_width(), 15))
+        
+        # Different screens based on game state
+        if self.game5_state == "instruction":
+            self._render_game5_instructions()
+        elif self.game5_state == "play":
+            self._render_game5_play()
+        elif self.game5_state == "result":
+            self._render_game5_result()
+
+    def _render_game5_instructions(self):
+        """Zeigt den Anweisungsbildschirm für das Kooperationsspiel"""
+        # Instruction box
+        instruction_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250)
+        pygame.draw.rect(self.screen, TEXT_LIGHT, instruction_rect, border_radius=20)
+        
+        # Title
+        instruction_title = self.medium_font.render("Ressourcen-Verteilung", True, PRIMARY)
+        self.screen.blit(instruction_title, (SCREEN_WIDTH // 2 - instruction_title.get_width() // 2, 150))
+        
+        # Instructions text
+        instructions = [
+            "In diesem Spiel geht es darum, wie du begrenzte Ressourcen verteilst.",
+            "Du wirst verschiedene Situationen erleben, in denen du entscheiden musst,",
+            "wie viel du für dich behältst und wie viel du mit anderen teilst.",
+            "",
+            "Es gibt keine richtigen oder falschen Antworten!",
+            "Entscheide einfach, wie du es in der jeweiligen Situation machen würdest."
+        ]
+        
+        y_pos = 200
+        for line in instructions:
+            text = self.small_font.render(line, True, TEXT_DARK)
+            self.screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, y_pos))
+            y_pos += 30
+        
+        # Example visualization
+        example_box = pygame.Rect(SCREEN_WIDTH // 2 - 200, 380, 400, 80)
+        pygame.draw.rect(self.screen, COOL_BLUE, example_box, border_radius=15)
+        
+        # Draw example slider
+        slider_width = 300
+        slider_height = 10
+        slider_x = SCREEN_WIDTH // 2 - slider_width // 2
+        slider_y = 420
+        
+        pygame.draw.rect(self.screen, TEXT_LIGHT, (slider_x, slider_y, slider_width, slider_height), border_radius=5)
+        
+        # Example knob
+        knob_x = slider_x + slider_width // 2
+        pygame.draw.circle(self.screen, POMEGRANATE, (knob_x, slider_y + slider_height // 2), 15)
+        
+        # Slider labels
+        left_label = self.small_font.render("Mehr für andere", True, TEXT_LIGHT)
+        right_label = self.small_font.render("Mehr für dich", True, TEXT_LIGHT)
+        
+        self.screen.blit(left_label, (slider_x - 10 - left_label.get_width(), slider_y))
+        self.screen.blit(right_label, (slider_x + slider_width + 10, slider_y))
+        
+        # Start button
+        start_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50)
+        pygame.draw.rect(self.screen, POMEGRANATE, start_button, border_radius=15)
+        
+        start_text = self.medium_font.render("Start", True, TEXT_LIGHT)
+        self.screen.blit(start_text, (SCREEN_WIDTH // 2 - start_text.get_width() // 2, SCREEN_HEIGHT - 85))
+
+    def _render_game5_play(self):
+        """Zeigt den Spielbildschirm mit aktuellem Szenario und Schieberegler"""
+        # Progress indicator
+        if self.game5_round < len(self.game5_scenarios):
+            progress_text = self.small_font.render(
+                f"Szenario {self.game5_round + 1} von {len(self.game5_scenarios)}", 
+                True, 
+                TEXT_LIGHT
+            )
+            self.screen.blit(progress_text, (20, 60))
+            
+            # Progress bar
+            progress_width = int(((self.game5_round + 1) / len(self.game5_scenarios)) * (SCREEN_WIDTH - 40))
+            pygame.draw.rect(self.screen, COOL_BLUE, (20, 80, SCREEN_WIDTH - 40, 10), border_radius=5)
+            pygame.draw.rect(self.screen, HONEY_YELLOW, (20, 80, progress_width, 10), border_radius=5)
+        
+        # Get current scenario
+        current = self.game5_scenarios[self.game5_round]
+        
+        # Scenario box
+        scenario_rect = pygame.Rect(100, 120, SCREEN_WIDTH - 200, 80)
+        pygame.draw.rect(self.screen, ORANGE_PEACH, scenario_rect, border_radius=15)
+        
+        # Scenario title
+        title_text = self.medium_font.render(current["title"], True, TEXT_DARK)
+        self.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 130))
+        
+        # Scenario description
+        desc_text = self.small_font.render(current["description"], True, TEXT_DARK)
+        self.screen.blit(desc_text, (SCREEN_WIDTH // 2 - desc_text.get_width() // 2, 170))
+        
+        # Resource label
+        resource_text = self.medium_font.render(f"Verteile: {current['resource']}", True, TEXT_DARK)
+        self.screen.blit(resource_text, (SCREEN_WIDTH // 2 - resource_text.get_width() // 2, 220))
+        
+        # Draw characters/images
+        # Left side - Others
+        other_rect = pygame.Rect(150, 250, 150, 80)
+        pygame.draw.rect(self.screen, COOL_BLUE, other_rect, border_radius=10)
+        other_label = self.small_font.render("Andere", True, TEXT_LIGHT)
+        self.screen.blit(other_label, (150 + 75 - other_label.get_width() // 2, 280))
+        
+        # Right side - Self
+        self_rect = pygame.Rect(SCREEN_WIDTH - 150 - 150, 250, 150, 80)
+        pygame.draw.rect(self.screen, POMEGRANATE, self_rect, border_radius=10)
+        self_label = self.small_font.render("Du", True, TEXT_LIGHT)
+        self.screen.blit(self_label, (SCREEN_WIDTH - 150 - 75 - self_label.get_width() // 2, 280))
+        
+        # Draw slider
+        slider = self.game5_slider
+        slider_start_x = slider["x"] - slider["width"] // 2
+        
+        # Slider background
+        pygame.draw.rect(self.screen, TEXT_LIGHT, 
+                    (slider_start_x, slider["y"], slider["width"], slider["height"]), 
+                    border_radius=slider["height"] // 2)
+        
+        # Filled part
+        fill_width = int(slider["width"] * self.game5_slider_position / 100)
+        pygame.draw.rect(self.screen, POMEGRANATE, 
+                    (slider_start_x, slider["y"], fill_width, slider["height"]), 
+                    border_radius=slider["height"] // 2)
+        
+        # Draw knob
+        knob_x = slider_start_x + fill_width
+        pygame.draw.circle(self.screen, HONEY_YELLOW, 
+                        (knob_x, slider["y"] + slider["height"] // 2), 
+                        slider["knob_radius"])
+        
+        # Draw current distribution percentages
+        left_percent = 100 - self.game5_slider_position
+        right_percent = self.game5_slider_position
+        
+        left_percent_text = self.medium_font.render(f"{left_percent}%", True, COOL_BLUE)
+        right_percent_text = self.medium_font.render(f"{right_percent}%", True, POMEGRANATE)
+        
+        self.screen.blit(left_percent_text, (150 + 75 - left_percent_text.get_width() // 2, 350))
+        self.screen.blit(right_percent_text, (SCREEN_WIDTH - 150 - 75 - right_percent_text.get_width() // 2, 350))
+        
+        # Slider labels
+        left_label = self.small_font.render(current["left_label"], True, TEXT_DARK)
+        right_label = self.small_font.render(current["right_label"], True, TEXT_DARK)
+        
+        self.screen.blit(left_label, (slider_start_x - 10 - left_label.get_width(), slider["y"] + 30))
+        self.screen.blit(right_label, (slider_start_x + slider["width"] + 10, slider["y"] + 30))
+        
+        # Resource visualization based on distribution
+        # Left side (others) resources
+        others_resources = int(left_percent / 10)  # Scale 0-10
+        for i in range(others_resources):
+            pygame.draw.circle(self.screen, HONEY_YELLOW, 
+                            (180 + (i % 5) * 20, 250 - 20 - 15 * (i // 5)), 8)
+        
+        # Right side (self) resources
+        self_resources = int(right_percent / 10)  # Scale 0-10
+        for i in range(self_resources):
+            pygame.draw.circle(self.screen, HONEY_YELLOW, 
+                            (SCREEN_WIDTH - 180 - (i % 5) * 20, 250 - 20 - 15 * (i // 5)), 8)
+        
+        # Continue button
+        continue_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+        pygame.draw.rect(self.screen, POMEGRANATE, continue_button, border_radius=15)
+        
+        continue_text = self.medium_font.render("Weiter", True, TEXT_LIGHT)
+        self.screen.blit(continue_text, (SCREEN_WIDTH // 2 - continue_text.get_width() // 2, SCREEN_HEIGHT - 65))
+
+    def _render_game5_result(self):
+        """Zeigt die Ergebnisse des Kooperationsspiels"""
+        # Results box
+        results_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250)
+        pygame.draw.rect(self.screen, TEXT_LIGHT, results_rect, border_radius=20)
+        
+        # Title
+        result_title = self.medium_font.render("Dein Kooperationsverhalten", True, PRIMARY)
+        self.screen.blit(result_title, (SCREEN_WIDTH // 2 - result_title.get_width() // 2, 150))
+        
+        # Calculate agreeableness percentage
+        max_possible_score = 100 * len(self.game5_scenarios)
+        agreeableness_percentage = int((self.game5_agreeableness_score / max_possible_score) * 100)
+        
+        # Determine cooperation level and description
+        if agreeableness_percentage > 75:
+            cooperation_level = "Sehr kooperativ und unterstützend"
+            description = "Du legst großen Wert auf Harmonie und stellst oft die Bedürfnisse anderer über deine eigenen."
+            details = "Dein kooperativer Ansatz fördert positive Beziehungen und ein unterstützendes Umfeld."
+        elif agreeableness_percentage > 50:
+            cooperation_level = "Kooperativ mit gesunder Balance"
+            description = "Du bist grundsätzlich kooperativ, achtest aber auch auf deine eigenen Bedürfnisse."
+            details = "Diese Balance ermöglicht dir, sowohl gute Beziehungen zu pflegen als auch deine Ziele zu erreichen."
+        elif agreeableness_percentage > 25:
+            cooperation_level = "Eher wettbewerbsorientiert mit kooperativen Elementen"
+            description = "Du fokussierst dich oft auf deine eigenen Ziele, kannst aber bei Bedarf kooperieren."
+            details = "Dein durchsetzungsfähiger Stil hilft dir, deine Interessen zu vertreten."
+        else:
+            cooperation_level = "Stark wettbewerbsorientiert"
+            description = "Du priorisierst konsequent deine eigenen Ziele und Bedürfnisse."
+            details = "Diese Eigenständigkeit kann in kompetitiven Umgebungen von Vorteil sein."
+        
+        # Render results text
+        level_text = self.medium_font.render(cooperation_level, True, PRIMARY)
+        self.screen.blit(level_text, (SCREEN_WIDTH // 2 - level_text.get_width() // 2, 190))
+        
+        description_text = self.small_font.render(description, True, TEXT_DARK)
+        self.screen.blit(description_text, (SCREEN_WIDTH // 2 - description_text.get_width() // 2, 230))
+        
+        details_text = self.small_font.render(details, True, TEXT_DARK)
+        self.screen.blit(details_text, (SCREEN_WIDTH // 2 - details_text.get_width() // 2, 260))
+        
+        # Draw cooperation scale
+        scale_width = SCREEN_WIDTH - 300
+        scale_height = 30
+        scale_x = 150
+        scale_y = 300
+        
+        # Scale background
+        pygame.draw.rect(self.screen, COOL_BLUE, (scale_x, scale_y, scale_width, scale_height), border_radius=15)
+        
+        # Scale fill based on score
+        fill_width = int(scale_width * agreeableness_percentage / 100)
+        pygame.draw.rect(self.screen, POMEGRANATE, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
+        
+        # Scale labels
+        competitive_text = self.small_font.render("Wettbewerbsorientiert", True, TEXT_DARK)
+        cooperative_text = self.small_font.render("Kooperativ", True, TEXT_DARK)
+        
+        self.screen.blit(competitive_text, (scale_x, scale_y + scale_height + 10))
+        self.screen.blit(cooperative_text, (scale_x + scale_width - cooperative_text.get_width(), scale_y + scale_height + 10))
+        
+        # Display percentage
+        percent_text = self.medium_font.render(f"{agreeableness_percentage}%", True, PRIMARY)
+        self.screen.blit(percent_text, (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
+        
+        # Shows choice summary
+        summary_title = self.small_font.render("Deine Entscheidungen:", True, TEXT_DARK)
+        self.screen.blit(summary_title, (scale_x, 370))
+        
+        # Display choice summary
+        y_pos = 400
+        for i, choice in enumerate(self.game5_choices):
+            scenario_title = choice["scenario"]
+            share_value = 100 - choice["value"]  # Invert for "share percentage"
+            
+            share_color = COOL_BLUE
+            if share_value > 75:
+                share_color = JUICY_GREEN
+            elif share_value > 50:
+                share_color = HONEY_YELLOW
+            elif share_value > 25:
+                share_color = ORANGE_PEACH
+            else:
+                share_color = POMEGRANATE
+            
+            summary_text = self.small_font.render(
+                f"{scenario_title}: {share_value}% geteilt", 
+                True,
+                share_color
+            )
+            self.screen.blit(summary_text, (scale_x + 20, y_pos))
+            y_pos += 30
+        
+        # Continue button
+        continue_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+        pygame.draw.rect(self.screen, POMEGRANATE, continue_button, border_radius=15)
+        
+        continue_text = self.medium_font.render("Weiter", True, TEXT_LIGHT)
+        self.screen.blit(continue_text, (SCREEN_WIDTH // 2 - continue_text.get_width() // 2, SCREEN_HEIGHT - 65))
+
     def game_over_render(self):
         """Render des Ergebnisbildschirms mit Persönlichkeitsprofil"""
         # Hintergrund mit sundae-thematischem Konfetti
@@ -974,107 +2245,197 @@ class Game:
             size = random.randint(2, 8)
             color_index = random.randint(0, 7)
             sundae_colors = [PASSION_PURPLE, COOL_BLUE, JUICY_GREEN, HONEY_YELLOW, 
-                           LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
+                        LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
             pygame.draw.circle(self.screen, sundae_colors[color_index], (x, y), size)
         
         # Header box
-        header_rect = pygame.Rect(50, 50, SCREEN_WIDTH - 100, 80)
+        header_rect = pygame.Rect(50, 30, SCREEN_WIDTH - 100, 60)
         pygame.draw.rect(self.screen, PRIMARY, header_rect, border_radius=20)
         
         # Title
         title = self.font.render("Persönlichkeitsprofil", True, TEXT_LIGHT)
-        self.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 65))
+        self.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 45))
         
         # Result box
-        result_box = pygame.Rect(50, 150, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 250)
+        result_box = pygame.Rect(50, 100, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 180)
         pygame.draw.rect(self.screen, ORANGE_PEACH, result_box, border_radius=30)
         
         # User name
         name_text = self.medium_font.render(f"Hallo {self.user_name}!", True, TEXT_DARK)
-        self.screen.blit(name_text, (SCREEN_WIDTH // 2 - name_text.get_width() // 2, 170))
+        self.screen.blit(name_text, (SCREEN_WIDTH // 2 - name_text.get_width() // 2, 120))
         
-        # Neuroticism score
+        # Get personality scores
         neuroticism_score = self.personality_traits["neuroticism"]
-        extraversion_score = self.personality_traits.get("extraversion", 50) 
+        extraversion_score = self.personality_traits["extraversion"]
+        openness_score = self.personality_traits["openness"]
+        conscientiousness_score = self.personality_traits["conscientiousness"]
+        agreeableness_score = self.personality_traits["agreeableness"]
 
-        # Description based on score
-        description = "Based on your reaction patterns:"
-        traits = []
+        # Determine dominant trait and companion type
+        dominant_trait = "balanced"
+        trait_scores = {
+            "neuroticism": neuroticism_score,
+            "extraversion": extraversion_score,
+            "openness": openness_score,
+            "conscientiousness": conscientiousness_score
+        }
         
-        if neuroticism_score > 75:
-            traits.append("Du bist sehr vorsichtig und überlegst genau bevor du handelst.")
-            traits.append("Dir ist Präzision wichtiger als Schnelligkeit.")
-            traits.append("Du achtest stark auf Details und vermeidest Fehler.")
-        elif neuroticism_score > 50:
-            traits.append("Du bist eher bedacht und überlegst vor dem Handeln.")
-            traits.append("Du bevorzugst eine ausgeglichene Balance zwischen Geschwindigkeit und Genauigkeit.")
-            traits.append("Du bist sensibel für mögliche Fehler und versuchst diese zu vermeiden.")
-        elif neuroticism_score > 25:
-            traits.append("Du bist relativ spontan, aber behältst die Kontrolle.")
-            traits.append("Du bevorzugst Effizienz und akzeptierst kleine Fehler.")
-            traits.append("Du bist flexibel und lässt dich nicht leicht aus der Ruhe bringen.")
-        else:
-            traits.append("Du bist sehr spontan und entscheidungsfreudig.")
-            traits.append("Du priorisierst Schnelligkeit und akzeptierst Risiken.")
-            traits.append("Du bleibst ruhig und unbeeindruckt, auch wenn Fehler passieren.")
+        highest_score = 0
+        for trait, score in trait_scores.items():
+            if score > highest_score:
+                highest_score = score
+                dominant_trait = trait
         
-        # Render traits
-        y_offset = 220
-        for trait in traits:
-            trait_text = self.small_font.render(trait, True, TEXT_DARK)
-            self.screen.blit(trait_text, (SCREEN_WIDTH // 2 - trait_text.get_width() // 2, y_offset))
-            y_offset += 40
+        # Companion selection based on dominant trait and scores
+        if dominant_trait == "neuroticism":
+            if neuroticism_score > 75:
+                companion_type = "Beruhigender Begleiter"
+                companion_desc = "Ein sanfter, strukturierter Begleiter, der Sicherheit vermittelt"
+                companion_color = COOL_BLUE
+            elif neuroticism_score > 50:
+                companion_type = "Ausgleichender Begleiter"
+                companion_desc = "Ein ruhiger, aber motivierender Begleiter mit klaren Abläufen"
+                companion_color = JUICY_GREEN
+            elif neuroticism_score > 25:
+                companion_type = "Dynamischer Begleiter"
+                companion_desc = "Ein energiegeladener Begleiter, der Abwechslung bietet"
+                companion_color = HONEY_YELLOW
+            else:
+                companion_type = "Abenteuerlicher Begleiter" 
+                companion_desc = "Ein spontaner, unkonventioneller Begleiter für neue Erfahrungen"
+                companion_color = POMEGRANATE
         
-        # Draw neuroticism bar
-        bar_width = 400
-        bar_height = 30
-        bar_x = SCREEN_WIDTH // 2 - bar_width // 2
-        bar_y = y_offset + 20
+        elif dominant_trait == "extraversion":
+            if extraversion_score > 75:
+                companion_type = "Sozialer Begleiter"
+                companion_desc = "Ein geselliger, interaktiver Begleiter für gemeinsame Aktivitäten"
+                companion_color = POMEGRANATE
+            elif extraversion_score > 50:
+                companion_type = "Kommunikativer Begleiter"
+                companion_desc = "Ein gesprächiger Begleiter, der auf deine Bedürfnisse eingeht"
+                companion_color = HONEY_YELLOW
+            elif extraversion_score > 25:
+                companion_type = "Ruhiger Begleiter"
+                companion_desc = "Ein zurückhaltender Begleiter, der dich unterstützt, ohne zu drängen"
+                companion_color = JUICY_GREEN
+            else:
+                companion_type = "Zurückgezogener Begleiter"
+                companion_desc = "Ein Begleiter, der Ruhe und Raum für Reflexion bietet"
+                companion_color = COOL_BLUE
         
-        # Bar background
-        pygame.draw.rect(self.screen, TEXT_LIGHT, (bar_x, bar_y, bar_width, bar_height), border_radius=15)
+        elif dominant_trait == "openness":
+            if openness_score > 75:
+                companion_type = "Kreativer Begleiter"
+                companion_desc = "Ein unkonventioneller Begleiter voller überraschender Ideen"
+                companion_color = CHERRY_PINK
+            elif openness_score > 50:
+                companion_type = "Inspirierender Begleiter"
+                companion_desc = "Ein Begleiter, der neue Perspektiven eröffnet und zum Nachdenken anregt"
+                companion_color = POMEGRANATE
+            elif openness_score > 25:
+                companion_type = "Entdeckender Begleiter"
+                companion_desc = "Ein Begleiter, der subtile Abwechslung in deinen Alltag bringt"
+                companion_color = HONEY_YELLOW
+            else:
+                companion_type = "Beständiger Begleiter"
+                companion_desc = "Ein verlässlicher Begleiter mit klaren, bewährten Routinen"
+                companion_color = COOL_BLUE
         
-        # Bar fill based on score
-        fill_width = int(bar_width * neuroticism_score / 100)
-        pygame.draw.rect(self.screen, PRIMARY, (bar_x, bar_y, fill_width, bar_height), border_radius=15)
-        
-        # Bar labels
-        low_text = self.small_font.render("Spontan", True, TEXT_DARK)
-        high_text = self.small_font.render("Bedacht", True, TEXT_DARK)
-        self.screen.blit(low_text, (bar_x - low_text.get_width() - 10, bar_y + 5))
-        self.screen.blit(high_text, (bar_x + bar_width + 10, bar_y + 5))
-        
-        # Score text
-        score_text = self.medium_font.render(f"{neuroticism_score}%", True, TEXT_DARK)
-        self.screen.blit(score_text, (bar_x + fill_width - score_text.get_width() // 2, bar_y - 30))
-        
-        # Recommended digital companion
-        if neuroticism_score > 75:
-            companion_type = "Beruhigender Begleiter"
-            companion_desc = "Ein sanfter, strukturierter Begleiter, der Sicherheit vermittelt"
-            companion_color = COOL_BLUE
-        elif neuroticism_score > 50:
-            companion_type = "Ausgleichender Begleiter"
-            companion_desc = "Ein ruhiger, aber motivierender Begleiter mit klaren Abläufen"
+        elif dominant_trait == "conscientiousness":
+            if conscientiousness_score > 75:
+                companion_type = "Strukturierter Begleiter"
+                companion_desc = "Ein organisierter Begleiter, der dir hilft, Ordnung zu halten"
+                companion_color = COOL_BLUE
+            elif conscientiousness_score > 50:
+                companion_type = "Methodischer Begleiter"
+                companion_desc = "Ein zuverlässiger Begleiter mit einer guten Balance aus Struktur und Flexibilität"
+                companion_color = JUICY_GREEN
+            elif conscientiousness_score > 25:
+                companion_type = "Flexibler Begleiter"
+                companion_desc = "Ein anpassungsfähiger Begleiter, der deinen Bedürfnissen nachkommt"
+                companion_color = HONEY_YELLOW
+            else:
+                companion_type = "Spontaner Begleiter"
+                companion_desc = "Ein kreativer, improvisierender Begleiter für unerwartete Situationen"
+                companion_color = CHERRY_PINK
+    
+        elif dominant_trait == "agreeableness":
+            if agreeableness_score > 75:
+                companion_type = "Harmonischer Begleiter"
+                companion_desc = "Ein sensibler, unterstützender Begleiter, der Harmonie und Zusammenarbeit fördert"
+                companion_color = HONEY_YELLOW
+            elif agreeableness_score > 50:
+                companion_type = "Ausgleichender Begleiter"
+                companion_desc = "Ein freundlicher Begleiter, der Kooperation und eigene Bedürfnisse gut balanciert"
+                companion_color = JUICY_GREEN
+            elif agreeableness_score > 25:
+                companion_type = "Selbstbewusster Begleiter"
+                companion_desc = "Ein fokussierter Begleiter, der dir hilft, deine Ziele zu erreichen"
+                companion_color = ORANGE_PEACH
+            else:
+                companion_type = "Durchsetzungsstarker Begleiter"
+                companion_desc = "Ein direkter, zielorientierter Begleiter für kompetitive Situationen"
+                companion_color = POMEGRANATE
+
+        else:  # balanced case
+            companion_type = "Ausgewogener Begleiter"
+            companion_desc = "Ein vielseitiger Begleiter, der sich deinen Bedürfnissen anpasst"
             companion_color = JUICY_GREEN
-        elif neuroticism_score > 25:
-            companion_type = "Dynamischer Begleiter"
-            companion_desc = "Ein energiegeladener Begleiter, der Abwechslung bietet"
-            companion_color = HONEY_YELLOW
-        else:
-            companion_type = "Abenteuerlicher Begleiter" 
-            companion_desc = "Ein spontaner, unkonventioneller Begleiter für neue Erfahrungen"
-            companion_color = POMEGRANATE
         
-        # Companion info
+        # Display personality traits
+        y_offset = 155
+        bar_spacing = 70
+        
+        # Helper function to draw a trait bar
+        def draw_trait_bar(name, score, y_pos, color, left_label, right_label):
+            trait_name = self.medium_font.render(name, True, TEXT_DARK)
+            self.screen.blit(trait_name, (100, y_pos))
+            
+            # Bar background
+            bar_width = 400
+            bar_height = 25
+            bar_x = SCREEN_WIDTH // 2 - bar_width // 2
+            pygame.draw.rect(self.screen, TEXT_LIGHT, (bar_x, y_pos + 30, bar_width, bar_height), border_radius=12)
+            
+            # Bar fill
+            fill_width = int(bar_width * score / 100)
+            pygame.draw.rect(self.screen, color, (bar_x, y_pos + 30, fill_width, bar_height), border_radius=12)
+            
+            # Score percentage
+            score_text = self.small_font.render(f"{score}%", True, TEXT_DARK)
+            self.screen.blit(score_text, (bar_x + fill_width - score_text.get_width() // 2, y_pos + 30 - 20))
+            
+            # Labels
+            left_text = self.small_font.render(left_label, True, TEXT_DARK)
+            right_text = self.small_font.render(right_label, True, TEXT_DARK)
+            self.screen.blit(left_text, (bar_x - 10 - left_text.get_width(), y_pos + 30 + 5))
+            self.screen.blit(right_text, (bar_x + bar_width + 10, y_pos + 30 + 5))
+        
+        # Draw Neuroticism bar
+        draw_trait_bar("Reaktionsstil", neuroticism_score, y_offset, COOL_BLUE, "Spontan", "Bedacht")
+        
+        # Draw Extraversion bar
+        draw_trait_bar("Soziale Orientierung", extraversion_score, y_offset + bar_spacing, POMEGRANATE, "Introvertiert", "Extravertiert")
+        
+        # Draw Openness bar
+        draw_trait_bar("Kreativität", openness_score, y_offset + bar_spacing * 2, CHERRY_PINK, "Konventionell", "Kreativ")
+        
+        # Draw Conscientiousness bar
+        draw_trait_bar("Organisation", conscientiousness_score, y_offset + bar_spacing * 3, JUICY_GREEN, "Flexibel", "Strukturiert")
+
+        # Draw Agreeableness bar
+        draw_trait_bar("Kooperationsverhalten", agreeableness_score, y_offset + bar_spacing * 4, HONEY_YELLOW, "Wettbewerbsorientiert", "Kooperativ")
+            
+        # Companion section
+        y_section = y_offset + bar_spacing * 4 + 10
         companion_title = self.medium_font.render("Dein idealer digitaler Begleiter:", True, TEXT_DARK)
-        self.screen.blit(companion_title, (SCREEN_WIDTH // 2 - companion_title.get_width() // 2, y_offset + 70))
+        self.screen.blit(companion_title, (SCREEN_WIDTH // 2 - companion_title.get_width() // 2, y_section))
         
         companion_type_text = self.medium_font.render(companion_type, True, companion_color)
-        self.screen.blit(companion_type_text, (SCREEN_WIDTH // 2 - companion_type_text.get_width() // 2, y_offset + 110))
+        self.screen.blit(companion_type_text, (SCREEN_WIDTH // 2 - companion_type_text.get_width() // 2, y_section + 40))
         
         companion_desc_text = self.small_font.render(companion_desc, True, TEXT_DARK)
-        self.screen.blit(companion_desc_text, (SCREEN_WIDTH // 2 - companion_desc_text.get_width() // 2, y_offset + 150))
+        self.screen.blit(companion_desc_text, (SCREEN_WIDTH // 2 - companion_desc_text.get_width() // 2, y_section + 80))
         
         # Thank you message at the bottom
         thank_you = self.medium_font.render("Vielen Dank fürs Spielen!", True, PRIMARY)
