@@ -209,7 +209,7 @@ class Game:
         
         return button_rect
     
-    def draw_card(self, x, y, width, height, color=TEXT_LIGHT, border_radius=15, shadow=True):
+    def draw_card(self, x, y, width, height, color=TEXT_LIGHT, border_radius=15, shadow=False):
         """Zeichnet eine Karte mit optionalem Schatten"""
         if shadow:
             # Schattenwurf

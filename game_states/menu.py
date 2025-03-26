@@ -37,7 +37,9 @@ class MenuState:
             mouse_x, mouse_y = event.pos
             
             # Position und Grösse des Buttons
-            button_x, button_y = SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 150
+            blob_y = SCREEN_HEIGHT // 5
+            y_offset = blob_y + BLOB_IMAGE.get_height()
+            button_x, button_y = SCREEN_WIDTH // 2, y_offset + 260
             button_width, button_height = 200, 50
             
             # Prüfen, ob der Klick auf dem Button ist

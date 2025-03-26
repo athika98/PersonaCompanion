@@ -168,8 +168,7 @@ class Game1State:
             self._render_game()
     
     def _render_instructions(self):
-        """Zeigt den Anweisungsbildschirm an"""
-        
+        """Zeigt die Spielanweisungen vor dem Start an"""      
         # Anweisungen
         instructions = self.game.medium_font.render(
             f"Fangen wir an, {self.game.user_name}! Klicke nur auf die Kreise und ignoriere alle anderen Formen.", True, text_color)
@@ -186,65 +185,65 @@ class Game1State:
         blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2
         blob_y = SCREEN_HEIGHT - 120  # Unten platzieren
         self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
-
     
     def _render_game(self):
         """Zeichnet das laufende Spiel"""
         # Spielanweisungen oben
         instructions = self.game.small_font.render(
-            "Klicke nur auf die KREISE, ignoriere andere Formen!", True, TEXT_LIGHT)
+            "Klicke nur auf die Kreise und ignoriere andere Formen!", True, text_color)
         self.game.screen.blit(instructions, 
-                            (SCREEN_WIDTH // 2 - instructions.get_width() // 2, 60))
+                            (SCREEN_WIDTH // 2 - instructions.get_width() // 2, 70))
         
-        # Spielstatistiken als moderne Karten
         # Punktekarte links
-        score_card = self.game.draw_card(20, 20, 140, 60)
-        score_label = self.game.small_font.render("Punkte:", True, NEUTRAL)
+        self.game.draw_card(20, 20, 140, 60)
+        score_label = self.game.small_font.render("Punkte", True, text_color)
         score_value = self.game.medium_font.render(f"{self.score}", True, PRIMARY)
-        self.game.screen.blit(score_label, (20, 25))
-        self.game.screen.blit(score_value, (20, 50))
+        self.game.screen.blit(score_label, (30, 25))
+        self.game.screen.blit(score_value, (30, 50))
         
         # Zeitkarte rechts
-        time_card = self.game.draw_card(SCREEN_WIDTH - 160, 20, 140, 60)
-        time_label = self.game.small_font.render("Zeit:", True, NEUTRAL)
+        self.game.draw_card(SCREEN_WIDTH - 160, 20, 140, 60)
+        time_label = self.game.small_font.render("Zeit", True, text_color)
         time_value = self.game.medium_font.render(f"{self.time // 60}", True, ACCENT)
         self.game.screen.blit(time_label, (SCREEN_WIDTH - 150, 25))
         self.game.screen.blit(time_value, (SCREEN_WIDTH - 150, 50))
         
         # Spielbereich-Hintergrund
-        game_area = self.game.draw_card(50, 100, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 180, color=(240, 248, 255))
-        
+        game_area_x = 50
+        game_area_y = 110
+        game_area_width = SCREEN_WIDTH - 100
+        game_area_height = SCREEN_HEIGHT - 190
+        self.game.draw_card(game_area_x, game_area_y, game_area_width, game_area_height)
+
         # Alle Formen zeichnen
         for shape in self.shapes:
             if shape['type'] == 'circle':
                 pygame.draw.circle(self.game.screen, shape['color'], shape['pos'], shape['size'])
             elif shape['type'] == 'rect':
-                rect = pygame.Rect(shape['pos'][0] - shape['size'], shape['pos'][1] - shape['size'], 
+                rect = pygame.Rect(shape['pos'][0] - shape['size'], shape['pos'][1] - shape['size'],
                                 shape['size'] * 2, shape['size'] * 2)
                 pygame.draw.rect(self.game.screen, shape['color'], rect)
             elif shape['type'] == 'triangle':
+                x, y = shape['pos']
+                size = shape['size']
                 points = [
-                    (shape['pos'][0], shape['pos'][1] - shape['size']),
-                    (shape['pos'][0] - shape['size'], shape['pos'][1] + shape['size']),
-                    (shape['pos'][0] + shape['size'], shape['pos'][1] + shape['size'])
+                    (x, y - size),
+                    (x - size, y + size),
+                    (x + size, y + size)
                 ]
                 pygame.draw.polygon(self.game.screen, shape['color'], points)
-        
+
         # Timer-Balken zeichnen
-        progress = self.time / (60 * 30)
-        self.game.draw_progress_bar(50, SCREEN_HEIGHT - 40, SCREEN_WIDTH - 100, 10, progress, fill_color=ACCENT)
+        progress = self.time / (60 * 30) # Prozent der Zeit übrig
+        self.game.draw_progress_bar(50, SCREEN_HEIGHT - 50, SCREEN_WIDTH - 100, 10, progress, fill_color=ACCENT)
         
-        # Statistiken unten
+        # Statistiken & ESC-Hinweis
         stats_text = self.game.small_font.render(
-            f"Korrekt: {self.correct_clicks}  |  Falsch: {self.incorrect_clicks}", 
-            True, 
-            NEUTRAL
-        )
-        self.game.screen.blit(stats_text, (50, SCREEN_HEIGHT - 50))
-        
-        # ESC-Anweisung
-        esc_text = self.game.small_font.render("ESC = Beenden", True, NEUTRAL)
-        self.game.screen.blit(esc_text, (SCREEN_WIDTH - esc_text.get_width() - 20, SCREEN_HEIGHT - 50))
+            f"Korrekt: {self.correct_clicks}   |   Falsch: {self.incorrect_clicks}", True, text_color)
+        self.game.screen.blit(stats_text, (50, SCREEN_HEIGHT - 70))
+
+        esc_text = self.game.small_font.render("ESC = Spiel beenden", True, text_color)
+        self.game.screen.blit(esc_text, (SCREEN_WIDTH - esc_text.get_width() - 20, SCREEN_HEIGHT - 70))
     
     def end_game(self):
         """Beendet das Spiel und berechnet den Neurotizismus-Score"""
