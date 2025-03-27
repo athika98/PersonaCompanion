@@ -12,23 +12,30 @@ import pygame
 pygame.init()
 
 
-# Bildschirmgröße
+# Bildschirmgrösse
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
 # Frame per Seconds
 FPS = 60
 
-# Animation Constants
+# Animation Constants --> nacher löschen
 PULSE_SPEED = 0.05
 TRANSITION_SPEED = 10
 
 # Farben
-LIGHT_BLUE = (234,246,255) # Hellblau
+BACKGROUND = (234,246,255) # Hellblau
 text_color = (1,32,95) # Dunkelblau
+ACCENT = (43, 82, 136) # Rot / Rich Burgundy
 
+# Blauset
+LILAC_BLUE   = (183, 195, 232)  # #B7C3E8
+SOLID_BLUE   = (142, 162, 215)  # #8EA2D7
+SAILING_BLUE = (69, 105, 173)   # #4569AD
+DIVE_BLUE    = (31, 63, 116)    # #1F3F74
+DEEP_SEA     = (20, 54, 109)    # #14366D
 
-BACKGROUND = (248, 250, 252)     # Sehr helles Grau mit Blauton
+# Farbkonstanten
 PRIMARY = (79, 70, 229)          # Violett/Indigo
 SECONDARY = (16, 185, 129)       # Smaragdgrün
 ACCENT = (239, 68, 68)           # Rot/Koralle
@@ -52,7 +59,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)
 
-# Dateipfade
+# Dateipfade für Fonts und Assets
 FONT_PATH = os.path.join("assets", "fonts", "Poppins-Regular.ttf")
 
 # Blob Bild laden und Grösse anpassen

@@ -147,7 +147,7 @@ class Game4State:
     def render(self):
         """Zeichnet den Spielbildschirm"""
         # Strukturierten Hintergrund mit subtilen Linien zeichnen
-        self.game.screen.fill(LIGHT_BLUE)
+        self.game.screen.fill(BACKGROUND)
         
         # Spieltitel
         game_title = self.game.font.render("Organisationsspiel", True, text_color)

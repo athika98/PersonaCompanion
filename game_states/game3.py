@@ -89,7 +89,7 @@ class Game3State:
     def render(self):
         """Zeichnet den Spielbildschirm"""
         # Hintergrund mit Farbverlauf
-        self.game.screen.fill(LIGHT_BLUE)
+        self.game.screen.fill(BACKGROUND)
         
         # Spieltitel
         game_title = self.game.font.render("Kreativitätsspiel", True, text_color)
@@ -133,7 +133,7 @@ class Game3State:
         
         # Beispielvisualisierung
         example_box = pygame.Rect(SCREEN_WIDTH // 2 - 150, 350, 300, 100)
-        self.game.draw_card(example_box.x, example_box.y, example_box.width, example_box.height, color=LIGHT_BLUE)
+        self.game.draw_card(example_box.x, example_box.y, example_box.width, example_box.height, color=BACKGROUND)
         
         # Einfaches Musterbeispiel
         example_text = self.game.small_font.render("Beispiel:", True, TEXT_DARK)

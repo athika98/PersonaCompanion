@@ -44,8 +44,8 @@ class ResultsState:
     
     def render(self):
         """Zeichnet den Ergebnisbildschirm"""
-        # Hintergrund mit LIGHT_BLUE
-        self.game.screen.fill(LIGHT_BLUE)
+        # Hintergrund mit BACKGROUND
+        self.game.screen.fill(BACKGROUND)
         
         # Subtiles Konfetti im Hintergrund
         for i in range(50):  # Reduziert auf 50 statt 100 für subtileren Effekt
@@ -143,7 +143,7 @@ class ResultsState:
         companion_box = pygame.Rect(companion_box_x, companion_box_y, companion_box_width, companion_box_height)
         
         # Optional: Draw the companion box if needed
-        # self.game.draw_card(companion_box.x, companion_box.y, companion_box.width, companion_box.height, color=LIGHT_BLUE)
+        # self.game.draw_card(companion_box.x, companion_box.y, companion_box.width, companion_box.height, color=BACKGROUND)
 
         companion_title = self.game.medium_font.render("Dein idealer digitaler Begleiter:", True, TEXT_DARK)
         self.game.screen.blit(companion_title, (SCREEN_WIDTH // 2 - companion_title.get_width() // 2, y_section))

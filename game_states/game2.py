@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Game2State - Das Entscheidungsspiel
+Game2State - Das Entscheidungsspiel This or That
 Misst die Extraversion durch Entscheidungsfragen
 """
 
@@ -10,17 +10,11 @@ import pygame
 from game_core.constants import *
 
 class Game2State:
-    """
-    Game2State verwaltet das Entscheidungsspiel, bei dem der Spieler Präferenzen
-    zwischen extravierteren und introvierteren Optionen wählt
-    """
     def __init__(self, game):
-        """Initialisiert den Spielzustand mit einer Referenz auf das Hauptspiel"""
         self.game = game
         self.initialize()
     
     def initialize(self):
-        """Initialisiert oder setzt das Spiel zurück"""
         self.scenarios = GAME2_SCENARIOS
         self.current_scenario = 0
         self.answers = []
@@ -102,7 +96,7 @@ class Game2State:
     def render(self):
         """Zeichnet den Spielbildschirm"""
         # Hintergrund mit Gradient
-        self.game.screen.fill(LIGHT_BLUE)
+        self.game.screen.fill(BACKGROUND)
         
         # Titel Bereich
         title = self.game.font.render("Entscheidungsspiel", True, text_color)
@@ -192,7 +186,7 @@ class Game2State:
         current = self.scenarios[self.current_scenario]
 
         # Fragenkarte
-        self.game.draw_card(100, 130, SCREEN_WIDTH - 200, 80, LIGHT_BLUE, shadow=False)
+        self.game.draw_card(100, 130, SCREEN_WIDTH - 200, 80, BACKGROUND, shadow=False)
         question_text = self.game.medium_font.render(current["question"], True, TEXT_DARK)
         self.game.screen.blit(
             question_text, 

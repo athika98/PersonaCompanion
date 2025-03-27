@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Game1State - Das Reaktionsspiel
+Game 1 - Das Reaktionsspiel Click & React
 Misst die Reaktionszeit und Genauigkeit, um den Neurotizismus-Wert zu bestimmen
 """
 
@@ -12,17 +12,11 @@ import math
 from game_core.constants import *
 
 class Game1State:
-    """
-    Game1State verwaltet das Reaktionsspiel, bei dem der Spieler auf Kreise klicken muss
-    und andere Formen ignorieren soll
-    """
     def __init__(self, game):
-        """Initialisiert den Spielzustand mit einer Referenz auf das Hauptspiel"""
         self.game = game
         self.initialize()
     
     def initialize(self):
-        """Initialisiert oder setzt das Spiel zurück"""
         self.shapes = []
         self.score = 0
         self.time = 60 * 30  # 30 Sekunden bei 60 FPS
@@ -35,22 +29,18 @@ class Game1State:
         self.running = False
     
     def handle_event(self, event):
-        """Verarbeitet Benutzereingaben"""
         if not self.running:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                self.running = True
-                self.time = 60 * 30  # 30 Sekunden
-                self.score = 0
-                self.correct_clicks = 0
-                self.incorrect_clicks = 0
-                self.missed_targets = 0
-                self.reaction_times = []
-                self.shapes = []
-            return
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if hasattr(self, 'start_button_rect') and self.start_button_rect.collidepoint(event.pos):
+                    self.initialize()
+                    self.running = True
+                    
+                return
             
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_x, mouse_y = event.pos
-            clicked_shape = None
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                self.initialize()
+                self.running = True
+            return
             
             # Überprüfe, ob eine Form angeklickt wurde
             for i, shape in enumerate(self.shapes):
@@ -98,7 +88,6 @@ class Game1State:
                 self.end_game()
     
     def update(self):
-        """Aktualisiert den Spielzustand"""
         if not self.running:
             return
             
@@ -123,12 +112,11 @@ class Game1State:
             x = random.randint(100, SCREEN_WIDTH - 100)
             y = random.randint(150, SCREEN_HEIGHT - 150)
             
-            # Zufällige Größe
+            # Zufällige Grösse
             size = random.randint(20, 40)
             
             # Zufällige Farbe aus der Sundae-Palette
-            colors = [PASSION_PURPLE, COOL_BLUE, JUICY_GREEN, HONEY_YELLOW, 
-                    LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
+            colors = [LILAC_BLUE, SOLID_BLUE, SAILING_BLUE, DIVE_BLUE, DEEP_SEA]
             color = random.choice(colors)
             
             # Form erstellen
@@ -154,12 +142,12 @@ class Game1State:
                 self.shapes.pop(i)
     
     def render(self):
-        """Zeichnet den Spielbildschirm"""
-        # Moderner Hintergrund
-        self.game.screen.fill(LIGHT_BLUE)
+        """Zeichnet den Spielzustand"""
+        # Hintergrund
+        self.game.screen.fill(BACKGROUND)
         
-        # Header bzw. Titelleiste
-        title = self.game.font.render("Reaktionsspiel", True, text_color)
+        # Header
+        title = self.game.font.render("Click & React", True, text_color)
         self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 30))
         
         if not self.running:
@@ -170,16 +158,37 @@ class Game1State:
     def _render_instructions(self):
         """Zeigt die Spielanweisungen vor dem Start an"""      
         # Anweisungen
-        instructions = self.game.medium_font.render(
+        instructions = self.game.small_font.render(
             f"Fangen wir an, {self.game.user_name}! Klicke nur auf die Kreise und ignoriere alle anderen Formen.", True, text_color)
         self.game.screen.blit(instructions, 
-                            (SCREEN_WIDTH // 2 - instructions.get_width() // 2, 150))
+                            (SCREEN_WIDTH // 2 - instructions.get_width() // 2, 100))
         
-        # Drücke Leertaste zum Starten
-        start_text = self.game.medium_font.render(
-            "Bereit? Drücke die Leertaste und los geht’s!", True, text_color)
-        self.game.screen.blit(start_text, 
-                            (SCREEN_WIDTH // 2 - start_text.get_width() // 2, SCREEN_HEIGHT // 2))
+        # Start-Button Position
+        button_x = SCREEN_WIDTH // 2
+        button_y = SCREEN_HEIGHT - 200
+        button_width = 200
+        button_height = 50
+
+        # Hover-Effekt prüfen
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        hover = (mouse_x >= button_x - button_width // 2 and 
+                mouse_x <= button_x + button_width // 2 and
+                mouse_y >= button_y - button_height // 2 and 
+                mouse_y <= button_y + button_height // 2)
+
+        # Button zeichnen
+        self.game.draw_modern_button(
+            "Start", button_x, button_y, button_width, button_height,
+            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover
+        )
+
+        # Rechteck für Klickprüfung speichern
+        self.start_button_rect = pygame.Rect(
+            button_x - button_width // 2,
+            button_y - button_height // 2,
+            button_width,
+            button_height
+        )
         
         # Blob Bild rendern
         blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2
@@ -195,14 +204,14 @@ class Game1State:
                             (SCREEN_WIDTH // 2 - instructions.get_width() // 2, 70))
         
         # Punktekarte links
-        self.game.draw_card(20, 20, 140, 60)
+        self.game.draw_card(20, 20, 140, 60, color=WHITE)
         score_label = self.game.small_font.render("Punkte", True, text_color)
-        score_value = self.game.medium_font.render(f"{self.score}", True, PRIMARY)
+        score_value = self.game.medium_font.render(f"{self.score}", True, BLACK)
         self.game.screen.blit(score_label, (30, 25))
         self.game.screen.blit(score_value, (30, 50))
         
         # Zeitkarte rechts
-        self.game.draw_card(SCREEN_WIDTH - 160, 20, 140, 60)
+        self.game.draw_card(SCREEN_WIDTH - 160, 20, 140, 60, color=WHITE)
         time_label = self.game.small_font.render("Zeit", True, text_color)
         time_value = self.game.medium_font.render(f"{self.time // 60}", True, ACCENT)
         self.game.screen.blit(time_label, (SCREEN_WIDTH - 150, 25))
@@ -213,7 +222,7 @@ class Game1State:
         game_area_y = 110
         game_area_width = SCREEN_WIDTH - 100
         game_area_height = SCREEN_HEIGHT - 190
-        self.game.draw_card(game_area_x, game_area_y, game_area_width, game_area_height)
+        self.game.draw_card(game_area_x, game_area_y, game_area_width, game_area_height, color=WHITE)
 
         # Alle Formen zeichnen
         for shape in self.shapes:

@@ -124,17 +124,17 @@ class Game5State:
     
     def render(self):
         """Zeichnet den Spielbildschirm"""
-        # Hintergrund mit LIGHT_BLUE füllen statt CHERRY_PINK
-        self.game.screen.fill(LIGHT_BLUE)
+        # Hintergrund mit BACKGROUND füllen statt CHERRY_PINK
+        self.game.screen.fill(BACKGROUND)
         
         # Subtiles Hintergrundmuster erstellen
         for x in range(0, SCREEN_WIDTH, 40):
             for y in range(0, SCREEN_HEIGHT, 40):
                 color_shift = int(10 * math.sin((x + y) / 100 + pygame.time.get_ticks() / 2000))
                 color = (
-                    min(255, LIGHT_BLUE[0] - color_shift),
-                    min(255, LIGHT_BLUE[1] - color_shift),
-                    min(255, LIGHT_BLUE[2] - color_shift)
+                    min(255, BACKGROUND[0] - color_shift),
+                    min(255, BACKGROUND[1] - color_shift),
+                    min(255, BACKGROUND[2] - color_shift)
                 )
                 pygame.draw.circle(self.game.screen, color, (x, y), 2)
         

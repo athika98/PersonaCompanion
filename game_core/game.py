@@ -70,9 +70,9 @@ class Game:
         self.user_name = ""
         self.active_input = True
         
-        # Animation
-        self.pulse_value = 0
-        self.pulse_growing = True
+        # Animation Variablen (Pulsieren) - nacher löschen
+        #self.pulse_value = 0
+        #self.pulse_growing = True
         
         # Persönlichkeitsanalyse
         self.personality_traits = {
@@ -105,9 +105,9 @@ class Game:
             self.clock.tick(FPS)
     
     def update(self):
-        """Aktualisiert den Spielzustand"""
+        """Aktualisiert den Spielzustand wird das noch gebraucht?"""
         # Animationen aktualisieren
-        self.update_animations()
+        #self.update_animations()
         
         # Übergänge verwalten
         if self.transitioning:
@@ -116,8 +116,8 @@ class Game:
             # Aktuellen Zustand aktualisieren
             self.states[self.current_state].update()
     
-    def update_animations(self):
-        """Aktualisiert die Animationswerte"""
+    """def update_animations(self):
+        #Aktualisiert die Animationswerte wird das noch gebraucht?
         # Pulsieren aktualisieren
         if self.pulse_growing:
             self.pulse_value += PULSE_SPEED
@@ -129,7 +129,8 @@ class Game:
             if self.pulse_value <= 0:
                 self.pulse_value = 0
                 self.pulse_growing = True
-    
+                """
+
     def update_transitions(self):
         """Verwaltet die Übergänge zwischen Spielzuständen"""
         if self.transition_alpha > 0:
@@ -144,7 +145,7 @@ class Game:
     def render(self):
         """Zeichnet den aktuellen Spielzustand"""
         # Hintergrund zeichnen
-        self.screen.fill(LIGHT_BLUE)
+        self.screen.fill(BACKGROUND)
         
         # Aktuellen Spielzustand zeichnen
         if not self.transitioning or self.transition_alpha < 255:
@@ -158,7 +159,7 @@ class Game:
         pygame.display.flip()
     
     def render_transition(self):
-        """Zeichnet den Übergangseffekt zwischen Spielzuständen"""
+        """Zeichnet den Übergangseffekt zwischen Spielzuständen - wird das noch gebraucht"""
         if self.transition_alpha > 0:
             transition_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
             
@@ -181,7 +182,7 @@ class Game:
         self.next_state = new_state
     
     # Hilfsfunktionen für das UI
-    def draw_modern_button(self, text, x, y, width, height, color, text_color=TEXT_LIGHT, 
+    def draw_modern_button(self, text, x, y, width, height, color, text_color=text_color, 
                          font=None, border_radius=10, hover=False):
         """Zeichnet einen modernen Button mit Schattierung"""
         if font is None:
@@ -209,7 +210,7 @@ class Game:
         
         return button_rect
     
-    def draw_card(self, x, y, width, height, color=TEXT_LIGHT, border_radius=15, shadow=False):
+    def draw_card(self, x, y, width, height, color=text_color, border_radius=15, shadow=False):
         """Zeichnet eine Karte mit optionalem Schatten"""
         if shadow:
             # Schattenwurf
@@ -236,38 +237,3 @@ class Game:
             fill_width = int(width * progress)
             fill_rect = pygame.Rect(x, y, fill_width, height)
             pygame.draw.rect(self.screen, fill_color, fill_rect, border_radius=border_radius)
-    
-    def draw_modern_background(self):
-        """Zeichnet einen modernen Hintergrund mit Raster und Farbakzenten"""
-        # Grundfarbe
-        self.screen.fill(BACKGROUND)
-        
-        # Subtiles Raster
-        grid_color = (240, 242, 245)  # Sehr helles Grau
-        grid_spacing = 30
-        
-        for x in range(0, SCREEN_WIDTH, grid_spacing):
-            for y in range(0, SCREEN_HEIGHT, grid_spacing):
-                # Kleine Punkte statt Linien für ein moderneres Aussehen
-                pygame.draw.circle(self.screen, grid_color, (x, y), 1)
-        
-        # Subtile Farbakzente
-        for _ in range(20):  # Ein paar zufällige Farbakzente
-            import random
-            x = random.randint(0, SCREEN_WIDTH)
-            y = random.randint(0, SCREEN_HEIGHT)
-            size = random.randint(30, 100)
-            alpha = random.randint(5, 20)  # Sehr transparent
-            
-            # Erstelle eine transparente Oberfläche
-            accent_surface = pygame.Surface((size*2, size*2), pygame.SRCALPHA)
-            
-            # Zufällige Farbe aus dem Farbschema
-            colors = [PRIMARY, SECONDARY, ACCENT]
-            color = list(random.choice(colors)) + [alpha]  # Füge Alpha-Wert hinzu
-            
-            # Zeichne einen sanften Kreis (Gradient-ähnlich)
-            pygame.draw.circle(accent_surface, color, (size, size), size)
-            
-            # Auf den Hauptbildschirm übertragen
-            self.screen.blit(accent_surface, (x-size, y-size))

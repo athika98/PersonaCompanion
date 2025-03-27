@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-MenuState - Der Startbildschirm des Spiels
+Menu - Startbildschirm des Spiels
 """
 
 import pygame
@@ -59,7 +59,7 @@ class MenuState:
         """Zeichnet das Hauptmenü ohne Inhalts-Karte"""
         # Direktes Zeichnen des Hintergrunds
         #self.render_custom_background()
-        self.game.screen.fill(LIGHT_BLUE)  # Setzt den Hintergrund auf ein einheitliches Hellblau
+        self.game.screen.fill(BACKGROUND)  # Setzt den Hintergrund auf ein einheitliches Hellblau
 
         # Titel  auf dem Hintergrund rendern
         title = self.game.font.render("Persona Companion", True, text_color)
@@ -178,4 +178,4 @@ class MenuState:
         # Blinking Cursor für Eingabe
         if active and int(pygame.time.get_ticks() / 500) % 2 == 0:
             cursor_x = x + 15 + name_text.get_width()
-            pygame.draw.line(self.game.screen, LIGHT_BLUE, (cursor_x, y + 12), (cursor_x, y + height - 12), 2)
+            pygame.draw.line(self.game.screen, BACKGROUND, (cursor_x, y + 12), (cursor_x, y + height - 12), 2)
