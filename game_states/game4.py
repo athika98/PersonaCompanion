@@ -31,6 +31,10 @@ class Game4State:
         self.drag_offset = (0, 0)
         self.categories = {}  # Speichert, welche Objekte in welchen Kategorien landen
         
+        # Button-Rechtecke für die Klickerkennung definieren
+        self.start_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50)
+        self.continue_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+        
         # Zu organisierende Objekte definieren
         self.items = [
             {"id": 1, "type": "book", "name": "Buch: Roman", "color": PASSION_PURPLE, "pos": [150, 250], "size": [80, 40], "original_category": "freizeit"},
@@ -70,8 +74,7 @@ class Game4State:
             
             # Anweisungsbildschirm - Start-Button
             if self.state == "instruction":
-                start_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50)
-                if start_button.collidepoint(mouse_x, mouse_y):
+                if self.start_button_rect.collidepoint(mouse_x, mouse_y):
                     self.state = "organize"
                     self.timer_active = True
                     return
@@ -93,8 +96,7 @@ class Game4State:
             
             # Ergebnisbildschirm - Weiter-Button
             elif self.state == "result":
-                continue_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
-                if continue_button.collidepoint(mouse_x, mouse_y):
+                if self.continue_button_rect.collidepoint(mouse_x, mouse_y):
                     # Speichere den Gewissenhaftigkeitswert und gehe zum nächsten Spiel
                     self.end_game()
         
@@ -145,27 +147,15 @@ class Game4State:
     def render(self):
         """Zeichnet den Spielbildschirm"""
         # Strukturierten Hintergrund mit subtilen Linien zeichnen
-        self.game.screen.fill(LEMON_YELLOW)
-        
-        # Hintergrundmuster für ein organisiertes Aussehen
-        for x in range(0, SCREEN_WIDTH, 40):
-            for y in range(0, SCREEN_HEIGHT, 40):
-                # Sehr helle Linien für ein Rastereffekt
-                line_color = (LEMON_YELLOW[0] - 20, LEMON_YELLOW[1] - 20, LEMON_YELLOW[2] - 20)
-                pygame.draw.line(self.game.screen, line_color, (x, 0), (x, SCREEN_HEIGHT), 1)
-                pygame.draw.line(self.game.screen, line_color, (0, y), (SCREEN_WIDTH, y), 1)
-        
-        # Header
-        header_rect = pygame.Rect(0, 0, SCREEN_WIDTH, 100)
-        pygame.draw.rect(self.game.screen, PRIMARY, header_rect)
+        self.game.screen.fill(LIGHT_BLUE)
         
         # Spieltitel
-        game_title = self.game.medium_font.render("Organisationsspiel", True, TEXT_LIGHT)
-        self.game.screen.blit(game_title, (SCREEN_WIDTH // 2 - game_title.get_width() // 2, 15))
+        game_title = self.game.font.render("Organisationsspiel", True, text_color)
+        self.game.screen.blit(game_title, (SCREEN_WIDTH // 2 - game_title.get_width() // 2, 30))
         
         # Benutzername anzeigen
-        name_text = self.game.small_font.render(f"Spieler: {self.game.user_name}", True, TEXT_LIGHT)
-        self.game.screen.blit(name_text, (SCREEN_WIDTH - 20 - name_text.get_width(), 15))
+        name_text = self.game.small_font.render(f"{self.game.user_name}", True, text_color)
+        self.game.screen.blit(name_text, (SCREEN_WIDTH - 20 - name_text.get_width(), 35))
         
         # Verschiedene Bildschirme basierend auf dem Spielzustand
         if self.state == "instruction":
@@ -179,7 +169,7 @@ class Game4State:
         """Zeigt den Anweisungsbildschirm für das Organisationsspiel"""
         # Anweisungsbox
         instruction_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250)
-        pygame.draw.rect(self.game.screen, TEXT_LIGHT, instruction_rect, border_radius=20)
+        self.game.draw_card(instruction_rect.x, instruction_rect.y, instruction_rect.width, instruction_rect.height, color=TEXT_LIGHT)
         
         # Titel
         instruction_title = self.game.medium_font.render("Wie organisiert bist du?", True, PRIMARY)
@@ -200,44 +190,30 @@ class Game4State:
             self.game.screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, y_pos))
             y_pos += 35
         
-        # Beispielvisualisierung
-        example_box = pygame.Rect(SCREEN_WIDTH // 2 - 200, 350, 400, 100)
-        pygame.draw.rect(self.game.screen, COOL_BLUE, example_box, border_radius=15)
-        
-        # Einfaches Organisationsbeispiel mit Beispielobjekten
-        example_title = self.game.small_font.render("Beispiel:", True, TEXT_LIGHT)
-        self.game.screen.blit(example_title, (SCREEN_WIDTH // 2 - example_title.get_width() // 2, 360))
-        
-        # Beispielobjekte zeichnen
-        pygame.draw.rect(self.game.screen, PASSION_PURPLE, (SCREEN_WIDTH // 2 - 160, 390, 60, 40), border_radius=5)
-        pygame.draw.rect(self.game.screen, POMEGRANATE, (SCREEN_WIDTH // 2 - 80, 390, 60, 40), border_radius=5)
-        pygame.draw.rect(self.game.screen, JUICY_GREEN, (SCREEN_WIDTH // 2, 390, 60, 40), border_radius=5)
-        pygame.draw.rect(self.game.screen, CHERRY_PINK, (SCREEN_WIDTH // 2 + 80, 390, 60, 40), border_radius=5)
-        
         # Start-Button
-        start_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50)
-        pygame.draw.rect(self.game.screen, POMEGRANATE, start_button, border_radius=15)
-        
-        start_text = self.game.medium_font.render("Start", True, TEXT_LIGHT)
-        self.game.screen.blit(start_text, (SCREEN_WIDTH // 2 - start_text.get_width() // 2, SCREEN_HEIGHT - 85))
+        self.game.draw_modern_button(
+            "Start", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 75, 200, 50,
+            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover=False
+        )
     
     def _render_organize(self):
         """Zeigt den Organisationsbildschirm mit draggable Items"""
         # Timer anzeigen
-        time_text = self.game.medium_font.render(f"Zeit: {self.time_remaining // 60} Sekunden", True, TEXT_LIGHT)
+        time_text = self.game.medium_font.render(f"Zeit: {self.time_remaining // 60} Sekunden", True, text_color)
         self.game.screen.blit(time_text, (20, 60))
         
         # Anweisungstext
-        instruction_text = self.game.small_font.render("Ziehe die Objekte in die Kategorien!", True, TEXT_LIGHT)
+        instruction_text = self.game.small_font.render("Ziehe die Objekte in die Kategorien!", True, text_color)
         self.game.screen.blit(instruction_text, (SCREEN_WIDTH // 2 - instruction_text.get_width() // 2, 60))
         
         # Kategoriebereiche zeichnen
         for container in self.containers:
-            pygame.draw.rect(self.game.screen, container["color"], container["rect"], border_radius=10)
-            pygame.draw.rect(self.game.screen, TEXT_DARK, container["rect"], 2, border_radius=10)  # Umrandung
+            self.game.draw_card(container["rect"].x, container["rect"].y, 
+                             container["rect"].width, container["rect"].height, 
+                             color=container["color"])
             
             # Kategoriename
-            container_text = self.game.small_font.render(container["name"], True, TEXT_DARK)
+            container_text = self.game.small_font.render(container["name"], True, text_color)
             self.game.screen.blit(container_text, (container["rect"].centerx - container_text.get_width() // 2, 
                                                  container["rect"].y + 10))
         
@@ -248,17 +224,17 @@ class Game4State:
                                   item["pos"][1] - item["size"][1] // 2, 
                                   item["size"][0], item["size"][1])
             pygame.draw.rect(self.game.screen, item["color"], item_rect, border_radius=5)
-            pygame.draw.rect(self.game.screen, TEXT_DARK, item_rect, 2, border_radius=5)  # Umrandung
+            pygame.draw.rect(self.game.screen, text_color, item_rect, 2, border_radius=5)  # Umrandung
             
             # Item-Name (gekürzt, wenn nötig)
             short_name = item["name"] if len(item["name"]) < 15 else item["name"][:12] + "..."
-            item_text = self.game.small_font.render(short_name, True, TEXT_DARK)
+            item_text = self.game.small_font.render(short_name, True, text_color)
             
             # Skaliere Text, wenn er zu groß ist
             if item_text.get_width() > item["size"][0] - 10:
                 # Kleinerer Font für lange Namen
                 tiny_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 42)
-                item_text = tiny_font.render(short_name, True, TEXT_DARK)
+                item_text = tiny_font.render(short_name, True, text_color)
             
             text_x = item["pos"][0] - item_text.get_width() // 2
             text_y = item["pos"][1] - item_text.get_height() // 2
@@ -268,20 +244,19 @@ class Game4State:
         y_offset = 120
         for container_id, items in self.categories.items():
             if items:  # Wenn es Items in dieser Kategorie gibt
-                category_text = self.game.small_font.render(f"Kategorie {container_id}: {len(items)} Objekte", True, TEXT_DARK)
+                category_text = self.game.small_font.render(f"Kategorie {container_id}: {len(items)} Objekte", True, text_color)
                 self.game.screen.blit(category_text, (20, y_offset))
                 y_offset += 25
         
         # Fortschrittsbalken für die Zeit
-        progress_width = int((self.time_remaining / (60 * 45)) * (SCREEN_WIDTH - 100))
-        pygame.draw.rect(self.game.screen, COOL_BLUE, (50, SCREEN_HEIGHT - 30, SCREEN_WIDTH - 100, 10), border_radius=5)
-        pygame.draw.rect(self.game.screen, POMEGRANATE, (50, SCREEN_HEIGHT - 30, progress_width, 10), border_radius=5)
+        self.game.draw_progress_bar(50, SCREEN_HEIGHT - 30, SCREEN_WIDTH - 100, 10, 
+                                 self.time_remaining / (60 * 45), fill_color=POMEGRANATE)
     
     def _render_result(self):
         """Zeigt die Ergebnisse des Organisationsspiels"""
         # Ergebnisbox
         results_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250)
-        pygame.draw.rect(self.game.screen, TEXT_LIGHT, results_rect, border_radius=20)
+        self.game.draw_card(results_rect.x, results_rect.y, results_rect.width, results_rect.height, color=TEXT_LIGHT)
         
         # Titel
         result_title = self.game.medium_font.render("Deine Organisationsfähigkeit", True, PRIMARY)
@@ -309,28 +284,28 @@ class Game4State:
         level_text = self.game.medium_font.render(organization_level, True, PRIMARY)
         self.game.screen.blit(level_text, (SCREEN_WIDTH // 2 - level_text.get_width() // 2, 190))
         
-        description_text = self.game.small_font.render(description, True, TEXT_DARK)
+        description_text = self.game.small_font.render(description, True, text_color)
         self.game.screen.blit(description_text, (SCREEN_WIDTH // 2 - description_text.get_width() // 2, 230))
         
-        details_text = self.game.small_font.render(details, True, TEXT_DARK)
+        details_text = self.game.small_font.render(details, True, text_color)
         self.game.screen.blit(details_text, (SCREEN_WIDTH // 2 - details_text.get_width() // 2, 260))
         
         # Organisations-Skala zeichnen
         scale_width = SCREEN_WIDTH - 300
         scale_height = 30
         scale_x = 150
-        scale_y = 300
+        scale_y = 350  # Verschoben von 300 auf 350
         
         # Skala-Hintergrund
-        pygame.draw.rect(self.game.screen, COOL_BLUE, (scale_x, scale_y, scale_width, scale_height), border_radius=15)
+        self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=COOL_BLUE, shadow=False)
         
         # Skala-Füllung basierend auf Score
         fill_width = int(scale_width * self.conscientiousness_score / 100)
         pygame.draw.rect(self.game.screen, POMEGRANATE, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
         
         # Skala-Beschriftungen
-        flexible_text = self.game.small_font.render("Flexibel", True, TEXT_DARK)
-        structured_text = self.game.small_font.render("Strukturiert", True, TEXT_DARK)
+        flexible_text = self.game.small_font.render("Flexibel", True, text_color)
+        structured_text = self.game.small_font.render("Strukturiert", True, text_color)
         
         self.game.screen.blit(flexible_text, (scale_x, scale_y + scale_height + 10))
         self.game.screen.blit(structured_text, (scale_x + scale_width - structured_text.get_width(), scale_y + scale_height + 10))
@@ -339,8 +314,9 @@ class Game4State:
         percent_text = self.game.medium_font.render(f"{self.conscientiousness_score}%", True, PRIMARY)
         self.game.screen.blit(percent_text, (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
         
-        # Kategorieübersicht
-        summary_title = self.game.small_font.render("Deine Kategorien:", True, TEXT_DARK)
+        # Kategorieübersicht - auskommentiert
+        """
+        summary_title = self.game.small_font.render("Deine Kategorien:", True, text_color)
         self.game.screen.blit(summary_title, (scale_x, 370))
         
         # Kategorieübersicht anzeigen
@@ -354,13 +330,13 @@ class Game4State:
                 )
                 self.game.screen.blit(summary_text, (scale_x + 20, y_pos))
                 y_pos += 30
+        """
         
         # Weiter-Button
-        continue_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
-        pygame.draw.rect(self.game.screen, POMEGRANATE, continue_button, border_radius=15)
-        
-        continue_text = self.game.medium_font.render("Weiter", True, TEXT_LIGHT)
-        self.game.screen.blit(continue_text, (SCREEN_WIDTH // 2 - continue_text.get_width() // 2, SCREEN_HEIGHT - 65))
+        self.game.draw_modern_button(
+            "Weiter", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 65, 200, 50,
+            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover=False
+        )
     
     def calculate_conscientiousness_score(self):
         """Berechnet den Gewissenhaftigkeitswert basierend auf der Organisation"""
