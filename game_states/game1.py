@@ -180,15 +180,31 @@ class Game1State:
     
     def _render_instructions(self):
         """Zeigt die Spielanweisungen vor dem Start an"""      
-        # Anweisungen
-        instructions = self.game.small_font.render(
-            f"Fangen wir an, {self.game.user_name}! Klicke nur auf die Kreise und ignoriere alle anderen Formen.", True, text_color)
-        self.game.screen.blit(instructions, 
-                            (SCREEN_WIDTH // 2 - instructions.get_width() // 2, 100))
+        # Titel
+        intro_title = self.game.medium_font.render("Reaktionstest", True, text_color)
+        self.game.screen.blit(intro_title, (SCREEN_WIDTH // 2 - intro_title.get_width() // 2, 100))
+        
+        # Erklärungstext
+        explanation_text = [
+            f"Hallo {self.game.user_name}!",
+            "Fangen wir mit einem einfachen Reaktionstest an.",
+            "In diesem Spiel geht es um deine Reaktionsfähigkeit und Genauigkeit.",
+            "Verschiedene Formen werden auf dem Bildschirm erscheinen.",
+            "Deine Aufgabe ist es, nur auf die Kreise zu klicken und alle anderen Formen zu ignorieren.",
+            "Je schneller du reagierst, desto mehr Punkte erhältst du.",
+            "Aber Vorsicht: Falsche Klicks führen zu Punktabzug!"
+        ]
+        
+        # Zeichne Erklärungstext
+        y_pos = 160
+        for line in explanation_text:
+            line_text = self.game.small_font.render(line, True, TEXT_DARK)
+            self.game.screen.blit(line_text, (SCREEN_WIDTH // 2 - line_text.get_width() // 2, y_pos))
+            y_pos += 30
         
         # Start-Button Position
         button_x = SCREEN_WIDTH // 2
-        button_y = SCREEN_HEIGHT - 200
+        button_y = SCREEN_HEIGHT - 150
         button_width = 200
         button_height = 50
 
