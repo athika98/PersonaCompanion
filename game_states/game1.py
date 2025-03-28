@@ -50,21 +50,17 @@ class Game1State:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = event.pos
                 
-                # Weiter-Button
-                continue_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
-                
-                if continue_button.collidepoint(mouse_x, mouse_y):
-                    # Zum nächsten Spiel übergehen
+                # Weiter-Button mit gespeichertem Rechteck prüfen
+                if hasattr(self, 'continue_button_rect') and self.continue_button_rect.collidepoint(mouse_x, mouse_y):
+                    print("Button clicked, transitioning to GAME2")  # Debug-Nachricht
                     self.game.transition_to("GAME2")
-                    return
-            
+                
             return
         
         # Wenn das Spiel läuft (state == "running")
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = event.pos
             clicked_shape = None
-
             # Überprüfe, ob eine Form angeklickt wurde
             for i, shape in enumerate(self.shapes):
                 # Distanzberechnung je nach Formtyp
@@ -286,40 +282,60 @@ class Game1State:
         # Titel
         title = self.game.medium_font.render("Dein Ergebnis:", True, text_color)
         self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 130))
-
+        
         # Ergebnisbalken
         scale_x = 150
         scale_y = 300
         scale_width = SCREEN_WIDTH - 300
         scale_height = 30
-
+        
         self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=WHITE, shadow=False)
         fill_width = int(scale_width * self.neuroticism_score / 100)
         pygame.draw.rect(self.game.screen, ACCENT,
-                       (scale_x, scale_y, fill_width, scale_height), border_radius=15)
-
+                    (scale_x, scale_y, fill_width, scale_height), border_radius=15)
+        
         # Labels
         low_text = self.game.small_font.render("Niedrig", True, TEXT_DARK)
         high_text = self.game.small_font.render("Hoch", True, TEXT_DARK)
         self.game.screen.blit(low_text, (scale_x, scale_y + scale_height + 10))
         self.game.screen.blit(high_text, (scale_x + scale_width - high_text.get_width(), scale_y + scale_height + 10))
-
+        
         # Neurotizismus Beschriftung mittig über dem Balken
         neuro_text = self.game.medium_font.render("Neurotizismus", True, text_color)
         self.game.screen.blit(neuro_text, (SCREEN_WIDTH // 2 - neuro_text.get_width() // 2, scale_y - 70))
-
+        
         # Prozentsatz über dem Balken
         percent_text = self.game.medium_font.render(f"{self.neuroticism_score}%", True, text_color)
         self.game.screen.blit(percent_text,
                             (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
-
-        # Weiter-Button (modern)
-        button_x, button_y = SCREEN_WIDTH // 2, SCREEN_HEIGHT - 80
+        
+        # Weiter-Button mit Hover-Effekt
+        button_x = SCREEN_WIDTH // 2
+        button_y = SCREEN_HEIGHT - 80
+        button_width = 200
+        button_height = 50
+        
+        # Prüfen, ob Maus über dem Button ist
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        hover = (mouse_x >= button_x - button_width // 2 and 
+                mouse_x <= button_x + button_width // 2 and
+                mouse_y >= button_y - button_height // 2 and 
+                mouse_y <= button_y + button_height // 2)
+        
+        # Button zeichnen mit Hover-Effekt
         self.game.draw_modern_button(
-            "Weiter", button_x, button_y, 200, 50,
-            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover=False
+            "Weiter", button_x, button_y, button_width, button_height,
+            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover
         )
-
+        
+        # Rechteck für Klickprüfung speichern
+        self.continue_button_rect = pygame.Rect(
+            button_x - button_width // 2,
+            button_y - button_height // 2,
+            button_width,
+            button_height
+        )
+        
         # Blob visual am unteren Rand
         blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2 + 200
         blob_y = SCREEN_HEIGHT - BLOB_IMAGE.get_height() - 20

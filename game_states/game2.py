@@ -21,38 +21,49 @@ class Game2State:
         self.extraversion_score = 0
         self.selection = None
         self.transition_timer = 0
-        self.state = "question"  # Zustände: question, transition, result
+        self.state = "intro"  # Zustände: intro, question, transition, result
 
         # Rechtecke für Optionen definieren
         self.option_a_rect = pygame.Rect(100, 240, SCREEN_WIDTH - 200, 80)
         self.option_b_rect = pygame.Rect(100, 340, SCREEN_WIDTH - 200, 80)
     
     def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and self.state == "question":
-            mouse_x, mouse_y = event.pos
-            
-            if self.option_a_rect.collidepoint(mouse_x, mouse_y):
-                self.selection = "A"
-                self.state = "transition"
-                self.transition_timer = 30  # Eine halbe Sekunde bei 60 FPS
+        if self.state == "intro":
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if hasattr(self, 'start_button_rect') and self.start_button_rect.collidepoint(event.pos):
+                    self.state = "question"
+                    return
                 
-                # Antwort aufzeichnen
-                current = self.scenarios[self.current_scenario]
-                if current["a_type"] == "extravert":
-                    self.extraversion_score += 1
-                self.answers.append(("A", current["a_type"]))
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                self.state = "question"
+                return
+                
+        elif self.state == "question":
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = event.pos
+                
+                if self.option_a_rect.collidepoint(mouse_x, mouse_y):
+                    self.selection = "A"
+                    self.state = "transition"
+                    self.transition_timer = 30  # Eine halbe Sekunde bei 60 FPS
                     
-            elif self.option_b_rect.collidepoint(mouse_x, mouse_y):
-                self.selection = "B"
-                self.state = "transition"
-                self.transition_timer = 30  # Eine halbe Sekunde bei 60 FPS
-                
-                # Antwort aufzeichnen
-                current = self.scenarios[self.current_scenario]
-                if current["b_type"] == "extravert":
-                    self.extraversion_score += 1
-                self.answers.append(("B", current["b_type"]))
-            
+                    # Antwort aufzeichnen
+                    current = self.scenarios[self.current_scenario]
+                    if current["a_type"] == "extravert":
+                        self.extraversion_score += 1
+                    self.answers.append(("A", current["a_type"]))
+                        
+                elif self.option_b_rect.collidepoint(mouse_x, mouse_y):
+                    self.selection = "B"
+                    self.state = "transition"
+                    self.transition_timer = 30  # Eine halbe Sekunde bei 60 FPS
+                    
+                    # Antwort aufzeichnen
+                    current = self.scenarios[self.current_scenario]
+                    if current["b_type"] == "extravert":
+                        self.extraversion_score += 1
+                    self.answers.append(("B", current["b_type"]))
+        
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self.state = "result"
         
@@ -60,9 +71,7 @@ class Game2State:
             mouse_x, mouse_y = event.pos
             
             # Weiter-Button
-            continue_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
-            
-            if continue_button.collidepoint(mouse_x, mouse_y):
+            if hasattr(self, 'continue_button_rect') and self.continue_button_rect.collidepoint(mouse_x, mouse_y):
                 # Berechnen und speichern des endgültigen Extraversions-Scores als Prozentsatz
                 extraversion_percentage = int((self.extraversion_score / len(self.scenarios)) * 100)
                 self.game.personality_traits["extraversion"] = extraversion_percentage
@@ -99,8 +108,11 @@ class Game2State:
         name_text = self.game.small_font.render(f"{self.game.user_name}", True, text_color)
         self.game.screen.blit(name_text, (SCREEN_WIDTH - name_text.get_width() - 20, 35))
 
-        # Fortschritt (falls noch Fragen offen)
-        if self.state != "result":
+        # Je nach Spielstatus
+        if self.state == "intro":
+            self._render_intro()
+        elif self.state == "question" or self.state == "transition":
+            # Fortschritt anzeigen
             question_count = len(self.scenarios)
             current = self.current_scenario + 1
             progress_text = self.game.small_font.render(f"Frage {current} von {question_count}", True, text_color)
@@ -108,14 +120,67 @@ class Game2State:
 
             progress_width = int((self.current_scenario / question_count) * (SCREEN_WIDTH - 100))
             self.game.draw_progress_bar(50, 80, SCREEN_WIDTH - 100, 10, self.current_scenario / question_count, fill_color=ACCENT)
-
-        # Je nach Spielstatus
-        if self.state == "question":
-            self._render_question()
-        elif self.state == "transition":
-            self._render_transition()
+            
+            if self.state == "question":
+                self._render_question()
+            else:
+                self._render_transition()
         elif self.state == "result":
             self._render_result()
+
+    def _render_intro(self):
+        """Zeigt den Intro-Bildschirm mit Spielerklärung"""
+        # Titel
+        intro_title = self.game.medium_font.render("Entscheide dich!", True, text_color)
+        self.game.screen.blit(intro_title, (SCREEN_WIDTH // 2 - intro_title.get_width() // 2, 100))
+        
+        # Erklärungstext
+        explanation_text = [
+            "Im nächsten Spiel geht es darum, deine Vorlieben besser kennenzulernen.",
+            "Es werden dir verschiedene Paare von Optionen angezeigt.",
+            "Wähle immer die Option aus, die besser zu dir passt oder die du bevorzugen würdest.",
+            "Es gibt keine richtigen oder falschen Antworten.",
+            "Sei einfach du selbst und antworte ehrlich!"
+        ]
+        
+        # Zeichne Erklärungstext
+        y_pos = 160
+        for line in explanation_text:
+            line_text = self.game.small_font.render(line, True, TEXT_DARK)
+            self.game.screen.blit(line_text, (SCREEN_WIDTH // 2 - line_text.get_width() // 2, y_pos))
+            y_pos += 30
+        
+        # Start-Button Position
+        button_x = SCREEN_WIDTH // 2
+        button_y = SCREEN_HEIGHT - 150
+        button_width = 200
+        button_height = 50
+
+        # Hover-Effekt prüfen
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        hover = (mouse_x >= button_x - button_width // 2 and 
+                mouse_x <= button_x + button_width // 2 and
+                mouse_y >= button_y - button_height // 2 and 
+                mouse_y <= button_y + button_height // 2)
+
+        # Button zeichnen
+        self.game.draw_modern_button(
+            "Start", button_x, button_y, button_width, button_height,
+            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover
+        )
+
+        # Rechteck für Klickprüfung speichern
+        self.start_button_rect = pygame.Rect(
+            button_x - button_width // 2,
+            button_y - button_height // 2,
+            button_width,
+            button_height
+        )
+        
+        # Blob Bild rendern
+        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2
+        blob_y = SCREEN_HEIGHT - 120  # Unten platzieren
+        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
 
     def _render_question(self):
         current = self.scenarios[self.current_scenario]
@@ -154,7 +219,7 @@ class Game2State:
         text_y = SCREEN_HEIGHT - 50
 
         # Blob-Grösse reduzieren (Mini)
-        blob_mini = pygame.transform.scale(BLOB_IMAGE, (35, 35))  # z. B. 32x32 Pixel
+        blob_mini = pygame.transform.scale(BLOB_IMAGE, (35, 35))  # z. B. 32x32 Pixel
         blob_x = text_x + hint_text.get_width() + 10
         blob_y = text_y - 4  # leicht zentriert zur Textlinie
 
@@ -278,10 +343,30 @@ class Game2State:
         """
 
         # Weiter-Button (modern)
-        button_x, button_y = SCREEN_WIDTH // 2, SCREEN_HEIGHT - 80
+        button_x = SCREEN_WIDTH // 2
+        button_y = SCREEN_HEIGHT - 80
+        button_width = 200
+        button_height = 50
+        
+        # Hover-Effekt prüfen
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        hover = (mouse_x >= button_x - button_width // 2 and 
+                mouse_x <= button_x + button_width // 2 and
+                mouse_y >= button_y - button_height // 2 and 
+                mouse_y <= button_y + button_height // 2)
+                
+        # Button zeichnen
         self.game.draw_modern_button(
-            "Weiter", button_x, button_y, 200, 50,
-            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover=False
+            "Weiter", button_x, button_y, button_width, button_height,
+            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover
+        )
+        
+        # Rechteck für Klickprüfung speichern
+        self.continue_button_rect = pygame.Rect(
+            button_x - button_width // 2,
+            button_y - button_height // 2,
+            button_width,
+            button_height
         )
 
         # Blob visual am unteren Rand
@@ -305,5 +390,3 @@ def render_multiline_text(surface, text, font, color, x, y, max_width, line_heig
     if line:
         rendered = font.render(line, True, color)
         surface.blit(rendered, (x, y))
-
-
