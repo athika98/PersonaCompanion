@@ -23,10 +23,16 @@ class Game2State:
         self.transition_timer = 0
         self.state = "intro"  # Zustände: intro, question, transition, result
 
-        # Rechtecke für Optionen definieren
-        self.option_a_rect = pygame.Rect(100, 240, SCREEN_WIDTH - 200, 80)
-        self.option_b_rect = pygame.Rect(100, 340, SCREEN_WIDTH - 200, 80)
-    
+        # Definiere die Breite der Boxen
+        box_width = SCREEN_WIDTH - 100  
+
+        # Berechne die x-Position, um die Boxen zu zentrieren
+        x_position = (SCREEN_WIDTH - box_width) // 2
+
+        # Definiere die Rechtecke für die Optionen
+        self.option_a_rect = pygame.Rect(x_position, 240, box_width, 80)
+        self.option_b_rect = pygame.Rect(x_position, 340, box_width, 80)
+
     def handle_event(self, event):
         if self.state == "intro":
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -196,7 +202,7 @@ class Game2State:
         # Option A – Obere Karte
         self.game.draw_card(self.option_a_rect.x, self.option_a_rect.y, self.option_a_rect.width, self.option_a_rect.height,
                             color=WHITE, shadow=False)
-        option_a_text = self.game.medium_font.render(f"A: {current['option_a']}", True, text_color)
+        option_a_text = self.game.small_font.render(f"A: {current['option_a']}", True, text_color)
         self.game.screen.blit(
             option_a_text, 
             (SCREEN_WIDTH // 2 - option_a_text.get_width() // 2, self.option_a_rect.y + 30)
@@ -205,7 +211,7 @@ class Game2State:
         # Option B – Untere Karte
         self.game.draw_card(self.option_b_rect.x, self.option_b_rect.y, self.option_b_rect.width, self.option_b_rect.height,
                             color=WHITE, shadow=False)
-        option_b_text = self.game.medium_font.render(f"B: {current['option_b']}", True, text_color)
+        option_b_text = self.game.small_font.render(f"B: {current['option_b']}", True, text_color)
         self.game.screen.blit(
             option_b_text,
             (SCREEN_WIDTH // 2 - option_b_text.get_width() // 2, self.option_b_rect.y + 30)
@@ -249,7 +255,7 @@ class Game2State:
                             color=option_a_color, shadow=False)
         if self.selection == "A":
             pygame.draw.rect(self.game.screen, selected_outline, self.option_a_rect, width=4, border_radius=15)
-        option_a_text = self.game.medium_font.render(f"A: {current['option_a']}", True, text_color)
+        option_a_text = self.game.small_font.render(f"A: {current['option_a']}", True, text_color)
         self.game.screen.blit(
             option_a_text, 
             (SCREEN_WIDTH // 2 - option_a_text.get_width() // 2, self.option_a_rect.y + 30)
@@ -260,7 +266,7 @@ class Game2State:
                             color=option_b_color, shadow=False)
         if self.selection == "B":
             pygame.draw.rect(self.game.screen, selected_outline, self.option_b_rect, width=4, border_radius=15)
-        option_b_text = self.game.medium_font.render(f"B: {current['option_b']}", True, text_color)
+        option_b_text = self.game.small_font.render(f"B: {current['option_b']}", True, text_color)
         self.game.screen.blit(
             option_b_text,
             (SCREEN_WIDTH // 2 - option_b_text.get_width() // 2, self.option_b_rect.y + 30)
