@@ -24,18 +24,12 @@ class Game2State:
         self.state = "question"  # Zustände: question, transition, result
 
         # Rechtecke für Optionen definieren
-        self.option_a_rect = pygame.Rect(150, 250, SCREEN_WIDTH - 300, 100)
-        self.option_b_rect = pygame.Rect(150, 380, SCREEN_WIDTH - 300, 100)
+        self.option_a_rect = pygame.Rect(100, 240, SCREEN_WIDTH - 200, 80)
+        self.option_b_rect = pygame.Rect(100, 340, SCREEN_WIDTH - 200, 80)
     
     def handle_event(self, event):
-        """Verarbeitet Benutzereingaben"""
         if event.type == pygame.MOUSEBUTTONDOWN and self.state == "question":
             mouse_x, mouse_y = event.pos
-            
-            # Option A Box (oben)
-            #option_a_rect = pygame.Rect(150, 250, SCREEN_WIDTH - 300, 100)
-            # Option B Box (unten)
-            #option_b_rect = pygame.Rect(150, 380, SCREEN_WIDTH - 300, 100)
             
             if self.option_a_rect.collidepoint(mouse_x, mouse_y):
                 self.selection = "A"
@@ -60,7 +54,6 @@ class Game2State:
                 self.answers.append(("B", current["b_type"]))
             
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            # ESC immer erlaubt, außer während der Übergangsanimation?
             self.state = "result"
         
         elif event.type == pygame.MOUSEBUTTONDOWN and self.state == "result":
@@ -99,7 +92,7 @@ class Game2State:
         self.game.screen.fill(BACKGROUND)
         
         # Titel Bereich
-        title = self.game.font.render("Entscheidungsspiel", True, text_color)
+        title = self.game.font.render("This or that", True, text_color)
         self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 30))
         
         # Benutzername anzeigen
@@ -125,45 +118,34 @@ class Game2State:
             self._render_result()
 
     def _render_question(self):
-        """Zeichnet die aktuelle Frage mit Auswahlmöglichkeiten im modernen Layout"""
         current = self.scenarios[self.current_scenario]
 
-        # Fragenkarte (flacher Card-Style)
-        self.game.draw_card(100, 130, SCREEN_WIDTH - 200, 80, color=(255, 255, 255), shadow=False)
-        question_text = self.game.medium_font.render(current["question"], True, TEXT_DARK)
+        # Fragenkarte
+        self.game.draw_card(100, 130, SCREEN_WIDTH - 200, 80, color=BACKGROUND, shadow=False)
+        question_text = self.game.medium_font.render(current["question"], True, text_color)
         self.game.screen.blit(
             question_text, 
             (SCREEN_WIDTH // 2 - question_text.get_width() // 2, 155)
         )
 
         # Option A – Obere Karte
-        #option_a_rect = pygame.Rect(150, 250, SCREEN_WIDTH - 300, 100)
         self.game.draw_card(self.option_a_rect.x, self.option_a_rect.y, self.option_a_rect.width, self.option_a_rect.height,
-                            color=PASSION_PURPLE, shadow=False)
-        option_a_text = self.game.medium_font.render(f"A: {current['option_a']}", True, TEXT_LIGHT)
+                            color=WHITE, shadow=False)
+        option_a_text = self.game.medium_font.render(f"A: {current['option_a']}", True, text_color)
         self.game.screen.blit(
             option_a_text, 
             (SCREEN_WIDTH // 2 - option_a_text.get_width() // 2, self.option_a_rect.y + 30)
         )
 
         # Option B – Untere Karte
-        option_b_rect = pygame.Rect(150, 380, SCREEN_WIDTH - 300, 100)
         self.game.draw_card(self.option_b_rect.x, self.option_b_rect.y, self.option_b_rect.width, self.option_b_rect.height,
-                            color=CHERRY_PINK, shadow=False)
-        option_b_text = self.game.medium_font.render(f"B: {current['option_b']}", True, TEXT_LIGHT)
+                            color=WHITE, shadow=False)
+        option_b_text = self.game.medium_font.render(f"B: {current['option_b']}", True, text_color)
         self.game.screen.blit(
             option_b_text,
             (SCREEN_WIDTH // 2 - option_b_text.get_width() // 2, self.option_b_rect.y + 30)
         )
 
-        # Hinweistext
-        """
-        hint_text = self.game.small_font.render("Wähle die Option, die besser zu dir passt", True, text_color)
-        self.game.screen.blit(
-            hint_text, 
-            (SCREEN_WIDTH // 2 - hint_text.get_width() // 2, SCREEN_HEIGHT - 50)
-        )
-        """
         # Hinweistext + Mini-Blob
         hint_text = self.game.small_font.render("Wähle die Option, die besser zu dir passt", True, text_color)
 
@@ -171,8 +153,8 @@ class Game2State:
         text_x = SCREEN_WIDTH // 2 - hint_text.get_width() // 2
         text_y = SCREEN_HEIGHT - 50
 
-        # Blob-Größe reduzieren (Mini)
-        blob_mini = pygame.transform.scale(BLOB_IMAGE, (32, 32))  # z. B. 32x32 Pixel
+        # Blob-Grösse reduzieren (Mini)
+        blob_mini = pygame.transform.scale(BLOB_IMAGE, (35, 35))  # z. B. 32x32 Pixel
         blob_x = text_x + hint_text.get_width() + 10
         blob_y = text_y - 4  # leicht zentriert zur Textlinie
 
@@ -182,51 +164,47 @@ class Game2State:
 
     
     def _render_transition(self):
-        """Zeigt die gewählte Option kurz animiert hervor"""
         current = self.scenarios[self.current_scenario]
 
         # Fragenkarte
         self.game.draw_card(100, 130, SCREEN_WIDTH - 200, 80, BACKGROUND, shadow=False)
-        question_text = self.game.medium_font.render(current["question"], True, TEXT_DARK)
+        question_text = self.game.medium_font.render(current["question"], True, text_color)
         self.game.screen.blit(
             question_text, 
             (SCREEN_WIDTH // 2 - question_text.get_width() // 2, 155)
         )
 
         # Farben definieren
-        selected_outline = LEMON_YELLOW
-        option_a_color = PASSION_PURPLE
-        option_b_color = CHERRY_PINK
+        selected_outline = DEEP_SEA
+        option_a_color = WHITE
+        option_b_color = WHITE
 
         # Option A
-        # Entferne diese Zeile: option_a_rect = pygame.Rect(150, 250, SCREEN_WIDTH - 300, 100)
         self.game.draw_card(self.option_a_rect.x, self.option_a_rect.y, self.option_a_rect.width, self.option_a_rect.height,
                             color=option_a_color, shadow=False)
         if self.selection == "A":
             pygame.draw.rect(self.game.screen, selected_outline, self.option_a_rect, width=4, border_radius=15)
-        option_a_text = self.game.medium_font.render(f"A: {current['option_a']}", True, TEXT_LIGHT)
+        option_a_text = self.game.medium_font.render(f"A: {current['option_a']}", True, text_color)
         self.game.screen.blit(
             option_a_text, 
             (SCREEN_WIDTH // 2 - option_a_text.get_width() // 2, self.option_a_rect.y + 30)
         )
 
         # Option B
-        # Entferne diese Zeile: option_b_rect = pygame.Rect(150, 380, SCREEN_WIDTH - 300, 100)
         self.game.draw_card(self.option_b_rect.x, self.option_b_rect.y, self.option_b_rect.width, self.option_b_rect.height,
                             color=option_b_color, shadow=False)
         if self.selection == "B":
             pygame.draw.rect(self.game.screen, selected_outline, self.option_b_rect, width=4, border_radius=15)
-        option_b_text = self.game.medium_font.render(f"B: {current['option_b']}", True, TEXT_LIGHT)
+        option_b_text = self.game.medium_font.render(f"B: {current['option_b']}", True, text_color)
         self.game.screen.blit(
             option_b_text,
             (SCREEN_WIDTH // 2 - option_b_text.get_width() // 2, self.option_b_rect.y + 30)
         )
 
     def _render_result(self):
-        """Zeigt den Auswertungsbildschirm im modernen Stil"""
         extraversion_percentage = int((self.extraversion_score / len(self.scenarios)) * 100)
 
-        # Ergebnisse beschreiben
+        # Ergebnisse beschreiben # wird nicht angezeigt
         if extraversion_percentage > 75:
             result_text = "Du bist sehr extravertiert und energiegeladen."
             result_subtext = "Du blühst in sozialen Situationen auf."
@@ -241,7 +219,7 @@ class Game2State:
             result_subtext = "Ruhige Umgebungen geben dir Energie."
 
         # Titel
-        title = self.game.medium_font.render("Dein Ergebnis:", True, PRIMARY)
+        title = self.game.medium_font.render("Dein Ergebnis:", True, text_color)
         self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 130))
 
         # Ergebnistext
@@ -251,7 +229,7 @@ class Game2State:
 
         subtext = self.game.small_font.render(result_subtext, True, TEXT_DARK)
         self.game.screen.blit(subtext, (SCREEN_WIDTH // 2 - subtext.get_width() // 2, 220))
-        """
+
         # Ergebnistext mit automatischem Umbruch
         render_multiline_text(
             self.game.screen, result_text, self.game.small_font, TEXT_DARK,
@@ -261,6 +239,7 @@ class Game2State:
             self.game.screen, result_subtext, self.game.small_font, TEXT_DARK,
             150, 220, SCREEN_WIDTH - 300, 25
         )
+        """
 
         # Ergebnisbalken
         scale_x = 150
@@ -268,9 +247,9 @@ class Game2State:
         scale_width = SCREEN_WIDTH - 300
         scale_height = 30
 
-        self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=COOL_BLUE, shadow=False)
+        self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=WHITE, shadow=False)
         fill_width = int(scale_width * extraversion_percentage / 100)
-        pygame.draw.rect(self.game.screen, POMEGRANATE,
+        pygame.draw.rect(self.game.screen, ACCENT,
                         (scale_x, scale_y, fill_width, scale_height), border_radius=15)
 
         # Labels

@@ -27,21 +27,44 @@ class Game1State:
         self.missed_targets = 0
         self.reaction_times = []
         self.running = False
+        self.state = "intro"  # Neue Zustände: intro, running, result
+        self.neuroticism_score = 0
     
     def handle_event(self, event):
-        if not self.running:
+        if self.state == "intro":
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if hasattr(self, 'start_button_rect') and self.start_button_rect.collidepoint(event.pos):
                     self.initialize()
                     self.running = True
+                    self.state = "running"
                     
                 return
             
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 self.initialize()
                 self.running = True
+                self.state = "running"
             return
+        
+        elif self.state == "result":
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = event.pos
+                
+                # Weiter-Button
+                continue_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+                
+                if continue_button.collidepoint(mouse_x, mouse_y):
+                    # Zum nächsten Spiel übergehen
+                    self.game.transition_to("GAME2")
+                    return
             
+            return
+        
+        # Wenn das Spiel läuft (state == "running")
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = event.pos
+            clicked_shape = None
+
             # Überprüfe, ob eine Form angeklickt wurde
             for i, shape in enumerate(self.shapes):
                 # Distanzberechnung je nach Formtyp
@@ -85,10 +108,11 @@ class Game1State:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 # Spiel vorzeitig beenden und Ergebnisse anzeigen
-                self.end_game()
+                self.calculate_neuroticism()
+                self.state = "result"
     
     def update(self):
-        if not self.running:
+        if self.state != "running":
             return
             
         # Timer aktualisieren
@@ -96,7 +120,8 @@ class Game1State:
             self.time -= 1
         else:
             # Zeit abgelaufen, Spiel beenden
-            self.end_game()
+            self.calculate_neuroticism()
+            self.state = "result"
             return
         
         # Zufällig neue Formen erstellen
@@ -150,10 +175,12 @@ class Game1State:
         title = self.game.font.render("Click & React", True, text_color)
         self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 30))
         
-        if not self.running:
+        if self.state == "intro":
             self._render_instructions()
-        else:
+        elif self.state == "running":
             self._render_game()
+        elif self.state == "result":
+            self._render_result()
     
     def _render_instructions(self):
         """Zeigt die Spielanweisungen vor dem Start an"""      
@@ -254,8 +281,52 @@ class Game1State:
         esc_text = self.game.small_font.render("ESC = Spiel beenden", True, text_color)
         self.game.screen.blit(esc_text, (SCREEN_WIDTH - esc_text.get_width() - 20, SCREEN_HEIGHT - 70))
     
-    def end_game(self):
-        """Beendet das Spiel und berechnet den Neurotizismus-Score"""
+    def _render_result(self):
+        """Zeigt die Ergebnisseite mit dem Neurotizismus-Balken an"""
+        # Titel
+        title = self.game.medium_font.render("Dein Ergebnis:", True, text_color)
+        self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 130))
+
+        # Ergebnisbalken
+        scale_x = 150
+        scale_y = 300
+        scale_width = SCREEN_WIDTH - 300
+        scale_height = 30
+
+        self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=WHITE, shadow=False)
+        fill_width = int(scale_width * self.neuroticism_score / 100)
+        pygame.draw.rect(self.game.screen, ACCENT,
+                       (scale_x, scale_y, fill_width, scale_height), border_radius=15)
+
+        # Labels
+        low_text = self.game.small_font.render("Niedrig", True, TEXT_DARK)
+        high_text = self.game.small_font.render("Hoch", True, TEXT_DARK)
+        self.game.screen.blit(low_text, (scale_x, scale_y + scale_height + 10))
+        self.game.screen.blit(high_text, (scale_x + scale_width - high_text.get_width(), scale_y + scale_height + 10))
+
+        # Neurotizismus Beschriftung mittig über dem Balken
+        neuro_text = self.game.medium_font.render("Neurotizismus", True, text_color)
+        self.game.screen.blit(neuro_text, (SCREEN_WIDTH // 2 - neuro_text.get_width() // 2, scale_y - 70))
+
+        # Prozentsatz über dem Balken
+        percent_text = self.game.medium_font.render(f"{self.neuroticism_score}%", True, text_color)
+        self.game.screen.blit(percent_text,
+                            (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
+
+        # Weiter-Button (modern)
+        button_x, button_y = SCREEN_WIDTH // 2, SCREEN_HEIGHT - 80
+        self.game.draw_modern_button(
+            "Weiter", button_x, button_y, 200, 50,
+            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover=False
+        )
+
+        # Blob visual am unteren Rand
+        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2 + 200
+        blob_y = SCREEN_HEIGHT - BLOB_IMAGE.get_height() - 20
+        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
+    
+    def calculate_neuroticism(self):
+        """Berechnet den Neurotizismus-Score basierend auf den Spielergebnissen"""
         if len(self.reaction_times) > 0:
             avg_reaction_time = sum(self.reaction_times) / len(self.reaction_times)
         else:
@@ -273,10 +344,12 @@ class Game1State:
         error_factor = 1.0 - min(1.0, self.incorrect_clicks / max(1, self.correct_clicks + self.incorrect_clicks))
         
         # Neurotizismus-Score berechnen (0-100 Skala)
-        neuroticism_score = int((speed_factor * 0.7 + error_factor * 0.3) * 100)
+        self.neuroticism_score = int((speed_factor * 0.7 + error_factor * 0.3) * 100)
         
         # Persönlichkeitsmerkmal aktualisieren
-        self.game.personality_traits["neuroticism"] = neuroticism_score
-        
-        # Zum nächsten Spiel übergehen
-        self.game.transition_to("GAME2")
+        self.game.personality_traits["neuroticism"] = self.neuroticism_score
+
+    def end_game(self):
+        """Beendet das Spiel und berechnet den Neurotizismus-Score"""
+        self.calculate_neuroticism()
+        self.state = "result"
