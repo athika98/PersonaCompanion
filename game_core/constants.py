@@ -141,55 +141,127 @@ GAME2_SCENARIOS = [
 ]
 
 # Game3 Muster (Kreativitätsspiel für Offenheit)
+# Verbesserte Muster-Fragen und Antwortoptionen für GAME3_PATTERNS
+
 GAME3_PATTERNS = [
     {
-        "question": "Wie würdest du dieses Muster vervollständigen?",
         "pattern_type": "line_sequence",
+        "question": "Wie würdest du diese Sequenz fortsetzen?",
         "options": [
-            {"name": "A", "description": "Regelmässige Fortsetzung", "value": "conventional", "openness_value": 0},
-            {"name": "B", "description": "Symmetrische Anordnung", "value": "balanced", "openness_value": 1},
-            {"name": "C", "description": "Überraschender Bruch", "value": "creative", "openness_value": 2},
-            {"name": "D", "description": "Komplett neues Element", "value": "highly_creative", "openness_value": 3}
+            {
+                "name": "A",
+                "description": "Eine noch kürzere Linie, immer weiter abnehmend",
+                "value": "regular",
+                "openness_value": 0  # Konventionell, folgt dem offensichtlichen Muster
+            },
+            {
+                "name": "B",
+                "description": "Eine lange Linie, die den Zyklus neu startet",
+                "value": "cycle",
+                "openness_value": 1  # Etwas kreativer, erkennt einen Zyklus
+            },
+            {
+                "name": "C",
+                "description": "Eine horizontale Linie als Kontrast",
+                "value": "contrast",
+                "openness_value": 2  # Kreativer, sucht nach Kontrasten
+            },
+            {
+                "name": "D",
+                "description": "Ein Kreuz aus zwei sich kreuzenden Linien",
+                "value": "complex",
+                "openness_value": 3  # Sehr kreativ, geht über das Grundmuster hinaus
+            }
         ]
     },
     {
-        "question": "Welche Farbanordnung gefällt dir am besten?",
         "pattern_type": "color_arrangement",
+        "question": "Welche Farbe würdest du für das nächste Element wählen?",
         "options": [
-            {"name": "A", "description": "Harmonierende Farben", "value": "conventional", "openness_value": 0},
-            {"name": "B", "description": "Komplementäre Kontraste", "value": "balanced", "openness_value": 1},
-            {"name": "C", "description": "Unerwartete Farbkombination", "value": "creative", "openness_value": 2},
-            {"name": "D", "description": "Experimentelle Farbwahl", "value": "highly_creative", "openness_value": 3}
+            {
+                "name": "A",
+                "description": "Gelb, um das Spektrum fortzusetzen",
+                "value": "expected",
+                "openness_value": 1  # Folgt einer bekannten Logik (Spektrum)
+            },
+            {
+                "name": "B",
+                "description": "Lila nochmal, um den Zyklus zu wiederholen",
+                "value": "repeat",
+                "openness_value": 0  # Konventionell, direkte Wiederholung
+            },
+            {
+                "name": "C",
+                "description": "Schwarz, als starker Kontrast zu den bisherigen Farben",
+                "value": "contrast",
+                "openness_value": 2  # Kreativ, sucht nach Kontrasten
+            },
+            {
+                "name": "D",
+                "description": "Ein Farbverlauf, der alle bisherigen Farben verbindet",
+                "value": "complex",
+                "openness_value": 3  # Sehr kreativ, entwickelt das Konzept weiter
+            }
         ]
     },
     {
-        "question": "Wie würdest du diese Form ergänzen?",
         "pattern_type": "shape_completion",
+        "question": "Wie würdest du den unvollständigen Kreis ergänzen?",
         "options": [
-            {"name": "A", "description": "Schliesse die Form logisch ab", "value": "conventional", "openness_value": 0},
-            {"name": "B", "description": "Füge ähnliche Elemente hinzu", "value": "balanced", "openness_value": 1},
-            {"name": "C", "description": "Verbinde mit neuen Formen", "value": "creative", "openness_value": 2},
-            {"name": "D", "description": "Transformiere in etwas Unerwartetes", "value": "highly_creative", "openness_value": 3}
+            {
+                "name": "A",
+                "description": "Mit einer einfachen Kurve zum perfekten Kreis schliessen",
+                "value": "complete",
+                "openness_value": 0  # Konventionell, schliesst einfach die Form
+            },
+            {
+                "name": "B",
+                "description": "Mit einer eckigen Linie, die ein D formt",
+                "value": "angular",
+                "openness_value": 1  # Etwas kreativer, bricht mit der runden Form
+            },
+            {
+                "name": "C",
+                "description": "Mit einer nach innen führenden Spirale",
+                "value": "spiral",
+                "openness_value": 3  # Sehr kreativ, unerwartete Fortsetzung
+            },
+            {
+                "name": "D",
+                "description": "Mit einer wellenförmigen Linie, die den Kreis schliesst",
+                "value": "wavy",
+                "openness_value": 2  # Kreativ, variiert die Form
+            }
         ]
     },
     {
-        "question": "Welche Lösung spricht dich am meisten an?",
-        "pattern_type": "abstract_pattern",
+        "pattern_type": "weather_sequence",
+        "question": "Wie setzt du diese Wettersequenz fort?",
         "options": [
-            {"name": "A", "description": "Ordnung und Struktur", "value": "conventional", "openness_value": 0},
-            {"name": "B", "description": "Harmonische Balance", "value": "balanced", "openness_value": 1},
-            {"name": "C", "description": "Kreative Neuinterpretation", "value": "creative", "openness_value": 2},
-            {"name": "D", "description": "Völlige Abstraktion", "value": "highly_creative", "openness_value": 3}
-        ]
-    },
-    {
-        "question": "Wie würdest du diese Geschichte fortsetzen?",
-        "pattern_type": "narrative_completion",
-        "options": [
-            {"name": "A", "description": "Logische Fortsetzung", "value": "conventional", "openness_value": 0},
-            {"name": "B", "description": "Mit zusätzlichen Details", "value": "balanced", "openness_value": 1},
-            {"name": "C", "description": "Überraschende Wendung", "value": "creative", "openness_value": 2},
-            {"name": "D", "description": "Völlig unerwartetes Ende", "value": "highly_creative", "openness_value": 3}
+            {
+                "name": "A",
+                "description": "Sonnenschein wieder, ein neuer Tag beginnt",
+                "value": "cycle",
+                "openness_value": 0  # Konventionell, wiederholt den Zyklus
+            },
+            {
+                "name": "B",
+                "description": "Schneefall als nächste Wetterentwicklung",
+                "value": "progression",
+                "openness_value": 1  # Etwas kreativer, logische Progression
+            },
+            {
+                "name": "C",
+                "description": "Regenbogen als Ergebnis von Regen und Sonne",
+                "value": "synthesis",
+                "openness_value": 2  # Kreativ, kombiniert vorherige Elemente
+            },
+            {
+                "name": "D",
+                "description": "Nachthimmel mit Sternen, Tag-Nacht-Zyklus",
+                "value": "conceptual",
+                "openness_value": 3  # Sehr kreativ, erweitert das Konzept
+            }
         ]
     }
 ]

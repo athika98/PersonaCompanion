@@ -293,25 +293,6 @@ class Game2State:
         title = self.game.medium_font.render("Dein Ergebnis:", True, text_color)
         self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 130))
 
-        # Ergebnistext
-        """
-        text = self.game.small_font.render(result_text, True, TEXT_DARK)
-        self.game.screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, 180))
-
-        subtext = self.game.small_font.render(result_subtext, True, TEXT_DARK)
-        self.game.screen.blit(subtext, (SCREEN_WIDTH // 2 - subtext.get_width() // 2, 220))
-
-        # Ergebnistext mit automatischem Umbruch
-        render_multiline_text(
-            self.game.screen, result_text, self.game.small_font, TEXT_DARK,
-            150, 180, SCREEN_WIDTH - 300, 25
-        )
-        render_multiline_text(
-            self.game.screen, result_subtext, self.game.small_font, TEXT_DARK,
-            150, 220, SCREEN_WIDTH - 300, 25
-        )
-        """
-
         # Ergebnisbalken
         scale_x = 150
         scale_y = 300
@@ -330,23 +311,9 @@ class Game2State:
         self.game.screen.blit(extro_text, (scale_x + scale_width - extro_text.get_width(), scale_y + scale_height + 10))
 
         # Prozentsatz über dem Balken
-        percent_text = self.game.medium_font.render(f"{extraversion_percentage}%", True, PRIMARY)
+        percent_text = self.game.medium_font.render(f"{extraversion_percentage}%", True, text_color)
         self.game.screen.blit(percent_text,
                             (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
-
-        # Antwortübersicht
-        """
-        summary_title = self.game.small_font.render("Antwortübersicht:", True, NEUTRAL)
-        self.game.screen.blit(summary_title, (scale_x, 380))
-
-        y_pos = 410
-        for i, (choice, trait) in enumerate(self.answers):
-            trait_color = POMEGRANATE if trait == "extravert" else COOL_BLUE
-            summary = self.game.small_font.render(
-                f"Frage {i+1}: Option {choice} ({trait.capitalize()})", True, trait_color)
-            self.game.screen.blit(summary, (scale_x + 20, y_pos))
-            y_pos += 30
-        """
 
         # Weiter-Button (modern)
         button_x = SCREEN_WIDTH // 2
