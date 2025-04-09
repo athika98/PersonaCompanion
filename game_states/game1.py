@@ -264,7 +264,7 @@ class Game1State:
             x = random.randint(150, SCREEN_WIDTH - 150)
             y = random.randint(170, SCREEN_HEIGHT - 220)
             
-            # Zufällige Größe
+            # Zufällige Grösse
             size = random.randint(20, 40)
             
             # Zufällige Farbe aus der Farbpalette
@@ -318,7 +318,7 @@ class Game1State:
                     self.missed_targets += 1
                     
                     # Messen, ob ein "einfacher" Kreis verpasst wurde 
-                    # (groß und länger sichtbar - deutet auf Unaufmerksamkeit hin)
+                    # (gross und länger sichtbar - deutet auf Unaufmerksamkeit hin)
                     if shape['size'] > 30 and shape['spawn_time'] < current_time - 1500:
                         self.missed_easy_targets += 1
                 self.shapes.pop(i)
@@ -351,15 +351,13 @@ class Game1State:
         # Erklärungstext
         explanation_text = [
             f"Hallo {self.game.user_name}!",
-            "Fangen wir mit einem Test deiner emotionalen Reaktionsfähigkeit an.",
-            "Verschiedene Formen werden auf dem Bildschirm erscheinen.",
-            "Deine Aufgabe ist es, nur auf die Kreise zu klicken und alle anderen Formen zu ignorieren.",
+            "Bereit für einen kleinen Reaktionstest?",
+            "Klicke nur auf die Kreise - alles andere kannst du ignorieren.",
             "Das Spiel wechselt zwischen verschiedenen Phasen:",
             "- Normalphasen: Entspanntes Spielen mit ausgewogenem Tempo",
             "- Stressphasen: Schnelleres Tempo, mehr Formen",
             "- Erholungsphasen: Langsameres Tempo, leichtere Herausforderung",
             "- Frustrationsphasen: Technik 'hakt', manche Klicks werden nicht registriert",
-            "",
             "Das Spiel misst, wie du mit den verschiedenen Situationen umgehst."
         ]
         
@@ -516,7 +514,7 @@ class Game1State:
                 pygame.draw.polygon(self.game.screen, color, points)
 
         # Timer-Balken zeichnen
-        progress = self.time / (60 * 45) # Prozent der Zeit übrig
+        progress = self.time / (60 * 60) # Prozent der Zeit übrig
         
         # Phasen-spezifischer Balken
         bar_color = time_colors[self.current_phase]
@@ -527,9 +525,6 @@ class Game1State:
         stats_text = self.game.small_font.render(
             f"Korrekt: {self.correct_clicks}   |   Falsch: {self.incorrect_clicks}", True, text_color)
         self.game.screen.blit(stats_text, (50, SCREEN_HEIGHT - 70))
-
-        esc_text = self.game.small_font.render("ESC = Spiel beenden", True, text_color)
-        self.game.screen.blit(esc_text, (SCREEN_WIDTH - esc_text.get_width() - 20, SCREEN_HEIGHT - 70))
     
     def advance_to_next_phase(self):
         """Wechselt zur nächsten Spielphase"""
@@ -598,7 +593,7 @@ class Game1State:
             points.append((point_x, point_y))
             
             # Komponenten-Namen zeichnen
-            label_radius = radius + 20  # Etwas außerhalb des Kreises
+            label_radius = radius + 20  # Etwas ausserhalb des Kreises
             label_x = center_x + label_radius * math.cos(angle)
             label_y = center_y + label_radius * math.sin(angle)
             
@@ -648,7 +643,7 @@ class Game1State:
             normal_acc = phase_performances["normal"]["accuracy"]
             stress_acc = phase_performances["stress"]["accuracy"]
             
-            # Je größer der Unterschied, desto niedriger die Stabilität
+            # Je grösser der Unterschied, desto niedriger die Stabilität
             performance_stability = 1.0 - min(1.0, abs(normal_acc - stress_acc) * 2)
         
         # (b) Frustrations-Indikatoren
@@ -735,46 +730,40 @@ class Game1State:
             self.game.screen.blit(rendered, (x, y))
     
     def _render_result(self):
-        """Zeigt die Ergebnisseite mit dem Neurotizismus-Balken und emotionalen Komponenten an"""
+        """Zeigt die Ergebnisseite mit dem Neurotizismus-Balken an"""
         # Titel
         title = self.game.medium_font.render("Dein Ergebnis:", True, text_color)
-        self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 100))
+        self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 130))
         
-        # Hauptkomponente (Neurotizismus) als Balken anzeigen
+        # Ergebnisbalken
         scale_x = 150
-        scale_y = 160
+        scale_y = 300
         scale_width = SCREEN_WIDTH - 300
         scale_height = 30
         
         self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=WHITE, shadow=False)
         fill_width = int(scale_width * self.neuroticism_score / 100)
         pygame.draw.rect(self.game.screen, ACCENT,
-                       (scale_x, scale_y, fill_width, scale_height), border_radius=15)
+                    (scale_x, scale_y, fill_width, scale_height), border_radius=15)
         
-        # Labels für Neurotizismus
-        low_text = self.game.small_font.render("Emotionsstabil", True, TEXT_DARK)
-        high_text = self.game.small_font.render("Emotional reaktiv", True, TEXT_DARK)
+        # Labels
+        low_text = self.game.small_font.render("Niedrig", True, TEXT_DARK)
+        high_text = self.game.small_font.render("Hoch", True, TEXT_DARK)
         self.game.screen.blit(low_text, (scale_x, scale_y + scale_height + 10))
         self.game.screen.blit(high_text, (scale_x + scale_width - high_text.get_width(), scale_y + scale_height + 10))
         
         # Neurotizismus Beschriftung mittig über dem Balken
-        neuro_text = self.game.medium_font.render("Emotionale Stabilität", True, text_color)
-        self.game.screen.blit(neuro_text, (SCREEN_WIDTH // 2 - neuro_text.get_width() // 2, scale_y - 35))
+        neuro_text = self.game.medium_font.render("Neurotizismus", True, text_color)
+        self.game.screen.blit(neuro_text, (SCREEN_WIDTH // 2 - neuro_text.get_width() // 2, scale_y - 70))
         
         # Prozentsatz über dem Balken
         percent_text = self.game.medium_font.render(f"{self.neuroticism_score}%", True, text_color)
         self.game.screen.blit(percent_text,
-                             (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
-        
-        # Detaillierte Ergebnisse je nach Neurotizismus-Score
-        self.draw_neuroticism_description(scale_y + 65)
-        
-        # Die 5 Komponenten in einem Radar-Chart darstellen
-        self.draw_neuroticism_components(SCREEN_WIDTH // 2, 390, 100)
+                            (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
         
         # Weiter-Button mit Hover-Effekt
         button_x = SCREEN_WIDTH // 2
-        button_y = SCREEN_HEIGHT - 60
+        button_y = SCREEN_HEIGHT - 80
         button_width = 200
         button_height = 50
         
@@ -798,3 +787,8 @@ class Game1State:
             button_width,
             button_height
         )
+        
+        # Blob visual am unteren Rand
+        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2 + 200
+        blob_y = SCREEN_HEIGHT - BLOB_IMAGE.get_height() - 20
+        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
