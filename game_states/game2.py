@@ -26,7 +26,7 @@ class Game2State:
         # Schieberegler-Eigenschaften - Der zentrale Verbesserungspunkt
         self.slider = {
             "x": SCREEN_WIDTH // 2,
-            "y": 350,
+            "y": 380,
             "width": 400,
             "height": 20,
             "knob_radius": 15,
@@ -39,13 +39,25 @@ class Game2State:
 
         # Definiere die Breite der Boxes für A und B
         box_width = SCREEN_WIDTH - 100  
-
-        # Berechne die x-Position, um die Boxes zu zentrieren
         x_position = (SCREEN_WIDTH - box_width) // 2
 
         # Definiere die Rechtecke für die Optionen
         self.option_a_rect = pygame.Rect(x_position, 240, box_width, 80)
         self.option_b_rect = pygame.Rect(x_position, 340, box_width, 80)
+
+    def classify_position(self, value):
+        """Kategorisiert die Slider-Position in beschreibende Klassen"""
+        if value < 25:
+            return "introvert_strong"
+        elif value < 45:
+            return "introvert_leaning"
+        elif value <= 55:
+            return "balanced"
+        elif value <= 75:
+            return "extravert_leaning"
+        else:
+            return "extravert_strong"
+
 
     def handle_event(self, event):
         if self.state == "intro":
@@ -113,20 +125,21 @@ class Game2State:
                 self.game.states["GAME3"].initialize()
     
     def record_answer(self):
-        """Zeichnet die Antwort basierend auf der Schieberegler-Position auf"""
-        extraversion_value = self.slider["position"] / 100.0
-        self.extraversion_score += extraversion_value
-        
-        # Bestimme, ob die Antwort eher introvertiert oder extravertiert ist
-        answer_type = "introvert" if extraversion_value < 0.5 else "extravert"
-        
-        # Speichere die Antwort mit dem exakten Wert
+        """Zeichnet die Antwort basierend auf der Schieberegler-Position auf und berechnet Zwischenstand"""
+        value = self.slider["position"] / 100.0
+        classification = self.classify_position(self.slider["position"])
+
         self.answers.append({
             "scenario": self.current_scenario,
-            "value": extraversion_value,
-            "type": answer_type
+            "value": value,
+            "classification": classification,
+            "weight": 1.0  # kann später angepasst werden
         })
-        
+
+        self.extraversion_score += value  # optional als legacy beibehalten
+
+        self.slider["position"] = 50  # Reset Slider
+
         # Bereite den nächsten Schieberegler vor
         self.slider["position"] = 50  # Reset auf Mitte
     
@@ -234,68 +247,107 @@ class Game2State:
         self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
 
     def _render_question(self):
-        """Zeigt die aktuelle Frage mit Schieberegler"""
+        """Zeigt die aktuelle Frage mit verbessertem Schieberegler"""
         current = self.scenarios[self.current_scenario]
 
-        # Fragenkarte
-        self.game.draw_card(100, 130, SCREEN_WIDTH - 200, 80, color=BACKGROUND, shadow=False)
+        # Frage ganz oben platzieren
+        self.game.draw_card(100, 120, SCREEN_WIDTH - 200, 80, color=BACKGROUND, shadow=False)
         question_text = self.game.medium_font.render(current["question"], True, text_color)
         self.game.screen.blit(
             question_text, 
-            (SCREEN_WIDTH // 2 - question_text.get_width() // 2, 155)
+            (SCREEN_WIDTH // 2 - question_text.get_width() // 2, 145)
         )
 
-        # Option A – Introvertierte Option (links)
-        self.game.draw_card(self.option_a_rect.x, self.option_a_rect.y, self.option_a_rect.width, self.option_a_rect.height,
+        # Schieberegler vergrößern und zeichnen
+        slider = self.slider
+        slider["width"] = 500  # Breiter machen
+        slider_start_x = slider["x"] - slider["width"] // 2
+        slider_end_x = slider_start_x + slider["width"]
+        
+        # Erweiterte Boxbreite für längeren Text
+        box_width = 700  # Noch breiter machen
+        box_height = 70
+        offset_y = 120 # Abstand vom Slider nach oben
+
+        # Zentriert horizontal
+        center_x = SCREEN_WIDTH // 2 - box_width // 2
+        
+        # Option A - Links (introvertierte Option) - OBERHALB des Schiebereglers
+        option_a_rect = pygame.Rect(center_x, slider["y"] - offset_y - box_height - 10, box_width, box_height)
+        self.game.draw_card(option_a_rect.x, option_a_rect.y, option_a_rect.width, option_a_rect.height,
                             color=WHITE, shadow=False)
-        option_a_text = self.game.small_font.render(current["option_b"], True, text_color)  # Option B ist introvertiert
+        option_a_text = self.game.small_font.render(current["option_b"], True, text_color)
+        
+        # Zentriere den Text in der Box
         self.game.screen.blit(
             option_a_text, 
-            (SCREEN_WIDTH // 2 - option_a_text.get_width() // 2, self.option_a_rect.y + 30)
+            (option_a_rect.x + option_a_rect.width // 2 - option_a_text.get_width() // 2, 
+            option_a_rect.y + option_a_rect.height // 2 - option_a_text.get_height() // 2)
         )
 
-        # Option B – Extravertierte Option (rechts)
-        self.game.draw_card(self.option_b_rect.x, self.option_b_rect.y, self.option_b_rect.width, self.option_b_rect.height,
+        # Option B - Rechts (extravertierte Option) - OBERHALB des Schiebereglers
+        option_b_rect = pygame.Rect(center_x, slider["y"] - offset_y, box_width, box_height)
+        self.game.draw_card(option_b_rect.x, option_b_rect.y, option_b_rect.width, option_b_rect.height,
                             color=WHITE, shadow=False)
-        option_b_text = self.game.small_font.render(current["option_a"], True, text_color)  # Option A ist extravertiert
+        option_b_text = self.game.small_font.render(current["option_a"], True, text_color)
+        
+        # Zentriere den Text in der Box
         self.game.screen.blit(
             option_b_text,
-            (SCREEN_WIDTH // 2 - option_b_text.get_width() // 2, self.option_b_rect.y + 30)
+            (option_b_rect.x + option_b_rect.width // 2 - option_b_text.get_width() // 2,
+            option_b_rect.y + option_b_rect.height // 2 - option_b_text.get_height() // 2)
         )
         
         # Schieberegler zeichnen
-        slider = self.slider
-        slider_start_x = slider["x"] - slider["width"] // 2
-        
         # Slider-Hintergrund
         pygame.draw.rect(self.game.screen, TEXT_LIGHT, 
-                       (slider_start_x, slider["y"], slider["width"], slider["height"]), 
-                       border_radius=slider["height"] // 2)
+                    (slider_start_x, slider["y"], slider["width"], slider["height"]), 
+                    border_radius=slider["height"] // 2)
         
         # Gefüllter Teil
         fill_width = int(slider["width"] * slider["position"] / 100)
         pygame.draw.rect(self.game.screen, ACCENT, 
-                       (slider_start_x, slider["y"], fill_width, slider["height"]), 
-                       border_radius=slider["height"] // 2)
+                    (slider_start_x, slider["y"], fill_width, slider["height"]), 
+                    border_radius=slider["height"] // 2)
         
         # Knopf zeichnen
         knob_x = slider_start_x + fill_width
         pygame.draw.circle(self.game.screen, HONEY_YELLOW, 
-                          (knob_x, slider["y"] + slider["height"] // 2), 
-                          slider["knob_radius"])
+                        (knob_x, slider["y"] + slider["height"] // 2), 
+                        slider["knob_radius"])
         
-        # Aktuelle Position-Prozent zeichnen
-        position_text = self.game.small_font.render(f"{slider['position']}%", True, text_color)
+        # Beschriftungen für die Enden des Schiebereglers
+        option_a_label = self.game.small_font.render("Option A", True, text_color)
+        option_b_label = self.game.small_font.render("Option B", True, text_color)
+        
+        self.game.screen.blit(option_a_label, (slider_start_x - option_a_label.get_width() // 2, slider["y"] + 25))
+        self.game.screen.blit(option_b_label, (slider_end_x - option_b_label.get_width() // 2, slider["y"] + 25))
+        
+        # Aktuelle Position visualisieren
+        position_text = self.game.small_font.render(f"Deine Position: {slider['position']}%", True, text_color)
         self.game.screen.blit(position_text, 
-                           (slider_start_x + fill_width - position_text.get_width() // 2, 
+                        (SCREEN_WIDTH // 2 - position_text.get_width() // 2, 
                             slider["y"] + slider["height"] + 20))
         
-        # Spektrum-Beschriftungen
-        introvert_text = self.game.small_font.render("Introvertiert", True, COOL_BLUE)
-        extravert_text = self.game.small_font.render("Extravertiert", True, POMEGRANATE)
+        # Visuelle Beschriftungen für die Tendenzen
+        position = slider["position"]
+        tendency_text = ""
         
-        self.game.screen.blit(introvert_text, (slider_start_x - 10 - introvert_text.get_width(), slider["y"]))
-        self.game.screen.blit(extravert_text, (slider_start_x + slider["width"] + 10, slider["y"]))
+        if position < 25:
+            tendency_text = "Starke Tendenz zu Option A"
+        elif position < 45:
+            tendency_text = "Tendenz zu Option A"
+        elif position <= 55:
+            tendency_text = "Ausgewogen zwischen beiden Optionen"
+        elif position <= 75:
+            tendency_text = "Tendenz zu Option B" 
+        else:
+            tendency_text = "Starke Tendenz zu Option B"
+            
+        tendency_label = self.game.small_font.render(tendency_text, True, PRIMARY)
+        self.game.screen.blit(tendency_label, 
+                            (SCREEN_WIDTH // 2 - tendency_label.get_width() // 2, 
+                            slider["y"] + slider["height"] + 50))
 
         # Weiter-Button
         button_x = SCREEN_WIDTH // 2
@@ -325,38 +377,43 @@ class Game2State:
         )
         
         # Hinweistext
-        hint_text = self.game.small_font.render("Ziehe den Schieberegler zwischen den Optionen", True, text_color)
-        self.game.screen.blit(hint_text, (SCREEN_WIDTH // 2 - hint_text.get_width() // 2, SCREEN_HEIGHT - 110))
-    
+        hint_text = self.game.small_font.render("Ziehe den Schieberegler zwischen den beiden Optionen", True, text_color)
+        self.game.screen.blit(hint_text, (SCREEN_WIDTH // 2 - hint_text.get_width() // 2, SCREEN_HEIGHT - 130))
+
     def _render_transition(self):
         """Zeigt den Übergangsbildschirm zwischen Fragen"""
         current = self.scenarios[self.current_scenario]
 
+        slider = self.slider
+
         # Fragenkarte
-        self.game.draw_card(100, 130, SCREEN_WIDTH - 200, 80, BACKGROUND, shadow=False)
+        self.game.draw_card(100, 120, SCREEN_WIDTH - 200, 80, BACKGROUND, shadow=False)
         question_text = self.game.medium_font.render(current["question"], True, text_color)
         self.game.screen.blit(
             question_text, 
-            (SCREEN_WIDTH // 2 - question_text.get_width() // 2, 155)
+            (SCREEN_WIDTH // 2 - question_text.get_width() // 2, 145)
         )
 
-        # Option A – Introvertierte Option
-        self.game.draw_card(self.option_a_rect.x, self.option_a_rect.y, self.option_a_rect.width, self.option_a_rect.height,
-                            color=WHITE, shadow=False)
-        option_a_text = self.game.small_font.render(current["option_b"], True, text_color)  # Option B ist introvertiert
-        self.game.screen.blit(
-            option_a_text, 
-            (SCREEN_WIDTH // 2 - option_a_text.get_width() // 2, self.option_a_rect.y + 30)
-        )
+        box_width = 700  # Noch breiter machen
+        box_height = 70
+        offset_y = 120 # Abstand vom Slider nach oben
+        center_x = SCREEN_WIDTH // 2 - box_width // 2
 
-        # Option B – Extravertierte Option
-        self.game.draw_card(self.option_b_rect.x, self.option_b_rect.y, self.option_b_rect.width, self.option_b_rect.height,
-                            color=WHITE, shadow=False)
-        option_b_text = self.game.small_font.render(current["option_a"], True, text_color)  # Option A ist extravertiert
-        self.game.screen.blit(
-            option_b_text,
-            (SCREEN_WIDTH // 2 - option_b_text.get_width() // 2, self.option_b_rect.y + 30)
-        )
+        # A-Box zeichnen
+        option_a_rect = pygame.Rect(center_x, slider["y"] - offset_y - box_height - 10, box_width, box_height)
+        self.game.draw_card(option_a_rect.x, option_a_rect.y, option_a_rect.width, option_a_rect.height, color=WHITE, shadow=False)
+        option_a_text = self.game.small_font.render(current["option_b"], True, text_color)
+        self.game.screen.blit(option_a_text,
+            (option_a_rect.x + option_a_rect.width // 2 - option_a_text.get_width() // 2,
+            option_a_rect.y + option_a_rect.height // 2 - option_a_text.get_height() // 2))
+
+        # B-Box zeichnen
+        option_b_rect = pygame.Rect(center_x, slider["y"] - offset_y, box_width, box_height)
+        self.game.draw_card(option_b_rect.x, option_b_rect.y, option_b_rect.width, option_b_rect.height, color=WHITE, shadow=False)
+        option_b_text = self.game.small_font.render(current["option_a"], True, text_color)
+        self.game.screen.blit(option_b_text,
+            (option_b_rect.x + option_b_rect.width // 2 - option_b_text.get_width() // 2,
+            option_b_rect.y + option_b_rect.height // 2 - option_b_text.get_height() // 2))
         
         # Schieberegler in der ausgewählten Position zeichnen
         slider = self.slider
@@ -381,7 +438,10 @@ class Game2State:
 
     def _render_result(self):
         """Zeigt das Ergebnis der Extraversionsbestimmung"""
-        extraversion_percentage = int((self.extraversion_score / len(self.scenarios)) * 100)
+        sum_weighted_scores = sum([a["value"] * a.get("weight", 1.0) for a in self.answers])
+        sum_weights = sum([a.get("weight", 1.0) for a in self.answers])
+        extraversion_percentage = int((sum_weighted_scores / sum_weights) * 100)
+
 
         # Ergebnisse beschreiben
         if extraversion_percentage > 75:
@@ -454,3 +514,51 @@ class Game2State:
         blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2 + 200
         blob_y = SCREEN_HEIGHT - BLOB_IMAGE.get_height() - 20
         self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
+
+    def _wrap_text(self, text_surface, max_width):
+        """Bricht Text um, wenn er zu lang für eine Zeile ist"""
+        if text_surface.get_width() <= max_width:
+            return [text_surface]
+        
+        # Wenn der Text zu breit ist, verwenden wir direkt den String
+        original_text = text_surface.get_string() if hasattr(text_surface, 'get_string') else text_surface
+        
+        # Wenn text_surface ein Surface ist, müssen wir den Text anders bekommen
+        if isinstance(text_surface, pygame.Surface):
+            # Da wir den originalen Text nicht direkt aus der Surface bekommen können,
+            # erstellen wir eine neue Textwrapping-Funktion, die neue Oberflächen erzeugt
+            
+            # Wir teilen den Text einfach in Hälften
+            words = original_text.split(' ') if isinstance(original_text, str) else []
+            if not words:
+                return [text_surface]  # Fallback, wenn wir keinen Text extrahieren können
+                
+            mid = len(words) // 2
+            line1 = ' '.join(words[:mid])
+            line2 = ' '.join(words[mid:])
+            
+            return [
+                self.game.small_font.render(line1, True, text_color),
+                self.game.small_font.render(line2, True, text_color)
+            ]
+        
+        # Für Strings (falls die Funktion mit Strings aufgerufen wird)
+        words = original_text.split()
+        lines = []
+        current_line = []
+        
+        for word in words:
+            test_line = current_line + [word]
+            test_surface = self.game.small_font.render(' '.join(test_line), True, text_color)
+            
+            if test_surface.get_width() <= max_width:
+                current_line = test_line
+            else:
+                if current_line:  # Falls die aktuelle Zeile nicht leer ist
+                    lines.append(self.game.small_font.render(' '.join(current_line), True, text_color))
+                current_line = [word]
+        
+        if current_line:  # Letzte Zeile hinzufügen
+            lines.append(self.game.small_font.render(' '.join(current_line), True, text_color))
+        
+        return lines

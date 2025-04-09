@@ -69,76 +69,77 @@ BLOB_IMAGE = pygame.transform.smoothscale(BLOB_IMAGE, (150, 150))  # Grösse anp
 # Game2 Szenarien (Extraversionsspiel) - Erweitert und differenzierter
 GAME2_SCENARIOS = [
     {
-        "question": "Wenn du auf einer grösseren Veranstaltung ankommst:",
-        "option_a": "Geniesst du es, neue Gespräche zu beginnen und dich mit verschiedenen Personen zu unterhalten",
-        "option_b": "Suchst du zuerst nach bekannten Gesichtern oder beobachtest die Umgebung, bevor du interagierst",
+        "question": "Du nimmst an einem beruflichen Networking-Event teil:",
+        "option_a": "Du kommst schnell mit vielen Leuten ins Gespräch und wechselst oft die Gesprächspartner",
+        "option_b": "Du bleibst bei wenigen Kontakten, führst dafür aber tiefere Gespräche",
         "a_type": "extravert",
         "b_type": "introvert"
     },
     {
-        "question": "Bei einer Gruppenarbeit fühlst du dich energiegeladener, wenn:",
-        "option_a": "Du deine Gedanken laut aussprechen und mit anderen diskutieren kannst",
-        "option_b": "Du Zeit bekommst, deine Ideen zu durchdenken, bevor du sie teilst",
+        "question": "Ein Freund schlägt spontan vor, heute Abend mit mehreren Leuten auszugehen:",
+        "option_a": "Du bist sofort begeistert und sagst zu – je mehr Leute, desto besser",
+        "option_b": "Du überlegst kurz, ob dir das heute zu viel ist, und entscheidest dich eher für einen ruhigen Abend",
         "a_type": "extravert",
         "b_type": "introvert"
     },
     {
-        "question": "Nach einem intensiven sozialen Wochenende:",
-        "option_a": "Fühlst du dich inspiriert und bereit für die neue Woche",
-        "option_b": "Brauchst du Zeit zum Aufladen und um wieder zu dir selbst zu finden",
+        "question": "Du sitzt im Wartezimmer und bemerkst eine andere Person, die du nicht kennst:",
+        "option_a": "Du findest es interessant, ein Gespräch zu beginnen",
+        "option_b": "Du bleibst lieber bei dir und nutzt die Zeit für dich",
         "a_type": "extravert",
         "b_type": "introvert"
     },
     {
-        "question": "Wenn du vor einer wichtigen Entscheidung stehst:",
-        "option_a": "Diskutierst du gerne mit mehreren Personen, um verschiedene Meinungen zu hören",
-        "option_b": "Recherchierst du lieber selbst und verarbeitest Informationen in Ruhe",
+        "question": "In einer Gruppenarbeit wirst du gebeten, die Leitung zu übernehmen:",
+        "option_a": "Du übernimmst gerne die Führung und strukturierst die Aufgaben aktiv",
+        "option_b": "Du fühlst dich wohler in einer unterstützenden Rolle ohne viel Sichtbarkeit",
         "a_type": "extravert",
         "b_type": "introvert"
     },
     {
-        "question": "Im Urlaub bevorzugst du:",
-        "option_a": "Einen Ort mit vielen Aktivitäten und Möglichkeiten, andere Reisende kennenzulernen",
-        "option_b": "Einen ruhigen Ort, an dem du die Umgebung in deinem eigenen Tempo erkunden kannst",
+        "question": "Dein Kalender ist an einem Wochenende leer:",
+        "option_a": "Du planst direkt, Freunde zu treffen oder an einer Veranstaltung teilzunehmen",
+        "option_b": "Du geniesst die unverplante Zeit für dich und deine Hobbys",
         "a_type": "extravert",
         "b_type": "introvert"
     },
     {
-        "question": "In Krisensituationen tendierst du dazu:",
-        "option_a": "Sofort zu handeln und andere einzubeziehen, um Lösungen zu finden",
-        "option_b": "Erst die Situation zu analysieren und einen Plan zu entwickeln, bevor du handelst",
+        "question": "Bei Diskussionen in grösseren Gruppen:",
+        "option_a": "Du sprichst schnell deine Gedanken aus und diskutierst gerne offen",
+        "option_b": "Du denkst lieber länger nach, bevor du dich mit einem Punkt einbringst",
         "a_type": "extravert",
         "b_type": "introvert"
     },
     {
-        "question": "Wie verhältst du dich in Online-Meetings oder Videokonferenzen?",
-        "option_a": "Du sprichst oft, teilst deine Gedanken und bringst dich aktiv ein",
-        "option_b": "Du hörst aufmerksam zu und sprichst nur, wenn du einen durchdachten Beitrag hast",
+        "question": "In einer fremden Umgebung (z. B. auf Reisen oder bei neuen Gruppen):",
+        "option_a": "Du bist neugierig und kommst schnell ins Gespräch",
+        "option_b": "Du beobachtest erst, fühlst dich aber wohl damit, zunächst zurückhaltend zu sein",
         "a_type": "extravert",
         "b_type": "introvert"
     },
     {
-        "question": "Bei einem Tag ohne feste Pläne:",
-        "option_a": "Suchst du spontan nach Aktivitäten oder kontaktierst Freunde für gemeinsame Unternehmungen",
-        "option_b": "Geniesst du die Zeit für dich, eigene Projekte oder entspannte Aktivitäten",
+        "question": "Du hast einen vollen Arbeitstag hinter dir:",
+        "option_a": "Ein Treffen mit Freunden gibt dir neue Energie",
+        "option_b": "Du brauchst Zeit allein, um dich wieder aufzuladen",
         "a_type": "extravert",
         "b_type": "introvert"
     },
     {
-        "question": "Wenn du ein neues Hobby oder eine neue Fähigkeit lernst:",
-        "option_a": "Bevorzugst du Gruppenunterricht, wo du von der Energie und dem Feedback anderer profitieren kannst",
-        "option_b": "Lernst du lieber in deinem eigenen Tempo mit Büchern, Videos oder 1:1-Unterricht",
+        "question": "In deiner Freizeit...",
+        "option_a": "...suchst du aktiv neue Erlebnisse und Gruppenaktivitäten",
+        "option_b": "...verbringst du gerne Zeit mit vertrauten Personen oder bei dir selbst",
         "a_type": "extravert",
         "b_type": "introvert"
     },
     {
-        "question": "Bei einem erfolgreichen Projekt oder Erlebnis:",
-        "option_a": "Möchtest du es sofort mit anderen teilen und feiern",
-        "option_b": "Verarbeitest du es erst für dich und teilst es später selektiv mit ausgewählten Personen",
+        "question": "Wenn du eine Präsentation halten musst:",
+        "option_a": "Du freust dich, deine Ideen vor anderen zu präsentieren",
+        "option_b": "Du bist lieber gut vorbereitet, aber angespannt vor der Gruppe zu stehen",
         "a_type": "extravert",
         "b_type": "introvert"
     }
 ]
+
 
 # Game3 Muster (Kreativitätsspiel für Offenheit)
 # Verbesserte Muster-Fragen und Antwortoptionen für GAME3_PATTERNS
