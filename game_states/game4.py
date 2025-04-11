@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 """
 Game4State - Das verbesserte Organisationsspiel
 Misst Gewissenhaftigkeit durch Organisation von Objekten in zwei Phasen
 """
-
 import pygame
 import random
+import math
 from game_core.constants import *
 
 class Game4State:
@@ -19,11 +18,15 @@ class Game4State:
         self.state = "instruction"  # Zustände: instruction, phase1, transition, phase2, result
         self.phase = 1  # Aktuelle Phase (1 oder 2)
         self.conscientiousness_score = 0
-        self.time_remaining = 60 * 30  # 30 Sekunden für Phase 1
+        self.time_remaining = 60 * 40  # 40 Sekunden für Phase 1
         self.timer_active = False
         self.dragging_item = None
         self.drag_offset = (0, 0)
         self.categories = {}  # Speichert, welche Objekte in welchen Kategorien landen
+        
+        # Reset-Zähler initialisieren
+        self.reset_count_phase1 = 0
+        self.reset_count_phase2 = 0
         
         # Ergebnisse der beiden Phasen
         self.phase1_results = {
@@ -42,47 +45,76 @@ class Game4State:
         # Button-Rechtecke für die Klickerkennung definieren
         self.start_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50)
         self.continue_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+        self.reset_button_rect = pygame.Rect(SCREEN_WIDTH - 120, 60, 100, 40)  # Neuer Reset-Button
+        
+        # Standardgröße für alle Objekte
+        std_size = [100, 50]
         
         # Zu organisierende Objekte für Phase 1 definieren
+        # Im initialize-Abschnitt, wo die items_phase1 definiert werden:
         self.items_phase1 = [
-            {"id": 1, "type": "book", "name": "Buch: Roman", "color": LILAC_BLUE, "pos": [150, 250], "size": [80, 40], "original_category": "freizeit"},
-            {"id": 2, "type": "book", "name": "Buch: Fachbuch", "color": LILAC_BLUE, "pos": [300, 180], "size": [80, 40], "original_category": "arbeit"},
-            {"id": 3, "type": "document", "name": "Dokument: Rechnung", "color": SOLID_BLUE, "pos": [450, 330], "size": [70, 50], "original_category": "haushalt"},
-            {"id": 4, "type": "document", "name": "Dokument: Bericht", "color": SOLID_BLUE, "pos": [200, 400], "size": [70, 50], "original_category": "arbeit"},
-            {"id": 5, "type": "tool", "name": "Werkzeug: Hammer", "color": SAILING_BLUE, "pos": [550, 200], "size": [60, 45], "original_category": "haushalt"},
-            {"id": 6, "type": "tool", "name": "Werkzeug: Schere", "color": SAILING_BLUE, "pos": [350, 280], "size": [60, 45], "original_category": "haushalt"},
-            {"id": 7, "type": "electronics", "name": "Elektronik: Laptop", "color": SOLID_BLUE, "pos": [500, 380], "size": [85, 50], "original_category": "arbeit"},
-            {"id": 8, "type": "electronics", "name": "Elektronik: Kopfhörer", "color": DIVE_BLUE, "pos": [250, 330], "size": [85, 50], "original_category": "freizeit"},
-            {"id": 9, "type": "food", "name": "Essen: Apfel", "color": DEEP_SEA, "pos": [400, 230], "size": [50, 50], "original_category": "haushalt"},
-            {"id": 10, "type": "food", "name": "Essen: Schokolade", "color": DIVE_BLUE, "pos": [180, 180], "size": [50, 50], "original_category": "freizeit"}
+            {"id": 1, "type": "book", "name": "Roman", "color": LILAC_BLUE, "pos": [150, 250], "size": std_size, "original_category": "freizeit"},
+            {"id": 2, "type": "book", "name": "Lehrbuch", "color": LILAC_BLUE, "pos": [300, 180], "size": std_size, "original_category": "arbeit"},
+            {"id": 3, "type": "document", "name": "Rechnung", "color": SOLID_BLUE, "pos": [450, 330], "size": std_size, "original_category": "haushalt"},
+            {"id": 4, "type": "document", "name": "Protokoll", "color": SOLID_BLUE, "pos": [200, 400], "size": std_size, "original_category": "arbeit"},
+            {"id": 5, "type": "tool", "name": "Werkzeug", "color": SAILING_BLUE, "pos": [550, 200], "size": std_size, "original_category": "haushalt"},
+            {"id": 6, "type": "tool", "name": "Schneider", "color": SAILING_BLUE, "pos": [350, 280], "size": std_size, "original_category": "haushalt"},
+            {"id": 7, "type": "electronics", "name": "Computer", "color": SOLID_BLUE, "pos": [500, 150], "size": std_size, "original_category": "arbeit"},  # Geänderte Position: [500, 380] -> [500, 150]
+            {"id": 8, "type": "electronics", "name": "Hörer", "color": DIVE_BLUE, "pos": [250, 330], "size": std_size, "original_category": "freizeit"},
+            {"id": 9, "type": "food", "name": "Obst", "color": DEEP_SEA, "pos": [400, 230], "size": std_size, "original_category": "haushalt"},
+            {"id": 10, "type": "food", "name": "Süsses", "color": DIVE_BLUE, "pos": [180, 180], "size": std_size, "original_category": "freizeit"}
         ]
-        
+
         # Zusätzliche Objekte für Phase 2
         self.items_phase2 = [
-            {"id": 11, "type": "book", "name": "Buch: Magazin", "color": LILAC_BLUE, "pos": [480, 160], "size": [75, 40], "original_category": "freizeit", "phase": 2},
-            {"id": 12, "type": "document", "name": "Dokument: Rezept", "color": SOLID_BLUE, "pos": [160, 150], "size": [70, 50], "original_category": "haushalt", "phase": 2},
-            {"id": 13, "type": "electronics", "name": "Elektronik: Smartphone", "color": SOLID_BLUE, "pos": [360, 170], "size": [75, 50], "original_category": "arbeit", "phase": 2},
-            {"id": 14, "type": "tool", "name": "Werkzeug: Zange", "color": SAILING_BLUE, "pos": [220, 220], "size": [60, 45], "original_category": "haushalt", "phase": 2},
-            {"id": 15, "type": "food", "name": "Essen: Käse", "color": DIVE_BLUE, "pos": [310, 130], "size": [50, 50], "original_category": "haushalt", "phase": 2}
+            {"id": 11, "type": "book", "name": "Zeitschrift", "color": LILAC_BLUE, "pos": [480, 160], "size": std_size, "original_category": "freizeit", "phase": 2},
+            {"id": 12, "type": "document", "name": "Anleitung", "color": SOLID_BLUE, "pos": [160, 150], "size": std_size, "original_category": "haushalt", "phase": 2},
+            {"id": 13, "type": "electronics", "name": "Mobilgerät", "color": SOLID_BLUE, "pos": [360, 170], "size": std_size, "original_category": "arbeit", "phase": 2},
+            {"id": 14, "type": "tool", "name": "Greifer", "color": SAILING_BLUE, "pos": [220, 220], "size": std_size, "original_category": "haushalt", "phase": 2},
+            {"id": 15, "type": "food", "name": "Milchprodukt", "color": DIVE_BLUE, "pos": [310, 130], "size": std_size, "original_category": "haushalt", "phase": 2}
         ]
         
         # Aktuelle aktive Objekte (zunächst nur Phase 1)
         self.active_items = self.items_phase1.copy()
         
-        # Kategoriebereiche definieren (Container)
+        # Kategoriebereiche definieren (Container) - VERBESSERT mit einzigartigen Farben und Highlight-Status
         self.containers = [
-            {"id": 1, "name": "Kategorie 1", "color": WHITE, "rect": pygame.Rect(100, 450, 200, 100)},
-            {"id": 2, "name": "Kategorie 2", "color": WHITE, "rect": pygame.Rect(325, 450, 200, 100)},
-            {"id": 3, "name": "Kategorie 3", "color": WHITE, "rect": pygame.Rect(550, 450, 200, 100)}
+            {
+                "id": 1, 
+                "name": "Kategorie 1", 
+                "color": WHITE, 
+                "rect": pygame.Rect(100, 450, 200, 100), 
+                "highlight_alpha": 0,
+                "border_color": PRIMARY,
+                "items_count": 0
+            },
+            {
+                "id": 2, 
+                "name": "Kategorie 2", 
+                "color": WHITE, 
+                "rect": pygame.Rect(325, 450, 200, 100), 
+                "highlight_alpha": 0,
+                "border_color": SOLID_BLUE,
+                "items_count": 0
+            },
+            {
+                "id": 3, 
+                "name": "Kategorie 3", 
+                "color": WHITE, 
+                "rect": pygame.Rect(550, 450, 200, 100), 
+                "highlight_alpha": 0,
+                "border_color": DEEP_SEA,
+                "items_count": 0
+            }
         ]
         
         # Ursprüngliche Kategorien für die Auswertung
         self.original_categories = {
-            "arbeit": ["Buch: Fachbuch", "Dokument: Bericht", "Elektronik: Laptop", "Elektronik: Smartphone"],
-            "haushalt": ["Dokument: Rechnung", "Werkzeug: Hammer", "Werkzeug: Schere", "Essen: Apfel", "Dokument: Rezept", "Werkzeug: Zange", "Essen: Käse"],
-            "freizeit": ["Buch: Roman", "Elektronik: Kopfhörer", "Essen: Schokolade", "Buch: Magazin"]
+            "arbeit": ["Lehrbuch", "Protokoll", "Computer", "Mobilgerät"],
+            "haushalt": ["Rechnung", "Werkzeug", "Schneider", "Obst", "Anleitung", "Greifer", "Milchprodukt"],
+            "freizeit": ["Roman", "Hörer", "Süsses", "Zeitschrift"]
         }
-        
+                
         # Kategorie-Zuweisungen initialisieren
         for container in self.containers:
             self.categories[container["id"]] = []
@@ -91,6 +123,12 @@ class Game4State:
         """Verarbeitet Benutzereingaben"""
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Linke Maustaste
             mouse_x, mouse_y = event.pos
+            
+            # Reset-Button - in Phase 1 oder 2
+            if (self.state == "phase1" or self.state == "phase2") and self.timer_active:
+                if self.reset_button_rect.collidepoint(mouse_x, mouse_y):
+                    self.reset_organization()
+                    return
             
             # Anweisungsbildschirm - Start-Button
             if self.state == "instruction":
@@ -158,12 +196,54 @@ class Game4State:
                     mouse_y - self.drag_offset[1]
                 ]
     
+    def reset_organization(self):
+        """Setzt die Organisation durch komplette Neuinitialisierung zurück"""
+        # Aktuellen Zustand speichern
+        current_state = self.state
+        current_phase = self.phase
+        current_time = self.time_remaining
+        
+        # Speichere die bisherigen Zähler
+        old_reset_count_phase1 = self.reset_count_phase1
+        old_reset_count_phase2 = self.reset_count_phase2
+        
+        # Komplett neu initialisieren
+        self.initialize()
+        
+        # Zustand wiederherstellen
+        self.state = current_state
+        self.phase = current_phase
+        self.time_remaining = current_time
+        self.timer_active = True
+        
+        # Reset-Zähler erhöhen
+        if self.state == "phase1":
+            self.reset_count_phase1 = old_reset_count_phase1 + 1
+        else:
+            self.reset_count_phase2 = old_reset_count_phase2 + 1
+            # In Phase 2 müssen wir die Phase-2-Objekte wieder hinzufügen
+            self.active_items.extend(self.items_phase2)
+        
+        # Sofortiges Rendering erzwingen
+        self.render()
+        pygame.display.flip()
+    
     def update(self):
         """Aktualisiert den Spielzustand"""
         if (self.state == "phase1" or self.state == "phase2") and self.timer_active:
             # Timer aktualisieren
             if self.time_remaining > 0:
                 self.time_remaining -= 1
+                
+                # Container highlight animation
+                for container in self.containers:
+                    # Check if mouse is over this container
+                    mouse_pos = pygame.mouse.get_pos()
+                    if container["rect"].collidepoint(mouse_pos) and self.dragging_item:
+                        # Calculate a pulsing alpha value between 30-100 based on time
+                        container["highlight_alpha"] = 50 + int(25 * math.sin(pygame.time.get_ticks() * 0.01))
+                    else:
+                        container["highlight_alpha"] = 0
             else:
                 # Zeit ist abgelaufen
                 self.timer_active = False
@@ -207,26 +287,21 @@ class Game4State:
         """Zeigt den Anweisungsbildschirm für das Organisationsspiel"""
         # Anweisungsbox
         instruction_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250)
-        self.game.draw_card(instruction_rect.x, instruction_rect.y, instruction_rect.width, instruction_rect.height, color=TEXT_LIGHT)
+        self.game.draw_card(instruction_rect.x, instruction_rect.y, instruction_rect.width, instruction_rect.height, color=BACKGROUND)
         
         # Titel
-        instruction_title = self.game.medium_font.render("Wie organisierst du deine Welt?", True, PRIMARY)
+        instruction_title = self.game.medium_font.render("Wie organisierst du deine Welt?", True, text_color)
         self.game.screen.blit(instruction_title, (SCREEN_WIDTH // 2 - instruction_title.get_width() // 2, 150))
         
         # Anweisungstext
         instructions = [
-            "In diesem Spiel geht es darum, verschiedene Objekte zu organisieren.",
-            "Ziehe die Objekte in die drei Kategorien unten auf dem Bildschirm.",
+            "Organisiere Objekte in drei Kategorien - nach Typ, Zweck oder deinem eigenen System.",
+            "Ziehe sie per Drag & Drop in die Bereiche unten auf dem Bildschirm",
             "",
-            "Es gibt verschiedene Möglichkeiten zu organisieren:",
-            "• Nach Objekttyp (Bücher, Werkzeuge, Elektronik, ...)",
-            "• Nach Verwendungszweck (Arbeit, Haushalt, Freizeit)",
-            "• Oder deinem eigenen, kreativen System",
+            "Das Spiel hat zwei Phasen mit Überraschungen!",
+            "Für die erste Phase hast du 40 Sekunden Zeit.",
             "",
-            "Organisiere die Objekte auf deine persönliche Art und Weise.",
-            "Das Spiel ist in zwei Phasen unterteilt - sei bereit für Überraschungen!",
-            "",
-            "Du hast zunächst 30 Sekunden Zeit."
+            "Sei kreativ und folge deinem persönlichen Organisationstalent."
         ]
         
         y_pos = 190
@@ -244,6 +319,12 @@ class Game4State:
             "Start", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 75, 200, 50,
             text_color, TEXT_LIGHT, self.game.medium_font, 25, hover=False
         )
+        
+        # Blob links vom Start-Button positionieren
+        button_left_edge = SCREEN_WIDTH // 2 - 100  # Button ist 200px breit
+        blob_x = button_left_edge - BLOB_IMAGE.get_width() - 30  # 30px Abstand zwischen Blob und Button
+        blob_y = SCREEN_HEIGHT - 145  # Vertikal mit dem Button ausrichten
+        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
     
     def _render_phase(self, phase_number):
         """Zeigt den Organisationsbildschirm für Phase 1 oder 2"""
@@ -255,6 +336,14 @@ class Game4State:
         phase_text = self.game.medium_font.render(f"Phase {phase_number}", True, PRIMARY)
         self.game.screen.blit(phase_text, (SCREEN_WIDTH // 2 - phase_text.get_width() // 2, 60))
         
+        # Reset-Button
+        reset_button_x = self.reset_button_rect.x + self.reset_button_rect.width // 2
+        reset_button_y = self.reset_button_rect.y + self.reset_button_rect.height // 2
+        self.game.draw_modern_button(
+            "Neustart", reset_button_x, reset_button_y, self.reset_button_rect.width, self.reset_button_rect.height,
+            WHITE, POMEGRANATE, self.game.small_font, 15, hover=False
+        )
+        
         # Anweisungstext
         if phase_number == 1:
             instruction_text = self.game.small_font.render("Ziehe die Objekte in die Kategorien!", True, text_color)
@@ -262,22 +351,75 @@ class Game4State:
             instruction_text = self.game.small_font.render("Neue Objekte sind hinzugekommen! Passe dein System an.", True, POMEGRANATE)
         self.game.screen.blit(instruction_text, (SCREEN_WIDTH // 2 - instruction_text.get_width() // 2, 90))
         
-        # Kategoriebereiche zeichnen
+        # Kategoriebereiche zeichnen - VERBESSERT
         for container in self.containers:
-            self.game.draw_card(container["rect"].x, container["rect"].y, 
-                             container["rect"].width, container["rect"].height, 
-                             color=container["color"])
+            # Update item count for visual feedback
+            container["items_count"] = len(self.categories[container["id"]])
             
-            # Kategoriename
-            container_text = self.game.small_font.render(container["name"], True, text_color)
+            # Create container background with gradient effect
+            gradient_surface = pygame.Surface((container["rect"].width, container["rect"].height), pygame.SRCALPHA)
+            color1 = (250, 250, 255, 255)  # Top color - lighter
+            color2 = (240, 240, 250, 255)  # Bottom color - slightly darker
+            
+            for y in range(container["rect"].height):
+                # Calculate the gradient color for this line
+                alpha = y / container["rect"].height
+                line_color = [int(color1[i] * (1-alpha) + color2[i] * alpha) for i in range(4)]
+                pygame.draw.line(gradient_surface, line_color, 
+                                (0, y), (container["rect"].width, y))
+                        
+            # Draw the gradient surface as background
+            self.game.screen.blit(gradient_surface, (container["rect"].x, container["rect"].y))
+            
+            # Check if container is being highlighted (when dragging an item over it)
+            if container["highlight_alpha"] > 0:
+                # Draw a highlighted border for visual feedback
+                highlight_surface = pygame.Surface((container["rect"].width, container["rect"].height), pygame.SRCALPHA)
+                pygame.draw.rect(highlight_surface, (*container["border_color"], container["highlight_alpha"]), 
+                                pygame.Rect(0, 0, container["rect"].width, container["rect"].height), width=0, border_radius=8)
+                self.game.screen.blit(highlight_surface, (container["rect"].x, container["rect"].y))
+            
+            # Add a stylish border with the container's unique color
+            border_width = 3 if container["items_count"] > 0 else 2
+            pygame.draw.rect(self.game.screen, container["border_color"], container["rect"], border_width, border_radius=8)
+            
+            # Add a title badge at the top
+            title_width = max(140, len(container["name"]) * 10)
+            title_height = 30
+            title_bg = pygame.Rect(
+                container["rect"].centerx - title_width // 2, 
+                container["rect"].y - title_height // 2, 
+                title_width, 
+                title_height
+            )
+            
+            # Draw title background with container's unique color
+            pygame.draw.rect(self.game.screen, container["border_color"], title_bg, border_radius=15)
+            
+            # Container name in white text
+            container_text = self.game.small_font.render(container["name"], True, WHITE)
             self.game.screen.blit(container_text, (container["rect"].centerx - container_text.get_width() // 2, 
-                                                 container["rect"].y + 10))
+                                              container["rect"].y - title_height // 2 + container_text.get_height() // 2 - 2))
             
-            # Anzahl der Objekte
-            if self.categories[container["id"]]:
-                count_text = self.game.small_font.render(f"{len(self.categories[container['id']])} Objekte", True, text_color)
-                self.game.screen.blit(count_text, (container["rect"].centerx - count_text.get_width() // 2, 
-                                                  container["rect"].y + container["rect"].height - 20))
+            # If container has items, show count with a badge
+            if container["items_count"] > 0:
+                count_badge_radius = 18
+                badge_x = container["rect"].right - count_badge_radius
+                badge_y = container["rect"].bottom - count_badge_radius
+                
+                # Draw count badge
+                pygame.draw.circle(self.game.screen, container["border_color"], (badge_x, badge_y), count_badge_radius)
+                
+                # Draw count text
+                count_text = self.game.small_font.render(str(container["items_count"]), True, WHITE)
+                self.game.screen.blit(count_text, (badge_x - count_text.get_width() // 2, 
+                                              badge_y - count_text.get_height() // 2))
+            else:
+                # Empty container hint
+                hint_text = "Leer"
+                hint = self.game.small_font.render(hint_text, True, TEXT_LIGHT)
+                self.game.screen.blit(hint, (container["rect"].centerx - hint.get_width() // 2, 
+                                        container["rect"].centery - hint.get_height() // 2))
         
         # Objekte zeichnen
         for item in self.active_items:
@@ -290,6 +432,20 @@ class Game4State:
             item_rect = pygame.Rect(item["pos"][0] - item["size"][0] // 2, 
                                   item["pos"][1] - item["size"][1] // 2, 
                                   item["size"][0], item["size"][1])
+                                  
+            # Add a glow effect around the dragged item
+            if self.dragging_item == item:
+                glow_rect = pygame.Rect(
+                    item["pos"][0] - item["size"][0] // 2 - 5,
+                    item["pos"][1] - item["size"][1] // 2 - 5,
+                    item["size"][0] + 10,
+                    item["size"][1] + 10
+                )
+                # Draw a soft glow (semi-transparent larger rectangle)
+                glow_surface = pygame.Surface((glow_rect.width, glow_rect.height), pygame.SRCALPHA)
+                pygame.draw.rect(glow_surface, (*PRIMARY, 100), pygame.Rect(0, 0, glow_rect.width, glow_rect.height), border_radius=8)
+                self.game.screen.blit(glow_surface, (glow_rect.x, glow_rect.y))
+            
             pygame.draw.rect(self.game.screen, item["color"], item_rect, border_radius=5)
             pygame.draw.rect(self.game.screen, border_color, item_rect, border_width, border_radius=5)  # Umrandung
             
@@ -297,7 +453,7 @@ class Game4State:
             short_name = item["name"] if len(item["name"]) < 15 else item["name"][:12] + "..."
             item_text = self.game.small_font.render(short_name, True, text_color)
             
-            # Skaliere Text, wenn er zu groß ist
+            # Skaliere Text, wenn er zu gross ist
             if item_text.get_width() > item["size"][0] - 10:
                 # Kleinerer Font für lange Namen
                 tiny_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 42)
@@ -316,7 +472,7 @@ class Game4State:
                 y_offset += 25
         
         # Fortschrittsbalken für die Zeit
-        max_time = 60 * 30 if phase_number == 1 else 60 * 20  # 30 oder 20 Sekunden
+        max_time = 60 * 40 if phase_number == 1 else 60 * 20  # 40 oder 20 Sekunden
         self.game.draw_progress_bar(50, SCREEN_HEIGHT - 30, SCREEN_WIDTH - 100, 10, 
                                  self.time_remaining / max_time, fill_color=POMEGRANATE)
     
@@ -336,8 +492,6 @@ class Game4State:
             "",
             "In Phase 2 musst du zusätzliche Objekte in dein Organisationssystem einordnen.",
             "Du kannst dein bisheriges System beibehalten oder es anpassen.",
-            "",
-            "Gewissenhafte Menschen finden oft einen guten Weg, mit solchen Änderungen umzugehen.",
             "",
             "Du hast 20 Sekunden Zeit für Phase 2."
         ]
@@ -366,10 +520,10 @@ class Game4State:
         """Zeigt die Ergebnisse des Organisationsspiels"""
         # Ergebnisbox
         results_rect = pygame.Rect(100, 100, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 220)
-        self.game.draw_card(results_rect.x, results_rect.y, results_rect.width, results_rect.height, color=TEXT_LIGHT)
+        self.game.draw_card(results_rect.x, results_rect.y, results_rect.width, results_rect.height, color=BACKGROUND)
         
         # Titel
-        result_title = self.game.medium_font.render("Deine Organisationsfähigkeit", True, PRIMARY)
+        result_title = self.game.medium_font.render("Deine Organisationsfähigkeit", True, text_color)
         self.game.screen.blit(result_title, (SCREEN_WIDTH // 2 - result_title.get_width() // 2, 120))
         
         # Organisationsstrategie
@@ -378,8 +532,8 @@ class Game4State:
         
         # Beschreibung basierend auf Score
         if self.conscientiousness_score > 80:
-            organization_level = "Außergewöhnlich gewissenhaft und organisiert"
-            description = "Du zeigst ein hohes Maß an Ordnung, Planung und Anpassungsfähigkeit."
+            organization_level = "Aussergewöhnlich gewissenhaft und organisiert"
+            description = "Du zeigst ein hohes Mass an Ordnung, Planung und Anpassungsfähigkeit."
         elif self.conscientiousness_score > 65:
             organization_level = "Sehr gewissenhaft und strukturiert"
             description = "Du organisierst durchdacht und passt dich gut an neue Situationen an."
@@ -387,7 +541,7 @@ class Game4State:
             organization_level = "Ausgewogen organisiert"
             description = "Du findest ein gutes Gleichgewicht zwischen Struktur und Flexibilität."
         elif self.conscientiousness_score > 35:
-            organization_level = "Mäßig organisiert mit flexiblen Elementen"
+            organization_level = "Mässig organisiert mit flexiblen Elementen"
             description = "Du bevorzugst einen lockereren Organisationsansatz, der teils funktioniert."
         else:
             organization_level = "Eher spontan als organisiert"
@@ -422,6 +576,12 @@ class Game4State:
         # Anpassungsfähigkeit
         adapt_text = self.game.small_font.render(f"Anpassungsfähigkeit: {int(self.phase2_results['adaptation_score']*100)}%", True, TEXT_DARK)
         self.game.screen.blit(adapt_text, (170, details_y + 90))
+        
+        # Reset-Info anzeigen, falls gemacht
+        if self.reset_count_phase1 > 0 or self.reset_count_phase2 > 0:
+            reset_text = self.game.small_font.render(f"Neustarts: Phase 1: {self.reset_count_phase1}, Phase 2: {self.reset_count_phase2}", True, POMEGRANATE)
+            self.game.screen.blit(reset_text, (170, details_y + 120))
+            details_y += 30
         
         # Gesamtergebnis
         total_objects = len(self.items_phase1) + len(self.items_phase2)
@@ -504,14 +664,14 @@ class Game4State:
         # 2. Nach Verwendungszweck (arbeit, haushalt, freizeit)
         purpose_score = self._calculate_strategy_score("original_category")
         
-        # 3. Gleichmäßige Verteilung
+        # 3. Gleichmässige Verteilung
         distribution_score = self._calculate_distribution_score()
         
         # Bestimme die dominante Strategie
         strategy_scores = {
             "Objekttyp": type_score,
             "Verwendungszweck": purpose_score,
-            "Gleichmäßige Verteilung": distribution_score
+            "Gleichmässige Verteilung": distribution_score
         }
         
         best_strategy = max(strategy_scores, key=strategy_scores.get)
@@ -565,7 +725,7 @@ class Game4State:
         return consistency_score / max(1, used_categories)
     
     def _calculate_distribution_score(self):
-        """Bewertet, wie gleichmäßig Objekte auf Kategorien verteilt sind"""
+        """Bewertet, wie gleichmässig Objekte auf Kategorien verteilt sind"""
         # Nur Kategorien mit Items berücksichtigen
         category_counts = [len(items) for items in self.categories.values() if items]
         
@@ -692,15 +852,22 @@ class Game4State:
         # 4. Anpassungsfähigkeit (25%)
         adaptation = self.phase2_results["adaptation_score"]
         
-        # Gewichteter Gesamtscore
+        # Reset-Faktor berechnen (mehr Resets reduzieren den Score)
+        reset_penalty = 0
+        if hasattr(self, 'reset_count_phase1') and self.reset_count_phase1 > 0:
+            reset_penalty += min(10, self.reset_count_phase1 * 5)  # Max 10% Abzug für Phase 1
+        if hasattr(self, 'reset_count_phase2') and self.reset_count_phase2 > 0:
+            reset_penalty += min(10, self.reset_count_phase2 * 5)  # Max 10% Abzug für Phase 2
+        
+        # Gewichteter Gesamtscore mit Reset-Penalty
         final_score = (
             phase1_organization * 30 +
             consistency * 25 +
             phase2_organization * 20 +
             adaptation * 25
-        )
+        ) - reset_penalty
         
-        self.conscientiousness_score = int(min(100, final_score))
+        self.conscientiousness_score = int(min(100, max(0, final_score)))
     
     def end_game(self):
         """Beendet das Spiel und geht zum nächsten Spiel"""

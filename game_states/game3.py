@@ -252,10 +252,6 @@ class Game3State:
         # Zeichnen
         self.game.screen.blit(hint_text, (text_x, text_y))
         self.game.screen.blit(blob_mini, (blob_x, blob_y))
-        
-        # ESC-Hinweis
-        esc_text = self.game.small_font.render("ESC = Spiel beenden", True, text_color)
-        self.game.screen.blit(esc_text, (SCREEN_WIDTH - esc_text.get_width() - 20, SCREEN_HEIGHT - 70))
     
     def _render_result(self):
         """Zeigt die Ergebnisseite mit dem Openness-Balken an"""
