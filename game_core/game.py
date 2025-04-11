@@ -2,11 +2,15 @@
 # -*- coding: utf-8 -*-
 
 """
-Game-Klasse - Die zentrale Steuerungsklasse für das Persona Companion Spiel
+Game-Klasse
+Die zentrale Steuerungsklasse für das Persona Companion Spiel
 """
 
+# Bibliotheken importieren
 import pygame
 import sys
+
+# Konstante Werte & Spielzustände aus anderen Dateien laden
 from game_core.constants import *
 from game_states.menu import MenuState
 from game_states.game1 import Game1State
@@ -22,9 +26,11 @@ class Game:
     """
     def __init__(self):
         """Initialisiert das Spiel und alle Ressourcen"""
-        # Erstelle das Fenster
+        # Fenster mit festgelegter Grösse erstellen
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("Persona Companion")
+
+        # Framerate-Kontrolle für flüssige Darstellung
         self.clock = pygame.time.Clock()
         
         # Lade Schriftarten
@@ -33,7 +39,7 @@ class Game:
         # Initialisiere Variablen
         self.initialize_variables()
         
-        # Erstelle die Spielzustände
+        # Erstelle die Spielabschnitte
         self.states = {
             "MENU": MenuState(self),
             "GAME1": Game1State(self),
@@ -44,7 +50,7 @@ class Game:
             "RESULTS": ResultsState(self)
         }
         
-        # Setze den Startzustand
+        # Spiel beginnt im Menü
         self.current_state = "MENU"
         
         # Transition Variablen
@@ -57,12 +63,11 @@ class Game:
         self.font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 25)  # Standard
         self.medium_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 35)
         self.small_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 45)
-
-        self.title_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 20)  # Titel
-        self.heading_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 25)  # Überschrift
-        self.subtitle_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 30)  # Untertitel
-        self.body_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 40)  # Fliesstext
-        self.caption_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 50)  # Kleiner Text
+        self.title_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 20)
+        self.heading_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 25)
+        self.subtitle_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 30)
+        self.body_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 40)
+        self.caption_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 50)
 
     def initialize_variables(self):
         """Initialisiert alle Spielvariablen"""
@@ -70,11 +75,7 @@ class Game:
         self.user_name = ""
         self.active_input = True
         
-        # Animation Variablen (Pulsieren) - nacher löschen
-        #self.pulse_value = 0
-        #self.pulse_growing = True
-        
-        # Persönlichkeitsanalyse
+        # Persönlichkeitsmerkmale für Big Five Modell
         self.personality_traits = {
             "openness": 0,
             "conscientiousness": 0,
@@ -87,7 +88,7 @@ class Game:
         """Hauptspielschleife"""
         running = True
         while running:
-            # Event-Verarbeitung
+            # Verarbeite Eingaben
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -95,19 +96,17 @@ class Game:
                     # Ereignisse an den aktuellen Zustand weiterleiten
                     self.states[self.current_state].handle_event(event)
             
-            # Aktualisierung
+            # Aktualisierung Zustand
             self.update()
             
-            # Rendering
+            # Bildschirm aktualisieren
             self.render()
             
             # FPS begrenzen
             self.clock.tick(FPS)
     
     def update(self):
-        """Aktualisiert den Spielzustand wird das noch gebraucht?"""
-        # Animationen aktualisieren
-        #self.update_animations()
+        """Aktualisiert den Spielzustand"""
         
         # Übergänge verwalten
         if self.transitioning:
@@ -115,24 +114,9 @@ class Game:
         else:
             # Aktuellen Zustand aktualisieren
             self.states[self.current_state].update()
-    
-    """def update_animations(self):
-        #Aktualisiert die Animationswerte wird das noch gebraucht?
-        # Pulsieren aktualisieren
-        if self.pulse_growing:
-            self.pulse_value += PULSE_SPEED
-            if self.pulse_value >= 1:
-                self.pulse_value = 1
-                self.pulse_growing = False
-        else:
-            self.pulse_value -= PULSE_SPEED
-            if self.pulse_value <= 0:
-                self.pulse_value = 0
-                self.pulse_growing = True
-                """
 
     def update_transitions(self):
-        """Verwaltet die Übergänge zwischen Spielzuständen"""
+        """Steuert die Animation für Übergänge zwischen Spielzuständen"""
         if self.transition_alpha > 0:
             self.transition_alpha = max(0, self.transition_alpha - TRANSITION_SPEED)
         else:
@@ -159,7 +143,7 @@ class Game:
         pygame.display.flip()
     
     def render_transition(self):
-        """Zeichnet den Übergangseffekt zwischen Spielzuständen - wird das noch gebraucht"""
+        """Zeichnet den Übergangseffekt zwischen Spielzuständen"""
         if self.transition_alpha > 0:
             transition_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
             
@@ -181,18 +165,18 @@ class Game:
         self.transition_alpha = 255
         self.next_state = new_state
     
-    # Hilfsfunktionen für das UI
+    # Hilfsfunktionen für die Benutzeroberfläche (UI)
     def draw_modern_button(self, text, x, y, width, height, color, text_color=text_color, 
                          font=None, border_radius=10, hover=False):
         """Zeichnet einen modernen Button mit Schattierung"""
         if font is None:
             font = self.medium_font
         
-        # Schatten (leicht versetzt)
+        # Schatten-Effekt unter dem Button
         shadow_rect = pygame.Rect(x - width//2 + 3, y - height//2 + 3, width, height)
         pygame.draw.rect(self.screen, NEUTRAL, shadow_rect, border_radius=border_radius)
         
-        # Button (Hauptrechteck)
+        # Hauptfäche des Buttons
         button_rect = pygame.Rect(x - width//2, y - height//2, width, height)
         
         # Hover-Effekt
@@ -203,7 +187,7 @@ class Game:
         else:
             pygame.draw.rect(self.screen, color, button_rect, border_radius=border_radius)
             
-        # Text
+        # Text auf dem Button
         text_surf = font.render(text, True, text_color)
         text_rect = text_surf.get_rect(center=(x, y))
         self.screen.blit(text_surf, text_rect)

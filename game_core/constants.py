@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """
-Constants - Definiert alle Konstanten und Konfigurationswerte für das Spiel
+Constants
+Dieses Skript definiert alle Konstanten, die im Spiel verwendet werden. - wie Farben, Bilder, Texte usw.
 """
 
+# Standard Module laden
 import os
 import pygame
 
@@ -12,20 +14,22 @@ import pygame
 pygame.init()
 
 
-# Bildschirmgrösse
+# Bildschirmgrösse festlegen in Pixel
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
-# Frame per Seconds
+# Bilder pro Sekunde
 FPS = 60
 
-# Animation Constants --> nacher löschen
+# Animation Constants --> nacher löschen?
 PULSE_SPEED = 0.05
 TRANSITION_SPEED = 10
 
 # Farben
-BACKGROUND = (234,246,255) # Hellblau
-text_color = (1,32,95) # Dunkelblau
+BACKGROUND = (234,246,255) # Heller Blauton als Hintergrund
+text_color = (1,32,95) # Dunkeler Blauton für Text
+
+### Farben noch anschauen
 ACCENT = (43, 82, 136) # Rot / Rich Burgundy
 
 # Blauset
@@ -59,14 +63,15 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)
 
-# Dateipfade für Fonts und Assets
+# Dateipfad für die Schriftart
 FONT_PATH = os.path.join("assets", "fonts", "Poppins-Regular.ttf")
 
 # Blob Bild laden und Grösse anpassen
 BLOB_IMAGE = pygame.image.load("assets/images/happy_blob2.png")
 BLOB_IMAGE = pygame.transform.smoothscale(BLOB_IMAGE, (150, 150))  # Grösse anpassen
 
-# Game2 Szenarien (Extraversionsspiel) - Erweitert und differenzierter
+# SPIEL 2: Szenarien, um Persönlichkeitstyp "Extravertiert vs. Introvertiert" abzufragen
+# Jede Situation zeigt eine Frage und zwei Antwortmöglichkeiten (A und B)
 GAME2_SCENARIOS = [
     {
         "question": "Du nimmst an einem beruflichen Networking-Event teil:",
@@ -141,9 +146,9 @@ GAME2_SCENARIOS = [
 ]
 
 
-# Game3 Muster (Kreativitätsspiel für Offenheit)
-# Verbesserte Muster-Fragen und Antwortoptionen für GAME3_PATTERNS
-
+# SPIEL 3: Muster erkennen – bewertet, wie kreativ/logisch jemand denkt
+# Jede Aufgabe enthält ein Muster + 4 mögliche Fortsetzungen
+# Jede Option bekommt einen "openness_value" – wie kreativ sie ist
 GAME3_PATTERNS = [
     {
         "pattern_type": "line_sequence",
@@ -267,7 +272,8 @@ GAME3_PATTERNS = [
     }
 ]
 
-# Game5 Szenarien (Kooperationsspiel für Verträglichkeit)
+# SPIEL 5: Szenarien zur Messung von "Verträglichkeit"
+# Wie viel gibst du ab vs. wie viel behältst du?
 GAME5_SCENARIOS = [
     {
         "title": "Eiscreme-Sundae Party",
