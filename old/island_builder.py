@@ -19,12 +19,12 @@ RESOURCE_LIMIT = 100  # Total resources available
 # Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-BLUE = (0, 100, 255)
-GREEN = (0, 180, 0)
+CLEAN_POOL_BLUE = (0, 100, 255)
+CHAMELEON_GREEN = (0, 180, 0)
 SAND = (238, 214, 175)
 LIGHT_BLUE = (173, 216, 230)
 GRAY = (100, 100, 100)
-DARK_GREEN = (0, 100, 0)
+DARK_CHAMELEON_GREEN = (0, 100, 0)
 RED = (255, 0, 0)
 
 # Font
@@ -509,7 +509,7 @@ class IslandBuilder:
             # Score bar
             bar_width = 300
             pygame.draw.rect(self.screen, GRAY, (SCREEN_WIDTH//2, y_pos, bar_width, 25))
-            pygame.draw.rect(self.screen, GREEN, (SCREEN_WIDTH//2, y_pos, bar_width * score/100, 25))
+            pygame.draw.rect(self.screen, CHAMELEON_GREEN, (SCREEN_WIDTH//2, y_pos, bar_width * score/100, 25))
             
             # Score text
             score_text = f"{score:.1f}%"

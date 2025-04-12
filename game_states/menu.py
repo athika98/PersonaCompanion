@@ -62,7 +62,7 @@ class MenuState:
         self.game.screen.fill(BACKGROUND)  # Setzt den Hintergrund auf ein einheitliches Hellblau
 
         # Titel  auf dem Hintergrund rendern
-        title = self.game.font.render("Persona Companion", True, text_color)
+        title = self.game.font.render("Persona Companion", True, TEXT_COLOR)
         self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, SCREEN_HEIGHT // 8))
 
         # Blob Bild rendern
@@ -73,20 +73,20 @@ class MenuState:
         # Begrüssungstext rendern
         y_offset = blob_y + BLOB_IMAGE.get_height()  # Weniger Abstand
     
-        welcome_text = self.game.medium_font.render("Willkommen bei Persona Companion!", True, text_color)
+        welcome_text = self.game.medium_font.render("Willkommen bei Persona Companion!", True, TEXT_COLOR)
         description1 = self.game.small_font.render(
             "Erkunde deine Persönlichkeit durch spannende Mini-Spiele und finde heraus, welcher Typ am besten zu dir passt.", 
-            True, text_color)
+            True, TEXT_COLOR)
         description2 = self.game.small_font.render(
             "Am Ende erwartet dich ein digitaler Begleiter, der perfekt auf dich abgestimmt ist.", 
-            True, text_color)
+            True, TEXT_COLOR)
         
         self.game.screen.blit(welcome_text, (SCREEN_WIDTH // 2 - welcome_text.get_width() // 2, y_offset))
         self.game.screen.blit(description1, (SCREEN_WIDTH // 2 - description1.get_width() // 2, y_offset + 50))
         self.game.screen.blit(description2, (SCREEN_WIDTH // 2 - description2.get_width() // 2, y_offset + 90))
         
         # Name input field
-        name_label = self.game.small_font.render("Dein Name:", True, text_color)
+        name_label = self.game.small_font.render("Dein Name:", True, TEXT_COLOR)
         self.game.screen.blit(name_label, (SCREEN_WIDTH // 2 - 150, y_offset + 120)) # Label-Position
         
         # Eingabefeld
@@ -103,7 +103,7 @@ class MenuState:
         
         self.game.draw_modern_button(
             "Start", button_x, button_y, 200, 50, 
-            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover
         )
     
     

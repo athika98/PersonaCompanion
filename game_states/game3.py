@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
-Game3State - Das Kreativitätsspiel
+Game 3 - "Complete me"
 Misst Offenheit für Erfahrungen durch Kreativitäts-Muster-Vervollständigung
 """
-
+# Bibliotheken importieren
 import pygame
 import math
 from game_core.constants import *
@@ -42,11 +42,11 @@ class Game3State:
         
         # Option-Rechtecke für die Kollisionserkennung definieren
         self.option_rects = []
-        for i in range(4):  # Für die 4 Optionen
+        for i in range(4):
             # Alle Boxen zentriert untereinander
-            box_x = SCREEN_WIDTH // 2 - 250  # Zentriert (500px Breite)
-            box_y = 270 + i * 60  # Alle untereinander mit reduziertem Abstand
-            self.option_rects.append(pygame.Rect(box_x, box_y, 500, 50))  # Noch breiter (500px)
+            box_x = SCREEN_WIDTH // 2 - 250
+            box_y = 270 + i * 60
+            self.option_rects.append(pygame.Rect(box_x, box_y, 500, 50))
     
     def handle_event(self, event):
         """Verarbeitet Benutzereingaben"""
@@ -114,11 +114,11 @@ class Game3State:
         self.game.screen.fill(BACKGROUND)
         
         # Spieltitel
-        game_title = self.game.font.render("Complete me", True, text_color)
+        game_title = self.game.font.render("Complete me", True, TEXT_COLOR)
         self.game.screen.blit(game_title, (SCREEN_WIDTH // 2 - game_title.get_width() // 2, 30))
         
         # Benutzername anzeigen
-        name_text = self.game.small_font.render(f"{self.game.user_name}", True, text_color)
+        name_text = self.game.small_font.render(f"{self.game.user_name}", True, TEXT_COLOR)
         self.game.screen.blit(name_text, (SCREEN_WIDTH - name_text.get_width() - 20, 35))
         
         # Verschiedene Bildschirme basierend auf dem Spielzustand
@@ -132,7 +132,7 @@ class Game3State:
     def _render_intro(self):
         """Zeigt den Anweisungsbildschirm für das Kreativitätsspiel"""
         # Titel
-        intro_title = self.game.medium_font.render("Wie kreativ bist du?", True, text_color)
+        intro_title = self.game.medium_font.render("Wie kreativ bist du?", True, TEXT_COLOR)
         self.game.screen.blit(intro_title, (SCREEN_WIDTH // 2 - intro_title.get_width() // 2, 100))
         
         # Erklärungstext
@@ -166,7 +166,7 @@ class Game3State:
         # Button zeichnen
         self.game.draw_modern_button(
             "Start", button_x, button_y, button_width, button_height,
-            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover
         )
 
         # Rechteck für Klickprüfung speichern
@@ -189,7 +189,7 @@ class Game3State:
         
         # Fortschrittsanzeige
         progress_text = self.game.small_font.render(
-            f"Muster {self.current_pattern + 1} von {len(self.patterns)}", True, text_color)
+            f"Muster {self.current_pattern + 1} von {len(self.patterns)}", True, TEXT_COLOR)
         self.game.screen.blit(progress_text, (20, 35))
         
         # Fortschrittsbalken
@@ -199,7 +199,7 @@ class Game3State:
         self.game.draw_card(100, 130, SCREEN_WIDTH - 200, 50, color=BACKGROUND, shadow=False)
         
         # Fragentext
-        question_text = self.game.medium_font.render(current["question"], True, text_color)
+        question_text = self.game.medium_font.render(current["question"], True, TEXT_COLOR)
         self.game.screen.blit(question_text, (SCREEN_WIDTH // 2 - question_text.get_width() // 2, 140))
         
         # Musterbild anzeigen
@@ -218,9 +218,9 @@ class Game3State:
         self.option_rects = []
         for i in range(4):  # Für die 4 Optionen
             # Alle Boxen zentriert untereinander
-            box_x = SCREEN_WIDTH // 2 - 250  # Zentriert (500px Breite)
-            box_y = 270 + i * 60  # Alle untereinander mit reduziertem Abstand
-            self.option_rects.append(pygame.Rect(box_x, box_y, 500, 50))  # Noch breiter (500px)
+            box_x = SCREEN_WIDTH // 2 - 250
+            box_y = 270 + i * 60
+            self.option_rects.append(pygame.Rect(box_x, box_y, 500, 50))
         
         # Optionsboxen
         for i, option in enumerate(current["options"]):
@@ -234,20 +234,20 @@ class Game3State:
             self.game.screen.blit(option_letter, (self.option_rects[i].x + 15, self.option_rects[i].y + 15))
             
             # Optionsbeschreibung
-            option_desc = self.game.small_font.render(option["description"], True, text_color)
+            option_desc = self.game.small_font.render(option["description"], True, TEXT_DARK)
             self.game.screen.blit(option_desc, (self.option_rects[i].x + 40, self.option_rects[i].y + 15))
         
         # Hinweistext und Mini-Blob
-        hint_text = self.game.small_font.render("Wähle die Option, die besser zu dir passt", True, text_color)
+        hint_text = self.game.small_font.render("Wähle die Option, die besser zu dir passt", True, TEXT_COLOR)
         
         # Text-Position links vom Blob
         text_x = SCREEN_WIDTH // 2 - hint_text.get_width() // 2
         text_y = SCREEN_HEIGHT - 50
         
-        # Blob-Grösse reduzieren (Mini)
+        # Mini Blob
         blob_mini = pygame.transform.scale(BLOB_IMAGE, (35, 35))
         blob_x = text_x + hint_text.get_width() + 10
-        blob_y = text_y - 4  # leicht zentriert zur Textlinie
+        blob_y = text_y - 4
         
         # Zeichnen
         self.game.screen.blit(hint_text, (text_x, text_y))
@@ -256,7 +256,7 @@ class Game3State:
     def _render_result(self):
         """Zeigt die Ergebnisseite mit dem Openness-Balken an"""
         # Titel 
-        title = self.game.medium_font.render("Dein Ergebnis:", True, text_color)
+        title = self.game.medium_font.render("Dein Ergebnis:", True, TEXT_COLOR)
         self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 130))
         
         # Ergebnisbalken
@@ -284,11 +284,11 @@ class Game3State:
         self.game.screen.blit(creative_text, (scale_x + scale_width - creative_text.get_width(), scale_y + scale_height + 10))
         
         # Openness Beschriftung mittig über dem Balken
-        openness_text = self.game.medium_font.render("Offenheit für Erfahrungen", True, text_color)
+        openness_text = self.game.medium_font.render("Offenheit für Erfahrungen", True, TEXT_COLOR)
         self.game.screen.blit(openness_text, (SCREEN_WIDTH // 2 - openness_text.get_width() // 2, scale_y - 70))
         
         # Prozentsatz über dem Balken
-        percent_text = self.game.medium_font.render(f"{openness_percentage}%", True, text_color)
+        percent_text = self.game.medium_font.render(f"{openness_percentage}%", True, TEXT_COLOR)
         self.game.screen.blit(percent_text, 
                             (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
         
@@ -308,7 +308,7 @@ class Game3State:
         # Button zeichnen mit Hover-Effekt
         self.game.draw_modern_button(
             "Weiter", button_x, button_y, button_width, button_height,
-            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover
         )
         
         # Rechteck für Klickprüfung speichern
@@ -320,9 +320,9 @@ class Game3State:
         )
         
         # Blob links vom Weiter-Button platzieren
-        button_left_edge = button_x - 100  # Button ist 200px breit
-        blob_x = button_left_edge - BLOB_IMAGE.get_width() - 30  # 30px Abstand zwischen Blob und Button
-        blob_y = SCREEN_HEIGHT - 100  # Vertikal mit Button ausrichten
+        button_left_edge = button_x - 100
+        blob_x = button_left_edge - BLOB_IMAGE.get_width() - 30
+        blob_y = SCREEN_HEIGHT - 100
         self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
     
     def calculate_openness(self):

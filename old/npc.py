@@ -23,10 +23,10 @@ GRAY = (100, 100, 100)
 LIGHT_GRAY = (200, 200, 200)
 DARK_GRAY = (50, 50, 50)
 RED = (255, 50, 50)
-GREEN = (50, 200, 50)
-BLUE = (50, 100, 200)
+CHAMELEON_GREEN = (50, 200, 50)
+CLEAN_POOL_BLUE = (50, 100, 200)
 LIGHT_BLUE = (150, 200, 255)
-LIGHT_GREEN = (150, 255, 150)
+LIGHT_CHAMELEON_GREEN = (150, 255, 150)
 LIGHT_RED = (255, 150, 150)
 LIGHT_YELLOW = (255, 255, 150)
 PURPLE = (150, 50, 200)
@@ -64,13 +64,13 @@ class CommunicationStyle(Enum):
 # Button class for interactive elements
 class Button:
     def __init__(self, x, y, width, height, text, color=LIGHT_BLUE, 
-                 hover_color=BLUE, text_color=BLACK, disabled_color=LIGHT_GRAY):
+                 hover_color=CLEAN_POOL_BLUE, TEXT_COLOR=BLACK, disabled_color=LIGHT_GRAY):
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
         self.color = color
         self.original_color = color
         self.hover_color = hover_color
-        self.text_color = text_color
+        self.TEXT_COLOR = TEXT_COLOR
         self.disabled_color = disabled_color
         self.hovered = False
         self.disabled = False
@@ -89,7 +89,7 @@ class Button:
         pygame.draw.rect(screen, DARK_GRAY, self.rect, 2, border_radius=5)
         
         # Render and center text
-        text_surf = FONT.render(self.text, True, self.text_color)
+        text_surf = FONT.render(self.text, True, self.TEXT_COLOR)
         text_rect = text_surf.get_rect(center=self.rect.center)
         screen.blit(text_surf, text_rect)
         
@@ -143,7 +143,7 @@ class NPC:
         self.task_id = task_id
         self.relationship = 0  # -10 to +10
         self.task_progress = 0  # 0 to 5 (complete)
-        self.appearance = appearance or (BLUE, 60)  # (color, size)
+        self.appearance = appearance or (CLEAN_POOL_BLUE, 60)  # (color, size)
         self.personality = personality
         self.visited = False
         self.completed = False
@@ -180,7 +180,7 @@ class NPC:
         color = self.appearance[0]
         # Adjust color if completed or selected
         if completed:
-            color = GREEN
+            color = CHAMELEON_GREEN
         elif selected:
             # Brighten the color
             r, g, b = color
@@ -199,11 +199,11 @@ class NPC:
         
         # Draw completion status or relationship indicator
         if completed:
-            status_text = FONT_SMALL.render("Complete", True, GREEN)
+            status_text = FONT_SMALL.render("Complete", True, CHAMELEON_GREEN)
         else:
             # Relationship indicator
             rel_text = "+"
-            rel_color = GREEN
+            rel_color = CHAMELEON_GREEN
             if self.relationship < 0:
                 rel_text = "-"
                 rel_color = RED
@@ -1108,7 +1108,7 @@ class NPCNegotiation:
                 (300, 500),
                 farmer_dialogue,
                 "sheep",
-                (GREEN, 40),
+                (CHAMELEON_GREEN, 40),
                 "Practical"
             ),
             "guard": NPC(
@@ -1117,7 +1117,7 @@ class NPCNegotiation:
                 (600, 500),
                 guard_dialogue,
                 "investigation",
-                (BLUE, 40),
+                (CLEAN_POOL_BLUE, 40),
                 "Authoritative"
             )
         }

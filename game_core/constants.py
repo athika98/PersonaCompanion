@@ -6,7 +6,7 @@ Constants
 Dieses Skript definiert alle Konstanten, die im Spiel verwendet werden. - wie Farben, Bilder, Texte usw.
 """
 
-# Standard Module laden
+# Bibliotheken importieren
 import os
 import pygame
 
@@ -25,18 +25,37 @@ FPS = 60
 PULSE_SPEED = 0.05
 TRANSITION_SPEED = 10
 
-# Farben
+# Hauptfarben
 BACKGROUND = (234,246,255) # Heller Blauton als Hintergrund
-text_color = (1,32,95) # Dunkeler Blauton für Text
-
-### Farben noch anschauen
+TEXT_COLOR = (1,32,95) # Dunkeler Blauton für Text
+TEXT_DARK = (15, 23, 42)  # für sekundäre Texte
+TEXT_LIGHT = (248, 250, 252)     # Sehr helles Grau
 ACCENT = (43, 82, 136) # Rot / Rich Burgundy
+
+# Weitere Farben
+CHAMELEON_GREEN = (203, 216, 172)
+VIOLET_VELVET = (179, 157, 219)
+CLEAN_POOL_BLUE = (171, 208, 249)
+HONEY_YELLOW = (232, 187, 118)  
+LEMON_YELLOW = (241, 232, 156)
+ORANGE_PEACH = (236, 186, 155)
+POMEGRANATE = (239, 148, 135)
+CHERRY_PINK = (243, 167, 192)
+
+DIVE_BLUE    = (31, 63, 116)
+ARROWHEAD_WHITE = (250, 235, 235)
+SHINSHU = (143, 30, 30)
+PLACEBO_GREEN = (235, 250, 235)
+BROCCOFLOWER = (147, 160, 121)
+PLACEBO_MAGENTA = (250, 235, 245)
+RISING_STAR = (250, 250, 220)
+##########
+
 
 # Blauset
 LILAC_BLUE   = (183, 195, 232)  # #B7C3E8
 SOLID_BLUE   = (142, 162, 215)  # #8EA2D7
 SAILING_BLUE = (69, 105, 173)   # #4569AD
-DIVE_BLUE    = (31, 63, 116)    # #1F3F74
 DEEP_SEA     = (20, 54, 109)    # #14366D
 
 # Farbkonstanten
@@ -45,18 +64,7 @@ SECONDARY = (16, 185, 129)       # Smaragdgrün
 ACCENT = (239, 68, 68)           # Rot/Koralle
 NEUTRAL = (71, 85, 105)          # Slate Grau
 NEUTRAL_LIGHT = (203, 213, 225)  # Helles Slate
-TEXT_DARK = (15, 23, 42)         # Fast Schwarz
 TEXT_LIGHT = (248, 250, 252)     # Sehr helles Grau
-
-# Farben aus der Sundae Farbpalette
-PASSION_PURPLE = (149, 125, 173)  # Passionfruit Pop - Lila
-COOL_BLUE = (122, 171, 194)       # Cool Mint - Blau
-JUICY_GREEN = (157, 207, 157)     # Juicy Pear - Grün
-HONEY_YELLOW = (232, 187, 118)    # Honey, Honey - Gelb/Orange
-LEMON_YELLOW = (241, 232, 156)    # Lemon Zest - Hellgelb
-ORANGE_PEACH = (236, 186, 155)    # Orange Crush - Pfirsich
-POMEGRANATE = (239, 148, 135)     # Pomegranate Fizz - Korallenrot
-CHERRY_PINK = (243, 167, 192)     # Cherry on Top - Pink
 
 # Zusätzliche Farben
 WHITE = (255, 255, 255)

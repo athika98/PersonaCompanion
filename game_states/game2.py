@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """
-Game2State - Das verbesserte Extraversions-Spektrum-Spiel
+Game 2 - "Balance Bar"
 Misst Extraversion durch nuancierte Positionierung auf einem Spektrum
 """
 
+# Bibliotheken importieren
 import pygame
 from game_core.constants import *
 
@@ -15,6 +16,7 @@ class Game2State:
         self.initialize()
     
     def initialize(self):
+        """Initialisiert den Spielzustand"""
         self.scenarios = GAME2_SCENARIOS
         self.current_scenario = 0
         self.answers = []
@@ -37,16 +39,14 @@ class Game2State:
         self.is_dragging = False
         self.drag_offset_x = 0
 
-        # Definiere die Breite der Boxes für A und B
+        # Klickflächen für die Optionen definieren
         box_width = SCREEN_WIDTH - 100  
         x_position = (SCREEN_WIDTH - box_width) // 2
-
-        # Definiere die Rechtecke für die Optionen
         self.option_a_rect = pygame.Rect(x_position, 240, box_width, 80)
         self.option_b_rect = pygame.Rect(x_position, 340, box_width, 80)
 
     def classify_position(self, value):
-        """Kategorisiert die Slider-Position in beschreibende Klassen"""
+        """Gibt eine Klassifikation basierend auf der Schieberegler-Position zurück"""
         if value < 25:
             return "introvert_strong"
         elif value < 45:
@@ -60,6 +60,7 @@ class Game2State:
 
 
     def handle_event(self, event):
+        """Verarbeitet Benutzereingaben"""
         if self.state == "intro":
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if hasattr(self, 'start_button_rect') and self.start_button_rect.collidepoint(event.pos):
@@ -164,11 +165,11 @@ class Game2State:
         self.game.screen.fill(BACKGROUND)
         
         # Titel Bereich
-        title = self.game.font.render("Extraversions-Spektrum", True, text_color)
+        title = self.game.font.render("Balance Bar", True, TEXT_COLOR)
         self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 30))
         
         # Benutzername anzeigen
-        name_text = self.game.small_font.render(f"{self.game.user_name}", True, text_color)
+        name_text = self.game.small_font.render(f"{self.game.user_name}", True, TEXT_COLOR)
         self.game.screen.blit(name_text, (SCREEN_WIDTH - name_text.get_width() - 20, 35))
 
         # Je nach Spielstatus
@@ -178,7 +179,7 @@ class Game2State:
             # Fortschritt anzeigen
             question_count = len(self.scenarios)
             current = self.current_scenario + 1
-            progress_text = self.game.small_font.render(f"Frage {current} von {question_count}", True, text_color)
+            progress_text = self.game.small_font.render(f"Frage {current} von {question_count}", True, TEXT_COLOR)
             self.game.screen.blit(progress_text, (20, 35))
 
             progress_width = int((self.current_scenario / question_count) * (SCREEN_WIDTH - 100))
@@ -194,7 +195,7 @@ class Game2State:
     def _render_intro(self):
         """Zeigt den Intro-Bildschirm mit Spielerklärung"""
         # Titel
-        intro_title = self.game.medium_font.render("Wo siehst du dich?", True, text_color)
+        intro_title = self.game.medium_font.render("Wo siehst du dich?", True, TEXT_COLOR)
         self.game.screen.blit(intro_title, (SCREEN_WIDTH // 2 - intro_title.get_width() // 2, 100))
         
         # Erklärungstext
@@ -230,7 +231,7 @@ class Game2State:
         # Button zeichnen
         self.game.draw_modern_button(
             "Start", button_x, button_y, button_width, button_height,
-            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover
         )
 
         # Rechteck für Klickprüfung speichern
@@ -243,42 +244,37 @@ class Game2State:
         
         # Blob Bild rendern
         blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2
-        blob_y = SCREEN_HEIGHT - 120  # Unten platzieren
+        blob_y = SCREEN_HEIGHT - 120
         self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
 
     def _render_question(self):
-        """Zeigt die aktuelle Frage mit verbessertem Schieberegler"""
-        current = self.scenarios[self.current_scenario]
+        """Zeigt die aktuelle Frage mit Schieberegler"""
+        current = self.scenarios[self.current_scenario] # Aktuelle Frage auslesen
 
-        # Frage ganz oben platzieren
+        # Fragenkarte zeichnen
         self.game.draw_card(100, 120, SCREEN_WIDTH - 200, 80, color=BACKGROUND, shadow=False)
-        question_text = self.game.medium_font.render(current["question"], True, text_color)
+        question_text = self.game.medium_font.render(current["question"], True, TEXT_COLOR)
         self.game.screen.blit(
             question_text, 
             (SCREEN_WIDTH // 2 - question_text.get_width() // 2, 145)
         )
 
-        # Schieberegler vergrößern und zeichnen
+        # Schieberegler zeichnen
         slider = self.slider
-        slider["width"] = 500  # Breiter machen
+        slider["width"] = 500  
         slider_start_x = slider["x"] - slider["width"] // 2
         slider_end_x = slider_start_x + slider["width"]
         
-        # Erweiterte Boxbreite für längeren Text
-        box_width = 700  # Noch breiter machen
+        # Boxen für die Antwortoptionen
+        box_width = 700
         box_height = 70
-        offset_y = 120 # Abstand vom Slider nach oben
-
-        # Zentriert horizontal
+        offset_y = 120
         center_x = SCREEN_WIDTH // 2 - box_width // 2
         
-        # Option A - Links (introvertierte Option) - OBERHALB des Schiebereglers
+        # Option A - Links (introvertierte Option)
         option_a_rect = pygame.Rect(center_x, slider["y"] - offset_y - box_height - 10, box_width, box_height)
-        self.game.draw_card(option_a_rect.x, option_a_rect.y, option_a_rect.width, option_a_rect.height,
-                            color=WHITE, shadow=False)
-        option_a_text = self.game.small_font.render(current["option_b"], True, text_color)
-        
-        # Zentriere den Text in der Box
+        self.game.draw_card(option_a_rect.x, option_a_rect.y, option_a_rect.width, option_a_rect.height, color=WHITE, shadow=False)
+        option_a_text = self.game.small_font.render(current["option_b"], True, TEXT_COLOR)
         self.game.screen.blit(
             option_a_text, 
             (option_a_rect.x + option_a_rect.width // 2 - option_a_text.get_width() // 2, 
@@ -287,11 +283,8 @@ class Game2State:
 
         # Option B - Rechts (extravertierte Option) - OBERHALB des Schiebereglers
         option_b_rect = pygame.Rect(center_x, slider["y"] - offset_y, box_width, box_height)
-        self.game.draw_card(option_b_rect.x, option_b_rect.y, option_b_rect.width, option_b_rect.height,
-                            color=WHITE, shadow=False)
-        option_b_text = self.game.small_font.render(current["option_a"], True, text_color)
-        
-        # Zentriere den Text in der Box
+        self.game.draw_card(option_b_rect.x, option_b_rect.y, option_b_rect.width, option_b_rect.height, color=WHITE, shadow=False)
+        option_b_text = self.game.small_font.render(current["option_a"], True, TEXT_COLOR)
         self.game.screen.blit(
             option_b_text,
             (option_b_rect.x + option_b_rect.width // 2 - option_b_text.get_width() // 2,
@@ -299,32 +292,25 @@ class Game2State:
         )
         
         # Schieberegler zeichnen
-        # Slider-Hintergrund
-        pygame.draw.rect(self.game.screen, TEXT_LIGHT, 
-                    (slider_start_x, slider["y"], slider["width"], slider["height"]), 
-                    border_radius=slider["height"] // 2)
+        pygame.draw.rect(self.game.screen, WHITE, (slider_start_x, slider["y"], slider["width"], slider["height"]), border_radius=slider["height"] // 2)
         
-        # Gefüllter Teil
         fill_width = int(slider["width"] * slider["position"] / 100)
-        pygame.draw.rect(self.game.screen, ACCENT, 
-                    (slider_start_x, slider["y"], fill_width, slider["height"]), 
-                    border_radius=slider["height"] // 2)
+        pygame.draw.rect(self.game.screen, ACCENT, (slider_start_x, slider["y"], fill_width, slider["height"]), border_radius=slider["height"] // 2)
         
-        # Knopf zeichnen
         knob_x = slider_start_x + fill_width
         pygame.draw.circle(self.game.screen, HONEY_YELLOW, 
                         (knob_x, slider["y"] + slider["height"] // 2), 
                         slider["knob_radius"])
         
         # Beschriftungen für die Enden des Schiebereglers
-        option_a_label = self.game.small_font.render("Option A", True, text_color)
-        option_b_label = self.game.small_font.render("Option B", True, text_color)
+        option_a_label = self.game.small_font.render("Option A", True, TEXT_COLOR)
+        option_b_label = self.game.small_font.render("Option B", True, TEXT_COLOR)
         
         self.game.screen.blit(option_a_label, (slider_start_x - option_a_label.get_width() // 2, slider["y"] + 25))
         self.game.screen.blit(option_b_label, (slider_end_x - option_b_label.get_width() // 2, slider["y"] + 25))
         
         # Aktuelle Position visualisieren
-        position_text = self.game.small_font.render(f"Deine Position: {slider['position']}%", True, text_color)
+        position_text = self.game.small_font.render(f"Deine Position: {slider['position']}%", True, TEXT_COLOR)
         self.game.screen.blit(position_text, 
                         (SCREEN_WIDTH // 2 - position_text.get_width() // 2, 
                             slider["y"] + slider["height"] + 20))
@@ -344,7 +330,7 @@ class Game2State:
         else:
             tendency_text = "Starke Tendenz zu Option B"
             
-        tendency_label = self.game.small_font.render(tendency_text, True, PRIMARY)
+        tendency_label = self.game.small_font.render(tendency_text, True, TEXT_COLOR)
         self.game.screen.blit(tendency_label, 
                             (SCREEN_WIDTH // 2 - tendency_label.get_width() // 2, 
                             slider["y"] + slider["height"] + 50))
@@ -365,7 +351,7 @@ class Game2State:
         # Button zeichnen
         self.game.draw_modern_button(
             "Weiter", button_x, button_y, button_width, button_height,
-            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover
         )
         
         # Rechteck für Klickprüfung speichern
@@ -377,7 +363,7 @@ class Game2State:
         )
         
         # Hinweistext
-        hint_text = self.game.small_font.render("Ziehe den Schieberegler zwischen den beiden Optionen", True, text_color)
+        hint_text = self.game.small_font.render("Ziehe den Schieberegler zwischen den beiden Optionen", True, TEXT_COLOR)
         self.game.screen.blit(hint_text, (SCREEN_WIDTH // 2 - hint_text.get_width() // 2, SCREEN_HEIGHT - 130))
 
     def _render_transition(self):
@@ -388,21 +374,21 @@ class Game2State:
 
         # Fragenkarte
         self.game.draw_card(100, 120, SCREEN_WIDTH - 200, 80, BACKGROUND, shadow=False)
-        question_text = self.game.medium_font.render(current["question"], True, text_color)
+        question_text = self.game.medium_font.render(current["question"], True, TEXT_COLOR)
         self.game.screen.blit(
             question_text, 
             (SCREEN_WIDTH // 2 - question_text.get_width() // 2, 145)
         )
 
-        box_width = 700  # Noch breiter machen
+        box_width = 700
         box_height = 70
-        offset_y = 120 # Abstand vom Slider nach oben
+        offset_y = 120
         center_x = SCREEN_WIDTH // 2 - box_width // 2
 
         # A-Box zeichnen
         option_a_rect = pygame.Rect(center_x, slider["y"] - offset_y - box_height - 10, box_width, box_height)
         self.game.draw_card(option_a_rect.x, option_a_rect.y, option_a_rect.width, option_a_rect.height, color=WHITE, shadow=False)
-        option_a_text = self.game.small_font.render(current["option_b"], True, text_color)
+        option_a_text = self.game.small_font.render(current["option_b"], True, TEXT_COLOR)
         self.game.screen.blit(option_a_text,
             (option_a_rect.x + option_a_rect.width // 2 - option_a_text.get_width() // 2,
             option_a_rect.y + option_a_rect.height // 2 - option_a_text.get_height() // 2))
@@ -410,7 +396,7 @@ class Game2State:
         # B-Box zeichnen
         option_b_rect = pygame.Rect(center_x, slider["y"] - offset_y, box_width, box_height)
         self.game.draw_card(option_b_rect.x, option_b_rect.y, option_b_rect.width, option_b_rect.height, color=WHITE, shadow=False)
-        option_b_text = self.game.small_font.render(current["option_a"], True, text_color)
+        option_b_text = self.game.small_font.render(current["option_a"], True, TEXT_COLOR)
         self.game.screen.blit(option_b_text,
             (option_b_rect.x + option_b_rect.width // 2 - option_b_text.get_width() // 2,
             option_b_rect.y + option_b_rect.height // 2 - option_b_text.get_height() // 2))
@@ -449,7 +435,7 @@ class Game2State:
             result_subtext = "Du blühst in sozialen Situationen auf."
         elif extraversion_percentage > 50:
             result_text = "Du bist eher extravertiert mit guter Balance."
-            result_subtext = "Du genießt Interaktionen, brauchst aber auch Ruhe."
+            result_subtext = "Du geniesst Interaktionen, brauchst aber auch Ruhe."
         elif extraversion_percentage > 25:
             result_text = "Du bist eher introvertiert mit guter Balance."
             result_subtext = "Du bevorzugst tiefgründige Gespräche und Rückzug."
@@ -458,7 +444,7 @@ class Game2State:
             result_subtext = "Ruhige Umgebungen geben dir Energie."
 
         # Titel
-        title = self.game.medium_font.render("Dein Ergebnis:", True, text_color)
+        title = self.game.medium_font.render("Dein Ergebnis:", True, TEXT_COLOR)
         self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 130))
 
         # Ergebnisbalken
@@ -499,7 +485,7 @@ class Game2State:
         # Button zeichnen
         self.game.draw_modern_button(
             "Weiter", button_x, button_y, button_width, button_height,
-            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover
         )
         
         # Rechteck für Klickprüfung speichern
@@ -538,8 +524,8 @@ class Game2State:
             line2 = ' '.join(words[mid:])
             
             return [
-                self.game.small_font.render(line1, True, text_color),
-                self.game.small_font.render(line2, True, text_color)
+                self.game.small_font.render(line1, True, TEXT_COLOR),
+                self.game.small_font.render(line2, True, TEXT_COLOR)
             ]
         
         # Für Strings (falls die Funktion mit Strings aufgerufen wird)
@@ -549,16 +535,16 @@ class Game2State:
         
         for word in words:
             test_line = current_line + [word]
-            test_surface = self.game.small_font.render(' '.join(test_line), True, text_color)
+            test_surface = self.game.small_font.render(' '.join(test_line), True, TEXT_COLOR)
             
             if test_surface.get_width() <= max_width:
                 current_line = test_line
             else:
                 if current_line:  # Falls die aktuelle Zeile nicht leer ist
-                    lines.append(self.game.small_font.render(' '.join(current_line), True, text_color))
+                    lines.append(self.game.small_font.render(' '.join(current_line), True, TEXT_COLOR))
                 current_line = [word]
         
         if current_line:  # Letzte Zeile hinzufügen
-            lines.append(self.game.small_font.render(' '.join(current_line), True, text_color))
+            lines.append(self.game.small_font.render(' '.join(current_line), True, TEXT_COLOR))
         
         return lines

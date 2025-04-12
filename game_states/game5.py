@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Game5State - Das Kooperationsspiel
+Game 5 - "Give & Gain"
 Misst Verträglichkeit durch Ressourcenverteilung
 """
 
@@ -84,7 +84,7 @@ class Game5State:
                     })
                     
                     # Score-Beitrag berechnen
-                    # Großzügigere Wahlen (niedrigerer Slider-Wert) erhöhen Verträglichkeit
+                    # Grosszügigere Wahlen (niedrigerer Slider-Wert) erhöhen Verträglichkeit
                     cooperation_score = 100 - self.slider_position  # Skala umkehren
                     self.agreeableness_score += cooperation_score
                     
@@ -124,7 +124,6 @@ class Game5State:
     
     def render(self):
         """Zeichnet den Spielbildschirm"""
-        # Hintergrund mit BACKGROUND füllen statt CHERRY_PINK
         self.game.screen.fill(BACKGROUND)
         
         # Subtiles Hintergrundmuster erstellen
@@ -140,14 +139,14 @@ class Game5State:
         
         # Header
         header_rect = pygame.Rect(0, 0, SCREEN_WIDTH, 100)
-        pygame.draw.rect(self.game.screen, PRIMARY, header_rect)
+        pygame.draw.rect(self.game.screen, BACKGROUND, header_rect)
         
         # Spieltitel
-        game_title = self.game.font.render("Kooperations-Challenge", True, TEXT_LIGHT)
+        game_title = self.game.font.render("Give & Gain", True, TEXT_COLOR)
         self.game.screen.blit(game_title, (SCREEN_WIDTH // 2 - game_title.get_width() // 2, 30))
         
         # Benutzername anzeigen
-        name_text = self.game.small_font.render(f"Spieler: {self.game.user_name}", True, TEXT_LIGHT)
+        name_text = self.game.small_font.render(f"Spieler: {self.game.user_name}", True, TEXT_COLOR)
         self.game.screen.blit(name_text, (SCREEN_WIDTH - 20 - name_text.get_width(), 35))
         
         # Verschiedene Bildschirme basierend auf dem Spielzustand
@@ -162,10 +161,10 @@ class Game5State:
         """Zeigt den Anweisungsbildschirm für das Kooperationsspiel"""
         # Anweisungsbox
         instruction_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250)
-        self.game.draw_card(instruction_rect.x, instruction_rect.y, instruction_rect.width, instruction_rect.height, color=TEXT_LIGHT)
+        self.game.draw_card(instruction_rect.x, instruction_rect.y, instruction_rect.width, instruction_rect.height, color=BACKGROUND)
         
         # Titel
-        instruction_title = self.game.medium_font.render("Ressourcen-Verteilung", True, PRIMARY)
+        instruction_title = self.game.medium_font.render("Ressourcen-Verteilung", True, TEXT_COLOR)
         self.game.screen.blit(instruction_title, (SCREEN_WIDTH // 2 - instruction_title.get_width() // 2, 150))
         
         # Anweisungstext
@@ -184,33 +183,10 @@ class Game5State:
             self.game.screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, y_pos))
             y_pos += 30
         
-        # Beispielvisualisierung
-        example_box = pygame.Rect(SCREEN_WIDTH // 2 - 200, 380, 400, 80)
-        self.game.draw_card(example_box.x, example_box.y, example_box.width, example_box.height, color=COOL_BLUE)
-        
-        # Beispiel-Slider zeichnen
-        slider_width = 300
-        slider_height = 10
-        slider_x = SCREEN_WIDTH // 2 - slider_width // 2
-        slider_y = 420
-        
-        pygame.draw.rect(self.game.screen, TEXT_LIGHT, (slider_x, slider_y, slider_width, slider_height), border_radius=5)
-        
-        # Beispiel-Knopf
-        knob_x = slider_x + slider_width // 2
-        pygame.draw.circle(self.game.screen, POMEGRANATE, (knob_x, slider_y + slider_height // 2), 15)
-        
-        # Slider-Beschriftungen
-        left_label = self.game.small_font.render("Mehr für andere", True, TEXT_LIGHT)
-        right_label = self.game.small_font.render("Mehr für dich", True, TEXT_LIGHT)
-        
-        self.game.screen.blit(left_label, (slider_x - 10 - left_label.get_width(), slider_y))
-        self.game.screen.blit(right_label, (slider_x + slider_width + 10, slider_y))
-        
         # Start-Button
         self.game.draw_modern_button(
             "Start", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 75, 200, 50,
-            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover=False
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover=False
         )
     
     def _render_play(self):
@@ -220,23 +196,23 @@ class Game5State:
             progress_text = self.game.small_font.render(
                 f"Szenario {self.round + 1} von {len(self.scenarios)}", 
                 True, 
-                TEXT_LIGHT
+                WHITE
             )
             self.game.screen.blit(progress_text, (20, 60))
             
             # Fortschrittsbalken
             self.game.draw_progress_bar(20, 80, SCREEN_WIDTH - 40, 10, 
-                                     (self.round + 1) / len(self.scenarios), fill_color=HONEY_YELLOW)
+                                     (self.round + 1) / len(self.scenarios), fill_color=POMEGRANATE)
         
         # Aktuelles Szenario
         current = self.scenarios[self.round]
         
         # Szenariobox
         scenario_rect = pygame.Rect(100, 120, SCREEN_WIDTH - 200, 80)
-        self.game.draw_card(scenario_rect.x, scenario_rect.y, scenario_rect.width, scenario_rect.height, color=ORANGE_PEACH)
+        self.game.draw_card(scenario_rect.x, scenario_rect.y, scenario_rect.width, scenario_rect.height, color=BACKGROUND)
         
         # Szenariotitel
-        title_text = self.game.medium_font.render(current["title"], True, TEXT_DARK)
+        title_text = self.game.medium_font.render(current["title"], True, TEXT_COLOR)
         self.game.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 130))
         
         # Szenariobeschreibung
@@ -244,20 +220,20 @@ class Game5State:
         self.game.screen.blit(desc_text, (SCREEN_WIDTH // 2 - desc_text.get_width() // 2, 170))
         
         # Ressourcen-Label
-        resource_text = self.game.medium_font.render(f"Verteile: {current['resource']}", True, TEXT_DARK)
+        resource_text = self.game.small_font.render(f"Verteile: {current['resource']}", True, TEXT_DARK)
         self.game.screen.blit(resource_text, (SCREEN_WIDTH // 2 - resource_text.get_width() // 2, 220))
         
         # Charaktere/Bilder zeichnen
         # Linke Seite - Andere
         other_rect = pygame.Rect(150, 250, 150, 80)
-        self.game.draw_card(other_rect.x, other_rect.y, other_rect.width, other_rect.height, color=COOL_BLUE)
-        other_label = self.game.small_font.render("Andere", True, TEXT_LIGHT)
+        self.game.draw_card(other_rect.x, other_rect.y, other_rect.width, other_rect.height, color=CLEAN_POOL_BLUE)
+        other_label = self.game.small_font.render("Andere", True, TEXT_COLOR)
         self.game.screen.blit(other_label, (150 + 75 - other_label.get_width() // 2, 280))
         
         # Rechte Seite - Selbst
         self_rect = pygame.Rect(SCREEN_WIDTH - 150 - 150, 250, 150, 80)
-        self.game.draw_card(self_rect.x, self_rect.y, self_rect.width, self_rect.height, color=POMEGRANATE)
-        self_label = self.game.small_font.render("Du", True, TEXT_LIGHT)
+        self.game.draw_card(self_rect.x, self_rect.y, self_rect.width, self_rect.height, color=VIOLET_VELVET)
+        self_label = self.game.small_font.render("Du", True, TEXT_COLOR)
         self.game.screen.blit(self_label, (SCREEN_WIDTH - 150 - 75 - self_label.get_width() // 2, 280))
         
         # Slider zeichnen
@@ -265,13 +241,13 @@ class Game5State:
         slider_start_x = slider["x"] - slider["width"] // 2
         
         # Slider-Hintergrund
-        pygame.draw.rect(self.game.screen, TEXT_LIGHT, 
+        pygame.draw.rect(self.game.screen, WHITE, 
                        (slider_start_x, slider["y"], slider["width"], slider["height"]), 
                        border_radius=slider["height"] // 2)
         
         # Gefüllter Teil
         fill_width = int(slider["width"] * self.slider_position / 100)
-        pygame.draw.rect(self.game.screen, POMEGRANATE, 
+        pygame.draw.rect(self.game.screen, PLACEBO_MAGENTA, 
                        (slider_start_x, slider["y"], fill_width, slider["height"]), 
                        border_radius=slider["height"] // 2)
         
@@ -285,8 +261,8 @@ class Game5State:
         left_percent = 100 - self.slider_position
         right_percent = self.slider_position
         
-        left_percent_text = self.game.medium_font.render(f"{left_percent}%", True, COOL_BLUE)
-        right_percent_text = self.game.medium_font.render(f"{right_percent}%", True, POMEGRANATE)
+        left_percent_text = self.game.medium_font.render(f"{left_percent}%", True, CLEAN_POOL_BLUE)
+        right_percent_text = self.game.medium_font.render(f"{right_percent}%", True, VIOLET_VELVET)
         
         self.game.screen.blit(left_percent_text, (150 + 75 - left_percent_text.get_width() // 2, 350))
         self.game.screen.blit(right_percent_text, (SCREEN_WIDTH - 150 - 75 - right_percent_text.get_width() // 2, 350))
@@ -314,17 +290,17 @@ class Game5State:
         # Weiter-Button
         self.game.draw_modern_button(
             "Weiter", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 65, 200, 50,
-            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover=False
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover=False
         )
     
     def _render_result(self):
         """Zeigt die Ergebnisse des Kooperationsspiels"""
         # Ergebnisbox
         results_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250)
-        self.game.draw_card(results_rect.x, results_rect.y, results_rect.width, results_rect.height, color=TEXT_LIGHT)
+        self.game.draw_card(results_rect.x, results_rect.y, results_rect.width, results_rect.height, color=BACKGROUND)
         
         # Titel
-        result_title = self.game.medium_font.render("Dein Kooperationsverhalten", True, PRIMARY)
+        result_title = self.game.medium_font.render("Dein Kooperationsverhalten", True, BACKGROUND)
         self.game.screen.blit(result_title, (SCREEN_WIDTH // 2 - result_title.get_width() // 2, 150))
         
         # Verträglichkeits-Prozentsatz berechnen
@@ -332,9 +308,10 @@ class Game5State:
         agreeableness_percentage = int((self.agreeableness_score / max_possible_score) * 100)
         
         # Kooperationslevel und Beschreibung bestimmen
+        """
         if agreeableness_percentage > 75:
             cooperation_level = "Sehr kooperativ und unterstützend"
-            description = "Du legst großen Wert auf Harmonie und stellst oft die Bedürfnisse anderer über deine eigenen."
+            description = "Du legst grossen Wert auf Harmonie und stellst oft die Bedürfnisse anderer über deine eigenen."
             details = "Dein kooperativer Ansatz fördert positive Beziehungen und ein unterstützendes Umfeld."
         elif agreeableness_percentage > 50:
             cooperation_level = "Kooperativ mit gesunder Balance"
@@ -358,6 +335,8 @@ class Game5State:
         
         details_text = self.game.small_font.render(details, True, TEXT_DARK)
         self.game.screen.blit(details_text, (SCREEN_WIDTH // 2 - details_text.get_width() // 2, 260))
+
+        """
         
         # Kooperations-Skala zeichnen
         scale_width = SCREEN_WIDTH - 300
@@ -366,11 +345,11 @@ class Game5State:
         scale_y = 350  # Verschoben von 300 auf 350
         
         # Skala-Hintergrund
-        self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=COOL_BLUE, shadow=False)
+        self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=CLEAN_POOL_BLUE, shadow=False)
         
         # Skala-Füllung basierend auf Score
         fill_width = int(scale_width * agreeableness_percentage / 100)
-        pygame.draw.rect(self.game.screen, POMEGRANATE, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
+        pygame.draw.rect(self.game.screen, VIOLET_VELVET, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
         
         # Skala-Beschriftungen
         competitive_text = self.game.small_font.render("Wettbewerbsorientiert", True, TEXT_DARK)
@@ -380,7 +359,7 @@ class Game5State:
         self.game.screen.blit(cooperative_text, (scale_x + scale_width - cooperative_text.get_width(), scale_y + scale_height + 10))
         
         # Prozentsatz anzeigen
-        percent_text = self.game.medium_font.render(f"{agreeableness_percentage}%", True, PRIMARY)
+        percent_text = self.game.medium_font.render(f"{agreeableness_percentage}%", True, TEXT_COLOR)
         self.game.screen.blit(percent_text, (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
         
         # Wahlübersicht auskommentiert
@@ -394,9 +373,9 @@ class Game5State:
             scenario_title = choice["scenario"]
             share_value = 100 - choice["value"]  # Umkehren für "Teilprozentsatz"
             
-            share_color = COOL_BLUE
+            share_color = CLEAN_POOL_BLUE
             if share_value > 75:
-                share_color = JUICY_GREEN
+                share_color = CHAMELEON_GREEN
             elif share_value > 50:
                 share_color = HONEY_YELLOW
             elif share_value > 25:
@@ -416,7 +395,7 @@ class Game5State:
         # Weiter-Button
         self.game.draw_modern_button(
             "Weiter", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 65, 200, 50,
-            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover=False
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover=False
         )
     
     def end_game(self):

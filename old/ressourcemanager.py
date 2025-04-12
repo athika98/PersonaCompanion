@@ -21,8 +21,8 @@ BLACK = (0, 0, 0)
 GRAY = (150, 150, 150)
 LIGHT_GRAY = (200, 200, 200)
 RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
+CHAMELEON_GREEN = (0, 255, 0)
+CLEAN_POOL_BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 PURPLE = (128, 0, 128)
 CYAN = (0, 255, 255)
@@ -70,9 +70,9 @@ class Resource:
         elif self.type == ResourceType.STONE:
             return GRAY
         elif self.type == ResourceType.WATER:
-            return BLUE
+            return CLEAN_POOL_BLUE
         elif self.type == ResourceType.FOOD:
-            return GREEN
+            return CHAMELEON_GREEN
         elif self.type == ResourceType.METAL:
             return LIGHT_GRAY
         return BLACK  # Default
@@ -111,9 +111,9 @@ class Task:
     def get_color_for_category(self):
         """Returns the color associated with this task category."""
         if self.category == TaskCategory.BUILDING:
-            return BLUE
+            return CLEAN_POOL_BLUE
         elif self.category == TaskCategory.CRAFTING:
-            return GREEN
+            return CHAMELEON_GREEN
         elif self.category == TaskCategory.RESEARCH:
             return PURPLE
         elif self.category == TaskCategory.SURVIVAL:
@@ -314,7 +314,7 @@ class InventoryGrid:
                         cell_y + self.cell_size - quality_height,
                         5, quality_height
                     )
-                    quality_color = GREEN if resource.quality >= 1.0 else YELLOW if resource.quality >= 0.7 else RED
+                    quality_color = CHAMELEON_GREEN if resource.quality >= 1.0 else YELLOW if resource.quality >= 0.7 else RED
                     pygame.draw.rect(screen, quality_color, quality_rect)
                     
                     # Draw resource name
@@ -347,7 +347,7 @@ class InventoryGrid:
                 mouse_pos[1] + self.cell_size/2 - quality_height,
                 5, quality_height
             )
-            quality_color = GREEN if self.drag_resource.quality >= 1.0 else YELLOW if self.drag_resource.quality >= 0.7 else RED
+            quality_color = CHAMELEON_GREEN if self.drag_resource.quality >= 1.0 else YELLOW if self.drag_resource.quality >= 0.7 else RED
             pygame.draw.rect(screen, quality_color, quality_rect)
             
             # Draw resource name
@@ -449,7 +449,7 @@ class TaskBoard:
             screen.blit(category_text, (self.x + 10, task_y + 30))
             
             # Draw deadline with color coding
-            deadline_color = GREEN if task.deadline > 5 else YELLOW if task.deadline > 2 else RED
+            deadline_color = CHAMELEON_GREEN if task.deadline > 5 else YELLOW if task.deadline > 2 else RED
             deadline_text = self.font.render(f"Due in: {task.deadline} turns", True, deadline_color)
             screen.blit(deadline_text, (self.x + 10, task_y + 50))
             
@@ -480,7 +480,7 @@ class TaskBoard:
                         slot_y + self.resource_size - quality_height,
                         5, quality_height
                     )
-                    quality_color = GREEN if resource.quality >= 1.0 else YELLOW if resource.quality >= 0.7 else RED
+                    quality_color = CHAMELEON_GREEN if resource.quality >= 1.0 else YELLOW if resource.quality >= 0.7 else RED
                     pygame.draw.rect(screen, quality_color, quality_rect)
                     
                     # Draw resource name
@@ -495,7 +495,7 @@ class TaskBoard:
             progress_fill_rect = pygame.Rect(self.x + 220, task_y + 10, progress_width, 15)
             
             pygame.draw.rect(screen, WHITE, progress_rect)
-            pygame.draw.rect(screen, GREEN, progress_fill_rect)
+            pygame.draw.rect(screen, CHAMELEON_GREEN, progress_fill_rect)
             pygame.draw.rect(screen, BLACK, progress_rect, 1)
             
             # Draw progress percentage
@@ -519,9 +519,9 @@ class TaskBoard:
         elif resource_type == ResourceType.STONE:
             return GRAY
         elif resource_type == ResourceType.WATER:
-            return BLUE
+            return CLEAN_POOL_BLUE
         elif resource_type == ResourceType.FOOD:
-            return GREEN
+            return CHAMELEON_GREEN
         elif resource_type == ResourceType.METAL:
             return LIGHT_GRAY
         return BLACK  # Default
@@ -1210,7 +1210,7 @@ class Game:
         
         # Name input box
         input_box = pygame.Rect(SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT//2, 200, 30)
-        color = BLUE if self.input_active else GRAY
+        color = CLEAN_POOL_BLUE if self.input_active else GRAY
         pygame.draw.rect(self.screen, color, input_box, 2)
         
         name_surface = self.font.render(self.player_name, True, BLACK)
@@ -1218,7 +1218,7 @@ class Game:
         
         # Start button
         button_rect = pygame.Rect(SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT//2 + 50, 200, 50)
-        pygame.draw.rect(self.screen, GREEN, button_rect)
+        pygame.draw.rect(self.screen, CHAMELEON_GREEN, button_rect)
         button_text = self.font.render("Start Game", True, BLACK)
         self.screen.blit(button_text, (SCREEN_WIDTH//2 - button_text.get_width()//2, SCREEN_HEIGHT//2 + 65))
         
@@ -1256,8 +1256,8 @@ class Game:
         resource_types = [
             (ResourceType.WOOD, "Wood", BROWN),
             (ResourceType.STONE, "Stone", GRAY),
-            (ResourceType.WATER, "Water", BLUE),
-            (ResourceType.FOOD, "Food", GREEN),
+            (ResourceType.WATER, "Water", CLEAN_POOL_BLUE),
+            (ResourceType.FOOD, "Food", CHAMELEON_GREEN),
             (ResourceType.METAL, "Metal", LIGHT_GRAY)
         ]
         
@@ -1273,7 +1273,7 @@ class Game:
         
         # Start button
         button_rect = pygame.Rect(SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT - 100, 200, 50)
-        pygame.draw.rect(self.screen, GREEN, button_rect)
+        pygame.draw.rect(self.screen, CHAMELEON_GREEN, button_rect)
         button_text = self.font.render("Start Playing", True, BLACK)
         self.screen.blit(button_text, (SCREEN_WIDTH//2 - button_text.get_width()//2, SCREEN_HEIGHT - 85))
         
@@ -1307,7 +1307,7 @@ class Game:
         
         # Draw end turn button
         end_turn_rect = pygame.Rect(SCREEN_WIDTH - 150, SCREEN_HEIGHT - 50, 130, 40)
-        pygame.draw.rect(self.screen, BLUE, end_turn_rect)
+        pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, end_turn_rect)
         end_turn_text = self.font.render("End Turn", True, WHITE)
         self.screen.blit(end_turn_text, (SCREEN_WIDTH - 110, SCREEN_HEIGHT - 40))
         
@@ -1358,7 +1358,7 @@ class Game:
         
         # Restart button
         button_rect = pygame.Rect(SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT - 100, 200, 50)
-        pygame.draw.rect(self.screen, GREEN, button_rect)
+        pygame.draw.rect(self.screen, CHAMELEON_GREEN, button_rect)
         button_text = self.font.render("Play Again", True, BLACK)
         self.screen.blit(button_text, (SCREEN_WIDTH//2 - button_text.get_width()//2, SCREEN_HEIGHT - 85))
 

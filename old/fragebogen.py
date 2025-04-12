@@ -68,7 +68,7 @@ def show_radar_chart(big_five_scores):
 def play_adventure_game():
     st.subheader("🎭 Dein Abenteuer beginnt!")
     global big_five_scores
-    q1 = st.radio("🔹 Du bist auf einer großen Party. Was machst du?",
+    q1 = st.radio("🔹 Du bist auf einer grossen Party. Was machst du?",
         ["Ich spreche mit vielen Leuten. (+ Extraversion)",
          "Ich beobachte lieber. (+ Neurotizismus)",
          "Ich suche eine kleine Gruppe. (+ Verträglichkeit)"])
@@ -104,7 +104,7 @@ def play_resource_game():
     st.subheader("💰 Wie verteilst du deine Ressourcen?")
     global big_five_scores
     social = st.slider("Freunde treffen (Extraversion)", 0, 10, 2)
-    work = st.slider("Fleißig arbeiten (Gewissenhaftigkeit)", 0, 10, 2)
+    work = st.slider("Fleissig arbeiten (Gewissenhaftigkeit)", 0, 10, 2)
     learning = st.slider("Neue Dinge lernen (Offenheit)", 0, 10, 2)
     help = st.slider("Anderen helfen (Verträglichkeit)", 0, 10, 2)
     relax = st.slider("Zeit für mich (Neurotizismus)", 0, 10, 2)

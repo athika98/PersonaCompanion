@@ -15,9 +15,9 @@ SCREEN_HEIGHT = 600
 FPS = 60
 
 # Farben aus der Sundae Farbpalette
-PASSION_PURPLE = (149, 125, 173)  # Passionfruit Pop - Lila
-COOL_BLUE = (122, 171, 194)       # Cool Mint - Blau
-JUICY_GREEN = (157, 207, 157)     # Juicy Pear - Grün
+VIOLET_VELVET = (149, 125, 173)  # Passionfruit Pop - Lila
+CLEAN_POOL_BLUE = (122, 171, 194)       # Cool Mint - Blau
+JUICY_CHAMELEON_GREEN = (157, 207, 157)     # Juicy Pear - Grün
 HONEY_YELLOW = (232, 187, 118)    # Honey, Honey - Gelb/Orange
 LEMON_YELLOW = (241, 232, 156)    # Lemon Zest - Hellgelb
 ORANGE_PEACH = (236, 186, 155)    # Orange Crush - Pfirsich
@@ -25,8 +25,8 @@ POMEGRANATE = (239, 148, 135)     # Pomegranate Fizz - Korallenrot
 CHERRY_PINK = (243, 167, 192)     # Cherry on Top - Pink
 
 # Hauptfarben für die UI
-PRIMARY = PASSION_PURPLE     # Hauptfarbe für Titel, Buttons
-SECONDARY = COOL_BLUE        # Sekundäre Farbe für Akzente
+PRIMARY = VIOLET_VELVET     # Hauptfarbe für Titel, Buttons
+SECONDARY = CLEAN_POOL_BLUE        # Sekundäre Farbe für Akzente
 BACKGROUND = (255, 248, 240) # Leicht cremefarbener Hintergrund
 TEXT_DARK = (90, 80, 100)    # Dunkle Textfarbe
 TEXT_LIGHT = (255, 255, 255) # Helle Textfarbe
@@ -61,9 +61,9 @@ class Game:
         pygame.display.set_caption("Persona Companion")
         self.clock = pygame.time.Clock()
         
-        # Lade die Quicksand-Schriftart mit dynamischer Größe
-        self.font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 15)  # Titelgröße
-        self.medium_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 25)  # Mittlere Größe
+        # Lade die Quicksand-Schriftart mit dynamischer Grösse
+        self.font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 15)  # Titelgrösse
+        self.medium_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 25)  # Mittlere Grösse
         self.small_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 30)  # Kleinere Texte
         
         # Game states and transitions
@@ -310,7 +310,7 @@ class Game:
     def menu_render(self):
         """Zeichnet das Hauptmenü mit Quicksand-Schriftart und Sundae-Farbschema"""
         # Create a sundae-inspired pattern
-        sundae_colors = [PASSION_PURPLE, COOL_BLUE, JUICY_GREEN, HONEY_YELLOW, 
+        sundae_colors = [VIOLET_VELVET, CLEAN_POOL_BLUE, JUICY_CHAMELEON_GREEN, HONEY_YELLOW, 
                         LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
         
         for i in range(0, SCREEN_WIDTH, 50):
@@ -329,9 +329,9 @@ class Game:
         
         # Content box
         content_rect = pygame.Rect(50, SCREEN_HEIGHT // 3, SCREEN_WIDTH - 100, SCREEN_HEIGHT // 3)
-        pygame.draw.rect(self.screen, JUICY_GREEN, content_rect, border_radius=20)
+        pygame.draw.rect(self.screen, JUICY_CHAMELEON_GREEN, content_rect, border_radius=20)
         
-        # Begrüßungstext rendern
+        # Begrüssungstext rendern
         desc_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 35)
         description1 = desc_font.render("Tauche ein in dein inneres Ich!", True, TEXT_DARK)
         description2 = desc_font.render("Spiele, erkunde und finde heraus, welche Eigenschaften dich ausmachen.", True, TEXT_DARK)
@@ -379,7 +379,7 @@ class Game:
     
     def user_info_render(self):
         # Background pattern - alternating sundae colors
-        colors = [PASSION_PURPLE, COOL_BLUE, JUICY_GREEN, HONEY_YELLOW, LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
+        colors = [VIOLET_VELVET, CLEAN_POOL_BLUE, JUICY_CHAMELEON_GREEN, HONEY_YELLOW, LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
         stripe_width = SCREEN_WIDTH // len(colors)
         
         for i, color in enumerate(colors):
@@ -389,7 +389,7 @@ class Game:
         
         # Header box
         header_rect = pygame.Rect(50, SCREEN_HEIGHT // 10, SCREEN_WIDTH - 100, SCREEN_HEIGHT // 6)
-        pygame.draw.rect(self.screen, COOL_BLUE, header_rect, border_radius=20)
+        pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, header_rect, border_radius=20)
         
         # Title
         title = self.font.render("Deine Information", True, TEXT_LIGHT)
@@ -411,7 +411,7 @@ class Game:
         if self.active_input == 0:
             pygame.draw.rect(self.screen, CHERRY_PINK, name_field_rect, 3, border_radius=10)
         else:
-            pygame.draw.rect(self.screen, COOL_BLUE, name_field_rect, 2, border_radius=10)
+            pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, name_field_rect, 2, border_radius=10)
         
         name_text = info_font.render(self.user_name, True, TEXT_DARK)
         self.screen.blit(name_text, (210, SCREEN_HEIGHT // 3 + 5))
@@ -425,7 +425,7 @@ class Game:
         if self.active_input == 1:
             pygame.draw.rect(self.screen, CHERRY_PINK, age_field_rect, 3, border_radius=10)
         else:
-            pygame.draw.rect(self.screen, COOL_BLUE, age_field_rect, 2, border_radius=10)
+            pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, age_field_rect, 2, border_radius=10)
         
         age_text = info_font.render(self.user_age, True, TEXT_DARK)
         self.screen.blit(age_text, (210, SCREEN_HEIGHT // 2.5 + 5))
@@ -439,7 +439,7 @@ class Game:
         if self.active_input == 2:
             pygame.draw.rect(self.screen, CHERRY_PINK, color_field_rect, 3, border_radius=10)
         else:
-            pygame.draw.rect(self.screen, COOL_BLUE, color_field_rect, 2, border_radius=10)
+            pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, color_field_rect, 2, border_radius=10)
         
         color_text = info_font.render(self.user_color, True, TEXT_DARK)
         self.screen.blit(color_text, (210, SCREEN_HEIGHT // 2 + 5))
@@ -452,12 +452,12 @@ class Game:
         self.screen.blit(continue_text, (SCREEN_WIDTH // 2 - continue_text.get_width() // 2, SCREEN_HEIGHT // 1.5 - continue_text.get_height() // 2))
         
         # Helpful text
-        hint_text = self.small_font.render("Drücke TAB um zwischen den Feldern zu wechseln", True, PASSION_PURPLE)
+        hint_text = self.small_font.render("Drücke TAB um zwischen den Feldern zu wechseln", True, VIOLET_VELVET)
         self.screen.blit(hint_text, (SCREEN_WIDTH // 2 - hint_text.get_width() // 2, SCREEN_HEIGHT - 50))
     
     def character_selection_render(self):
         # Background design with sundae colors
-        sundae_colors = [PASSION_PURPLE, COOL_BLUE, JUICY_GREEN, HONEY_YELLOW, 
+        sundae_colors = [VIOLET_VELVET, CLEAN_POOL_BLUE, JUICY_CHAMELEON_GREEN, HONEY_YELLOW, 
                          LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
         
         for i in range(0, SCREEN_HEIGHT, 40):
@@ -487,10 +487,10 @@ class Game:
         ]
         
         character_colors = [
-            PASSION_PURPLE,
+            VIOLET_VELVET,
             CHERRY_PINK,
-            COOL_BLUE,
-            JUICY_GREEN,
+            CLEAN_POOL_BLUE,
+            JUICY_CHAMELEON_GREEN,
             POMEGRANATE
         ]
         
@@ -508,13 +508,13 @@ class Game:
             
             if self.selected_character == i:
                 pygame.draw.rect(self.screen, character_colors[i], option_rect, border_radius=10)
-                text_color = TEXT_LIGHT
+                TEXT_COLOR = TEXT_LIGHT
             else:
                 pygame.draw.rect(self.screen, TEXT_LIGHT, option_rect, border_radius=10)
-                text_color = character_colors[i]
+                TEXT_COLOR = character_colors[i]
             
             # Character text
-            char_render = self.medium_font.render(char_text, True, text_color)
+            char_render = self.medium_font.render(char_text, True, TEXT_COLOR)
             self.screen.blit(char_render, (SCREEN_WIDTH // 2 - char_render.get_width() // 2, y_pos - char_render.get_height() // 2))
         
         # Continue button with rainbow gradient effect
@@ -552,13 +552,13 @@ class Game:
         for x in range(0, SCREEN_WIDTH, 40):
             for y in range(0, SCREEN_HEIGHT, 40):
                 color_index = ((x + y) // 40) % 8
-                sundae_colors = [PASSION_PURPLE, COOL_BLUE, JUICY_GREEN, HONEY_YELLOW, 
+                sundae_colors = [VIOLET_VELVET, CLEAN_POOL_BLUE, JUICY_CHAMELEON_GREEN, HONEY_YELLOW, 
                                LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
                 pygame.draw.circle(self.screen, sundae_colors[color_index], (x, y), 3)
         
         # Header
         header_rect = pygame.Rect(0, 0, SCREEN_WIDTH, 80)
-        pygame.draw.rect(self.screen, PASSION_PURPLE, header_rect)
+        pygame.draw.rect(self.screen, VIOLET_VELVET, header_rect)
         
         # Game title
         game_title = self.medium_font.render("Mini-Game 1: Entdecke deine Persönlichkeit", True, TEXT_LIGHT)
@@ -569,7 +569,7 @@ class Game:
         pygame.draw.rect(self.screen, TEXT_LIGHT, game_area, border_radius=20)
         
         # Placeholder text
-        coming_soon = self.font.render("Spiel wird entwickelt...", True, COOL_BLUE)
+        coming_soon = self.font.render("Spiel wird entwickelt...", True, CLEAN_POOL_BLUE)
         self.screen.blit(coming_soon, (SCREEN_WIDTH // 2 - coming_soon.get_width() // 2, SCREEN_HEIGHT // 2 - coming_soon.get_height() // 2))
         
         # Instructions
@@ -586,7 +586,7 @@ class Game:
             y = random.randint(0, SCREEN_HEIGHT)
             size = random.randint(2, 8)
             color_index = random.randint(0, 7)
-            sundae_colors = [PASSION_PURPLE, COOL_BLUE, JUICY_GREEN, HONEY_YELLOW, 
+            sundae_colors = [VIOLET_VELVET, CLEAN_POOL_BLUE, JUICY_CHAMELEON_GREEN, HONEY_YELLOW, 
                            LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
             pygame.draw.circle(self.screen, sundae_colors[color_index], (x, y), size)
         
@@ -603,7 +603,7 @@ class Game:
         self.screen.blit(result_text, (SCREEN_WIDTH // 2 - result_text.get_width() // 2, 250))
         
         # Thank you message
-        thank_you = self.medium_font.render("Vielen Dank fürs Spielen!", True, PASSION_PURPLE)
+        thank_you = self.medium_font.render("Vielen Dank fürs Spielen!", True, VIOLET_VELVET)
         self.screen.blit(thank_you, (SCREEN_WIDTH // 2 - thank_you.get_width() // 2, SCREEN_HEIGHT - 100))
 
 # Spiel starten

@@ -24,9 +24,9 @@ TEXT_DARK = (15, 23, 42)         # Fast Schwarz
 TEXT_LIGHT = (248, 250, 252)     # Sehr helles Grau
 
 # Farben aus der Sundae Farbpalette
-PASSION_PURPLE = (149, 125, 173)  # Passionfruit Pop - Lila
-COOL_BLUE = (122, 171, 194)       # Cool Mint - Blau
-JUICY_GREEN = (157, 207, 157)     # Juicy Pear - Grün
+VIOLET_VELVET = (149, 125, 173)  # Passionfruit Pop - Lila
+CLEAN_POOL_BLUE = (122, 171, 194)       # Cool Mint - Blau
+JUICY_CHAMELEON_GREEN = (157, 207, 157)     # Juicy Pear - Grün
 HONEY_YELLOW = (232, 187, 118)    # Honey, Honey - Gelb/Orange
 LEMON_YELLOW = (241, 232, 156)    # Lemon Zest - Hellgelb
 ORANGE_PEACH = (236, 186, 155)    # Orange Crush - Pfirsich
@@ -63,9 +63,9 @@ class Game:
         pygame.display.set_caption("Persona Companion")
         self.clock = pygame.time.Clock()
         
-        # Lade die Quicksand-Schriftart mit dynamischer Größe
-        self.font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 15)  # Titelgröße
-        self.medium_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 25)  # Mittlere Größe
+        # Lade die Quicksand-Schriftart mit dynamischer Grösse
+        self.font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 15)  # Titelgrösse
+        self.medium_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 25)  # Mittlere Grösse
         self.small_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 30)  # Kleinere Texte
 
         # Verbesserte Typografie mit Gewichtung
@@ -149,7 +149,7 @@ class Game:
         self.game5_is_dragging = False
     
     # Modernere Buttons mit leichter Schattierung
-    def draw_modern_button(self, text, x, y, width, height, color, text_color=TEXT_LIGHT, font=None, border_radius=10, hover=False):
+    def draw_modern_button(self, text, x, y, width, height, color, TEXT_COLOR=TEXT_LIGHT, font=None, border_radius=10, hover=False):
         if font is None:
             font = self.medium_font
         
@@ -169,7 +169,7 @@ class Game:
             pygame.draw.rect(self.screen, color, button_rect, border_radius=border_radius)
             
         # Text
-        text_surf = font.render(text, True, text_color)
+        text_surf = font.render(text, True, TEXT_COLOR)
         text_rect = text_surf.get_rect(center=(x, y))
         self.screen.blit(text_surf, text_rect)
         
@@ -738,7 +738,7 @@ class Game:
                 "question": "Wie würdest du dieses Muster vervollständigen?",
                 "pattern_type": "line_sequence",
                 "options": [
-                    {"name": "A", "description": "Regelmäßige Fortsetzung", "value": "conventional", "openness_value": 0},
+                    {"name": "A", "description": "Regelmässige Fortsetzung", "value": "conventional", "openness_value": 0},
                     {"name": "B", "description": "Symmetrische Anordnung", "value": "balanced", "openness_value": 1},
                     {"name": "C", "description": "Überraschender Bruch", "value": "creative", "openness_value": 2},
                     {"name": "D", "description": "Komplett neues Element", "value": "highly_creative", "openness_value": 3}
@@ -758,7 +758,7 @@ class Game:
                 "question": "Wie würdest du diese Form ergänzen?",
                 "pattern_type": "shape_completion",
                 "options": [
-                    {"name": "A", "description": "Schließe die Form logisch ab", "value": "conventional", "openness_value": 0},
+                    {"name": "A", "description": "Schliesse die Form logisch ab", "value": "conventional", "openness_value": 0},
                     {"name": "B", "description": "Füge ähnliche Elemente hinzu", "value": "balanced", "openness_value": 1},
                     {"name": "C", "description": "Verbinde mit neuen Formen", "value": "creative", "openness_value": 2},
                     {"name": "D", "description": "Transformiere in etwas Unerwartetes", "value": "highly_creative", "openness_value": 3}
@@ -810,23 +810,23 @@ class Game:
         
         # Definiere die zu organisierenden Objekte
         self.game4_items = [
-            {"id": 1, "type": "book", "name": "Buch: Roman", "color": PASSION_PURPLE, "pos": [150, 250], "size": [80, 40], "original_category": "freizeit"},
-            {"id": 2, "type": "book", "name": "Buch: Fachbuch", "color": PASSION_PURPLE, "pos": [300, 180], "size": [80, 40], "original_category": "arbeit"},
-            {"id": 3, "type": "document", "name": "Dokument: Rechnung", "color": COOL_BLUE, "pos": [450, 330], "size": [70, 50], "original_category": "haushalt"},
-            {"id": 4, "type": "document", "name": "Dokument: Bericht", "color": COOL_BLUE, "pos": [200, 400], "size": [70, 50], "original_category": "arbeit"},
+            {"id": 1, "type": "book", "name": "Buch: Roman", "color": VIOLET_VELVET, "pos": [150, 250], "size": [80, 40], "original_category": "freizeit"},
+            {"id": 2, "type": "book", "name": "Buch: Fachbuch", "color": VIOLET_VELVET, "pos": [300, 180], "size": [80, 40], "original_category": "arbeit"},
+            {"id": 3, "type": "document", "name": "Dokument: Rechnung", "color": CLEAN_POOL_BLUE, "pos": [450, 330], "size": [70, 50], "original_category": "haushalt"},
+            {"id": 4, "type": "document", "name": "Dokument: Bericht", "color": CLEAN_POOL_BLUE, "pos": [200, 400], "size": [70, 50], "original_category": "arbeit"},
             {"id": 5, "type": "tool", "name": "Werkzeug: Hammer", "color": ORANGE_PEACH, "pos": [550, 200], "size": [60, 45], "original_category": "haushalt"},
             {"id": 6, "type": "tool", "name": "Werkzeug: Schere", "color": ORANGE_PEACH, "pos": [350, 280], "size": [60, 45], "original_category": "haushalt"},
-            {"id": 7, "type": "electronics", "name": "Elektronik: Laptop", "color": COOL_BLUE, "pos": [500, 380], "size": [85, 50], "original_category": "arbeit"},
-            {"id": 8, "type": "electronics", "name": "Elektronik: Kopfhörer", "color": JUICY_GREEN, "pos": [250, 330], "size": [65, 40], "original_category": "freizeit"},
+            {"id": 7, "type": "electronics", "name": "Elektronik: Laptop", "color": CLEAN_POOL_BLUE, "pos": [500, 380], "size": [85, 50], "original_category": "arbeit"},
+            {"id": 8, "type": "electronics", "name": "Elektronik: Kopfhörer", "color": JUICY_CHAMELEON_GREEN, "pos": [250, 330], "size": [65, 40], "original_category": "freizeit"},
             {"id": 9, "type": "food", "name": "Essen: Apfel", "color": POMEGRANATE, "pos": [400, 230], "size": [50, 50], "original_category": "haushalt"},
             {"id": 10, "type": "food", "name": "Essen: Schokolade", "color": CHERRY_PINK, "pos": [180, 180], "size": [55, 35], "original_category": "freizeit"}
         ]
         
         # Definiere Kategoriebereiche (Container)
         self.game4_containers = [
-            {"id": 1, "name": "Kategorie 1", "color": JUICY_GREEN, "rect": pygame.Rect(100, 450, 150, 100)},
-            {"id": 2, "name": "Kategorie 2", "color": COOL_BLUE, "rect": pygame.Rect(325, 450, 150, 100)},
-            {"id": 3, "name": "Kategorie 3", "color": PASSION_PURPLE, "rect": pygame.Rect(550, 450, 150, 100)}
+            {"id": 1, "name": "Kategorie 1", "color": JUICY_CHAMELEON_GREEN, "rect": pygame.Rect(100, 450, 150, 100)},
+            {"id": 2, "name": "Kategorie 2", "color": CLEAN_POOL_BLUE, "rect": pygame.Rect(325, 450, 150, 100)},
+            {"id": 3, "name": "Kategorie 3", "color": VIOLET_VELVET, "rect": pygame.Rect(550, 450, 150, 100)}
         ]
         
         # Ursprüngliche Kategorien für die Auswertung
@@ -876,7 +876,7 @@ class Game:
             {
                 "title": "Eiscreme-Sundae Party",
                 "description": "Du organisierst eine Sundae-Party! Wie verteilst du die Toppings?",
-                "resource": "Schokoladensoße",
+                "resource": "Schokoladensosse",
                 "left_label": "Mehr für andere",
                 "right_label": "Mehr für dich",
                 "self_image": "self_icecream",  # Platzhalter für Bilder
@@ -904,7 +904,7 @@ class Game:
                 "title": "Gemeinsames Kochen",
                 "description": "Beim gemeinsamen Kochen bleiben wenige Zutaten übrig. Wie verteilst du sie?",
                 "resource": "Leckere Zutaten",
-                "left_label": "Großzügig abgeben",
+                "left_label": "Grosszügig abgeben",
                 "right_label": "Für sich behalten",
                 "self_image": "self_cooking",
                 "other_image": "others_cooking"
@@ -944,7 +944,7 @@ class Game:
                     transition_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
                     
                     # Create horizontal color bands for transition
-                    sundae_colors = [PASSION_PURPLE, COOL_BLUE, JUICY_GREEN, HONEY_YELLOW, 
+                    sundae_colors = [VIOLET_VELVET, CLEAN_POOL_BLUE, JUICY_CHAMELEON_GREEN, HONEY_YELLOW, 
                                    LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
                     
                     band_height = SCREEN_HEIGHT // len(sundae_colors)
@@ -1023,7 +1023,7 @@ class Game:
             size = random.randint(20, 40)
             
             # Random color from the sundae palette
-            colors = [PASSION_PURPLE, COOL_BLUE, JUICY_GREEN, HONEY_YELLOW, 
+            colors = [VIOLET_VELVET, CLEAN_POOL_BLUE, JUICY_CHAMELEON_GREEN, HONEY_YELLOW, 
                      LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
             color = random.choice(colors)
             
@@ -1175,7 +1175,7 @@ class Game:
         # Content-Karte mit Schatten
         self.draw_card(50, SCREEN_HEIGHT // 3, SCREEN_WIDTH - 100, SCREEN_HEIGHT // 2.5)
         
-        # Begrüßungstext rendern
+        # Begrüssungstext rendern
         welcome_text = self.medium_font.render("Willkommen bei Persona Companion!", True, PRIMARY)
         description1 = self.small_font.render("Erkunde deine Persönlichkeit durch spannende Mini-Spiele und finde heraus, welcher Typ am besten zu dir passt.", True, NEUTRAL)
         description2 = self.small_font.render("Am Ende erwartet dich ein digitaler Begleiter, der perfekt auf dich abgestimmt ist.", True, NEUTRAL)
@@ -1313,16 +1313,16 @@ class Game:
     def game2_render(self):
         """Render the decision game"""
         # Background with gradient
-        self.screen.fill(JUICY_GREEN)
+        self.screen.fill(JUICY_CHAMELEON_GREEN)
         
         # Create a background pattern
         for x in range(0, SCREEN_WIDTH, 30):
             for y in range(0, SCREEN_HEIGHT, 30):
                 color_value = (x + y) % 100
                 bg_color = (
-                    min(255, JUICY_GREEN[0] + color_value // 3),
-                    min(255, JUICY_GREEN[1] + color_value // 3),
-                    min(255, JUICY_GREEN[2] + color_value // 3)
+                    min(255, JUICY_CHAMELEON_GREEN[0] + color_value // 3),
+                    min(255, JUICY_CHAMELEON_GREEN[1] + color_value // 3),
+                    min(255, JUICY_CHAMELEON_GREEN[2] + color_value // 3)
                 )
                 pygame.draw.circle(self.screen, bg_color, (x, y), 2)
         
@@ -1349,7 +1349,7 @@ class Game:
             
             # Progress bar
             progress_width = int((self.game2_current_scenario / len(self.game2_scenarios)) * (SCREEN_WIDTH - 40))
-            pygame.draw.rect(self.screen, COOL_BLUE, (20, 80, SCREEN_WIDTH - 40, 10), border_radius=5)
+            pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, (20, 80, SCREEN_WIDTH - 40, 10), border_radius=5)
             pygame.draw.rect(self.screen, HONEY_YELLOW, (20, 80, progress_width, 10), border_radius=5)
         
         # Question state
@@ -1367,7 +1367,7 @@ class Game:
             
             # Option A box
             option_a_rect = pygame.Rect(150, 250, SCREEN_WIDTH - 300, 100)
-            pygame.draw.rect(self.screen, PASSION_PURPLE, option_a_rect, border_radius=15)
+            pygame.draw.rect(self.screen, VIOLET_VELVET, option_a_rect, border_radius=15)
             
             # Option A text
             option_a_text = self.medium_font.render(f"A: {current['option_a']}", True, TEXT_LIGHT)
@@ -1404,9 +1404,9 @@ class Game:
                 # Draw a glowing effect
                 glow_rect = pygame.Rect(145, 245, SCREEN_WIDTH - 290, 110)
                 pygame.draw.rect(self.screen, LEMON_YELLOW, glow_rect, border_radius=18)
-                pygame.draw.rect(self.screen, PASSION_PURPLE, option_a_rect, border_radius=15)
+                pygame.draw.rect(self.screen, VIOLET_VELVET, option_a_rect, border_radius=15)
             else:
-                pygame.draw.rect(self.screen, PASSION_PURPLE, option_a_rect, border_radius=15)
+                pygame.draw.rect(self.screen, VIOLET_VELVET, option_a_rect, border_radius=15)
             
             # Option A text
             option_a_text = self.medium_font.render(f"A: {current['option_a']}", True, TEXT_LIGHT)
@@ -1442,10 +1442,10 @@ class Game:
             # Show score
             if extraversion_percentage > 75:
                 result_text = "Du bist sehr extravertiert und energiegeladen in sozialen Situationen."
-                result_subtext = "Du genießt es, mit anderen Menschen zusammen zu sein und neue Kontakte zu knüpfen."
+                result_subtext = "Du geniesst es, mit anderen Menschen zusammen zu sein und neue Kontakte zu knüpfen."
             elif extraversion_percentage > 50:
                 result_text = "Du bist eher extravertiert mit einer guten Balance."
-                result_subtext = "Du genießt soziale Interaktionen, brauchst aber auch Zeit für dich."
+                result_subtext = "Du geniesst soziale Interaktionen, brauchst aber auch Zeit für dich."
             elif extraversion_percentage > 25:
                 result_text = "Du bist eher introvertiert mit einer guten Balance."
                 result_subtext = "Du schätzt tiefe Gespräche und brauchst Zeit für dich, um Energie zu tanken."
@@ -1467,7 +1467,7 @@ class Game:
             scale_y = 300
             
             # Scale background
-            pygame.draw.rect(self.screen, COOL_BLUE, (scale_x, scale_y, scale_width, scale_height), border_radius=15)
+            pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, (scale_x, scale_y, scale_width, scale_height), border_radius=15)
             
             # Scale fill based on score
             fill_width = int(scale_width * extraversion_percentage / 100)
@@ -1494,7 +1494,7 @@ class Game:
                 summary_text = self.small_font.render(
                     f"Frage {i+1}: Option {choice} ({trait.capitalize()})", 
                     True, 
-                    COOL_BLUE if trait == "introvert" else POMEGRANATE
+                    CLEAN_POOL_BLUE if trait == "introvert" else POMEGRANATE
                 )
                 self.screen.blit(summary_text, (scale_x + 20, y_pos))
                 y_pos += 30
@@ -1509,16 +1509,16 @@ class Game:
     def game3_render(self):
         """Render-Funktion für das Kreativitätsspiel"""
         # Draw creative background with flowing patterns
-        self.screen.fill(JUICY_GREEN)
+        self.screen.fill(JUICY_CHAMELEON_GREEN)
         
         # Create a dynamic background pattern
         for x in range(0, SCREEN_WIDTH, 40):
             for y in range(0, SCREEN_HEIGHT, 40):
                 color_shift = int(20 * math.sin((x + y) / 100 + pygame.time.get_ticks() / 1000))
                 color = (
-                    min(255, JUICY_GREEN[0] + color_shift),
-                    min(255, JUICY_GREEN[1] - color_shift),
-                    min(255, JUICY_GREEN[2] + color_shift)
+                    min(255, JUICY_CHAMELEON_GREEN[0] + color_shift),
+                    min(255, JUICY_CHAMELEON_GREEN[1] - color_shift),
+                    min(255, JUICY_CHAMELEON_GREEN[2] + color_shift)
                 )
                 size = 3 + int(2 * math.cos((x - y) / 50 + pygame.time.get_ticks() / 800))
                 pygame.draw.circle(self.screen, color, (x, y), size)
@@ -1570,7 +1570,7 @@ class Game:
         
         # Example visualization
         example_box = pygame.Rect(SCREEN_WIDTH // 2 - 150, 350, 300, 100)
-        pygame.draw.rect(self.screen, COOL_BLUE, example_box, border_radius=15)
+        pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, example_box, border_radius=15)
         
         # Simple pattern example
         example_text = self.small_font.render("Beispiel:", True, TEXT_LIGHT)
@@ -1603,7 +1603,7 @@ class Game:
         
         # Progress bar
         progress_width = int(((self.game3_current_pattern + 1) / len(self.game3_patterns)) * (SCREEN_WIDTH - 40))
-        pygame.draw.rect(self.screen, COOL_BLUE, (20, 80, SCREEN_WIDTH - 40, 10), border_radius=5)
+        pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, (20, 80, SCREEN_WIDTH - 40, 10), border_radius=5)
         pygame.draw.rect(self.screen, HONEY_YELLOW, (20, 80, progress_width, 10), border_radius=5)
         
         # Question box
@@ -1621,7 +1621,7 @@ class Game:
         for i, option in enumerate(current["options"]):
             # 2x2 grid layout for options
             option_rect = pygame.Rect(100 + (i % 2) * 300, 280 + (i // 2) * 120, 250, 100)
-            pygame.draw.rect(self.screen, PASSION_PURPLE, option_rect, border_radius=15)
+            pygame.draw.rect(self.screen, VIOLET_VELVET, option_rect, border_radius=15)
             
             # Option letter (A, B, C, D)
             option_letter = self.medium_font.render(option["name"], True, TEXT_LIGHT)
@@ -1652,7 +1652,7 @@ class Game:
             # Draw color squares with missing color
             start_x = SCREEN_WIDTH // 2 - 80
             y = 225
-            colors = [PASSION_PURPLE, COOL_BLUE, JUICY_GREEN]
+            colors = [VIOLET_VELVET, CLEAN_POOL_BLUE, JUICY_CHAMELEON_GREEN]
             for i in range(4):
                 if i < 3:  # Draw first 3 colors
                     pygame.draw.rect(self.screen, colors[i], (start_x + i*40 - 10, y - 10, 20, 20), border_radius=3)
@@ -1679,7 +1679,7 @@ class Game:
             # Draw a few geometric elements
             pygame.draw.polygon(self.screen, POMEGRANATE, 
                             [(center_x-30, center_y-20), (center_x, center_y-40), (center_x+30, center_y-20)])
-            pygame.draw.rect(self.screen, COOL_BLUE, (center_x-20, center_y-10, 40, 20))
+            pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, (center_x-20, center_y-10, 40, 20))
             
             # Draw dotted outline for missing element
             pygame.draw.circle(self.screen, LEMON_YELLOW, (center_x, center_y+25), 15, 1)
@@ -1692,7 +1692,7 @@ class Game:
             # Sun, cloud, rain icons
             pygame.draw.circle(self.screen, HONEY_YELLOW, (start_x, y), 10)  # Sun
             pygame.draw.ellipse(self.screen, TEXT_LIGHT, (start_x+30-15, y-7, 30, 15))  # Cloud
-            pygame.draw.ellipse(self.screen, COOL_BLUE, (start_x+70-10, y-5, 20, 10))  # Rain cloud
+            pygame.draw.ellipse(self.screen, CLEAN_POOL_BLUE, (start_x+70-10, y-5, 20, 10))  # Rain cloud
             
             # Question mark for what comes next
             question_text = self.medium_font.render("?", True, LEMON_YELLOW)
@@ -1724,7 +1724,7 @@ class Game:
         elif openness_percentage > 25:
             creativity_level = "Pragmatisch mit kreativen Elementen"
             description = "Du bevorzugst bewährte Lösungen, bist aber offen für neue Ideen."
-            details = "Dein Ansatz ist größtenteils konventionell, mit gelegentlichen kreativen Impulsen."
+            details = "Dein Ansatz ist grösstenteils konventionell, mit gelegentlichen kreativen Impulsen."
         else:
             creativity_level = "Strukturiert und konventionell"
             description = "Du schätzt Beständigkeit, Ordnung und bewährte Methoden."
@@ -1747,7 +1747,7 @@ class Game:
         scale_y = 300
         
         # Scale background
-        pygame.draw.rect(self.screen, COOL_BLUE, (scale_x, scale_y, scale_width, scale_height), border_radius=15)
+        pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, (scale_x, scale_y, scale_width, scale_height), border_radius=15)
         
         # Scale fill based on score
         fill_width = int(scale_width * openness_percentage / 100)
@@ -1789,7 +1789,7 @@ class Game:
     def _get_value_color(self, value):
         """Returns a color based on the creativity value"""
         if value == "conventional":
-            return COOL_BLUE
+            return CLEAN_POOL_BLUE
         elif value == "balanced":
             return HONEY_YELLOW
         elif value == "creative":
@@ -1858,16 +1858,16 @@ class Game:
         
         # Example visualization
         example_box = pygame.Rect(SCREEN_WIDTH // 2 - 200, 350, 400, 100)
-        pygame.draw.rect(self.screen, COOL_BLUE, example_box, border_radius=15)
+        pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, example_box, border_radius=15)
         
         # Simple organization example with example items
         example_title = self.small_font.render("Beispiel:", True, TEXT_LIGHT)
         self.screen.blit(example_title, (SCREEN_WIDTH // 2 - example_title.get_width() // 2, 360))
         
         # Draw example objects
-        pygame.draw.rect(self.screen, PASSION_PURPLE, (SCREEN_WIDTH // 2 - 160, 390, 60, 40), border_radius=5)
+        pygame.draw.rect(self.screen, VIOLET_VELVET, (SCREEN_WIDTH // 2 - 160, 390, 60, 40), border_radius=5)
         pygame.draw.rect(self.screen, POMEGRANATE, (SCREEN_WIDTH // 2 - 80, 390, 60, 40), border_radius=5)
-        pygame.draw.rect(self.screen, JUICY_GREEN, (SCREEN_WIDTH // 2, 390, 60, 40), border_radius=5)
+        pygame.draw.rect(self.screen, JUICY_CHAMELEON_GREEN, (SCREEN_WIDTH // 2, 390, 60, 40), border_radius=5)
         pygame.draw.rect(self.screen, CHERRY_PINK, (SCREEN_WIDTH // 2 + 80, 390, 60, 40), border_radius=5)
         
         # Start button
@@ -1910,7 +1910,7 @@ class Game:
             short_name = item["name"] if len(item["name"]) < 15 else item["name"][:12] + "..."
             item_text = self.small_font.render(short_name, True, TEXT_DARK)
             
-            # Skaliere Text, wenn er zu groß ist
+            # Skaliere Text, wenn er zu gross ist
             if item_text.get_width() > item["size"][0] - 10:
                 # Kleinerer Font für lange Namen
                 tiny_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 42)
@@ -1930,7 +1930,7 @@ class Game:
         
         # Fortschrittsbalken für die Zeit
         progress_width = int((self.game4_time_remaining / (60 * 45)) * (SCREEN_WIDTH - 100))
-        pygame.draw.rect(self.screen, COOL_BLUE, (50, SCREEN_HEIGHT - 30, SCREEN_WIDTH - 100, 10), border_radius=5)
+        pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, (50, SCREEN_HEIGHT - 30, SCREEN_WIDTH - 100, 10), border_radius=5)
         pygame.draw.rect(self.screen, POMEGRANATE, (50, SCREEN_HEIGHT - 30, progress_width, 10), border_radius=5)
 
     def _render_game4_result(self):
@@ -1978,7 +1978,7 @@ class Game:
         scale_y = 300
         
         # Scale background
-        pygame.draw.rect(self.screen, COOL_BLUE, (scale_x, scale_y, scale_width, scale_height), border_radius=15)
+        pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, (scale_x, scale_y, scale_width, scale_height), border_radius=15)
         
         # Scale fill based on score
         fill_width = int(scale_width * self.game4_conscientiousness_score / 100)
@@ -2082,7 +2082,7 @@ class Game:
         
         # Example visualization
         example_box = pygame.Rect(SCREEN_WIDTH // 2 - 200, 380, 400, 80)
-        pygame.draw.rect(self.screen, COOL_BLUE, example_box, border_radius=15)
+        pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, example_box, border_radius=15)
         
         # Draw example slider
         slider_width = 300
@@ -2123,7 +2123,7 @@ class Game:
             
             # Progress bar
             progress_width = int(((self.game5_round + 1) / len(self.game5_scenarios)) * (SCREEN_WIDTH - 40))
-            pygame.draw.rect(self.screen, COOL_BLUE, (20, 80, SCREEN_WIDTH - 40, 10), border_radius=5)
+            pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, (20, 80, SCREEN_WIDTH - 40, 10), border_radius=5)
             pygame.draw.rect(self.screen, HONEY_YELLOW, (20, 80, progress_width, 10), border_radius=5)
         
         # Get current scenario
@@ -2148,7 +2148,7 @@ class Game:
         # Draw characters/images
         # Left side - Others
         other_rect = pygame.Rect(150, 250, 150, 80)
-        pygame.draw.rect(self.screen, COOL_BLUE, other_rect, border_radius=10)
+        pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, other_rect, border_radius=10)
         other_label = self.small_font.render("Andere", True, TEXT_LIGHT)
         self.screen.blit(other_label, (150 + 75 - other_label.get_width() // 2, 280))
         
@@ -2183,7 +2183,7 @@ class Game:
         left_percent = 100 - self.game5_slider_position
         right_percent = self.game5_slider_position
         
-        left_percent_text = self.medium_font.render(f"{left_percent}%", True, COOL_BLUE)
+        left_percent_text = self.medium_font.render(f"{left_percent}%", True, CLEAN_POOL_BLUE)
         right_percent_text = self.medium_font.render(f"{right_percent}%", True, POMEGRANATE)
         
         self.screen.blit(left_percent_text, (150 + 75 - left_percent_text.get_width() // 2, 350))
@@ -2233,7 +2233,7 @@ class Game:
         # Determine cooperation level and description
         if agreeableness_percentage > 75:
             cooperation_level = "Sehr kooperativ und unterstützend"
-            description = "Du legst großen Wert auf Harmonie und stellst oft die Bedürfnisse anderer über deine eigenen."
+            description = "Du legst grossen Wert auf Harmonie und stellst oft die Bedürfnisse anderer über deine eigenen."
             details = "Dein kooperativer Ansatz fördert positive Beziehungen und ein unterstützendes Umfeld."
         elif agreeableness_percentage > 50:
             cooperation_level = "Kooperativ mit gesunder Balance"
@@ -2265,7 +2265,7 @@ class Game:
         scale_y = 300
         
         # Scale background
-        pygame.draw.rect(self.screen, COOL_BLUE, (scale_x, scale_y, scale_width, scale_height), border_radius=15)
+        pygame.draw.rect(self.screen, CLEAN_POOL_BLUE, (scale_x, scale_y, scale_width, scale_height), border_radius=15)
         
         # Scale fill based on score
         fill_width = int(scale_width * agreeableness_percentage / 100)
@@ -2292,9 +2292,9 @@ class Game:
             scenario_title = choice["scenario"]
             share_value = 100 - choice["value"]  # Invert for "share percentage"
             
-            share_color = COOL_BLUE
+            share_color = CLEAN_POOL_BLUE
             if share_value > 75:
-                share_color = JUICY_GREEN
+                share_color = JUICY_CHAMELEON_GREEN
             elif share_value > 50:
                 share_color = HONEY_YELLOW
             elif share_value > 25:
@@ -2328,7 +2328,7 @@ class Game:
             y = random.randint(0, SCREEN_HEIGHT)
             size = random.randint(2, 8)
             color_index = random.randint(0, 7)
-            sundae_colors = [PASSION_PURPLE, COOL_BLUE, JUICY_GREEN, HONEY_YELLOW, 
+            sundae_colors = [VIOLET_VELVET, CLEAN_POOL_BLUE, JUICY_CHAMELEON_GREEN, HONEY_YELLOW, 
                         LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
             pygame.draw.circle(self.screen, sundae_colors[color_index], (x, y), size)
         
@@ -2375,11 +2375,11 @@ class Game:
             if neuroticism_score > 75:
                 companion_type = "Beruhigender Begleiter"
                 companion_desc = "Ein sanfter, strukturierter Begleiter, der Sicherheit vermittelt"
-                companion_color = COOL_BLUE
+                companion_color = CLEAN_POOL_BLUE
             elif neuroticism_score > 50:
                 companion_type = "Ausgleichender Begleiter"
                 companion_desc = "Ein ruhiger, aber motivierender Begleiter mit klaren Abläufen"
-                companion_color = JUICY_GREEN
+                companion_color = JUICY_CHAMELEON_GREEN
             elif neuroticism_score > 25:
                 companion_type = "Dynamischer Begleiter"
                 companion_desc = "Ein energiegeladener Begleiter, der Abwechslung bietet"
@@ -2401,11 +2401,11 @@ class Game:
             elif extraversion_score > 25:
                 companion_type = "Ruhiger Begleiter"
                 companion_desc = "Ein zurückhaltender Begleiter, der dich unterstützt, ohne zu drängen"
-                companion_color = JUICY_GREEN
+                companion_color = JUICY_CHAMELEON_GREEN
             else:
                 companion_type = "Zurückgezogener Begleiter"
                 companion_desc = "Ein Begleiter, der Ruhe und Raum für Reflexion bietet"
-                companion_color = COOL_BLUE
+                companion_color = CLEAN_POOL_BLUE
         
         elif dominant_trait == "openness":
             if openness_score > 75:
@@ -2423,17 +2423,17 @@ class Game:
             else:
                 companion_type = "Beständiger Begleiter"
                 companion_desc = "Ein verlässlicher Begleiter mit klaren, bewährten Routinen"
-                companion_color = COOL_BLUE
+                companion_color = CLEAN_POOL_BLUE
         
         elif dominant_trait == "conscientiousness":
             if conscientiousness_score > 75:
                 companion_type = "Strukturierter Begleiter"
                 companion_desc = "Ein organisierter Begleiter, der dir hilft, Ordnung zu halten"
-                companion_color = COOL_BLUE
+                companion_color = CLEAN_POOL_BLUE
             elif conscientiousness_score > 50:
                 companion_type = "Methodischer Begleiter"
                 companion_desc = "Ein zuverlässiger Begleiter mit einer guten Balance aus Struktur und Flexibilität"
-                companion_color = JUICY_GREEN
+                companion_color = JUICY_CHAMELEON_GREEN
             elif conscientiousness_score > 25:
                 companion_type = "Flexibler Begleiter"
                 companion_desc = "Ein anpassungsfähiger Begleiter, der deinen Bedürfnissen nachkommt"
@@ -2451,7 +2451,7 @@ class Game:
             elif agreeableness_score > 50:
                 companion_type = "Ausgleichender Begleiter"
                 companion_desc = "Ein freundlicher Begleiter, der Kooperation und eigene Bedürfnisse gut balanciert"
-                companion_color = JUICY_GREEN
+                companion_color = JUICY_CHAMELEON_GREEN
             elif agreeableness_score > 25:
                 companion_type = "Selbstbewusster Begleiter"
                 companion_desc = "Ein fokussierter Begleiter, der dir hilft, deine Ziele zu erreichen"
@@ -2464,7 +2464,7 @@ class Game:
         else:  # balanced case
             companion_type = "Ausgewogener Begleiter"
             companion_desc = "Ein vielseitiger Begleiter, der sich deinen Bedürfnissen anpasst"
-            companion_color = JUICY_GREEN
+            companion_color = JUICY_CHAMELEON_GREEN
         
         # Display personality traits
         y_offset = 155
@@ -2496,7 +2496,7 @@ class Game:
             self.screen.blit(right_text, (bar_x + bar_width + 10, y_pos + 30 + 5))
         
         # Draw Neuroticism bar
-        draw_trait_bar("Reaktionsstil", neuroticism_score, y_offset, COOL_BLUE, "Spontan", "Bedacht")
+        draw_trait_bar("Reaktionsstil", neuroticism_score, y_offset, CLEAN_POOL_BLUE, "Spontan", "Bedacht")
         
         # Draw Extraversion bar
         draw_trait_bar("Soziale Orientierung", extraversion_score, y_offset + bar_spacing, POMEGRANATE, "Introvertiert", "Extravertiert")
@@ -2505,7 +2505,7 @@ class Game:
         draw_trait_bar("Kreativität", openness_score, y_offset + bar_spacing * 2, CHERRY_PINK, "Konventionell", "Kreativ")
         
         # Draw Conscientiousness bar
-        draw_trait_bar("Organisation", conscientiousness_score, y_offset + bar_spacing * 3, JUICY_GREEN, "Flexibel", "Strukturiert")
+        draw_trait_bar("Organisation", conscientiousness_score, y_offset + bar_spacing * 3, JUICY_CHAMELEON_GREEN, "Flexibel", "Strukturiert")
 
         # Draw Agreeableness bar
         draw_trait_bar("Kooperationsverhalten", agreeableness_score, y_offset + bar_spacing * 4, HONEY_YELLOW, "Wettbewerbsorientiert", "Kooperativ")

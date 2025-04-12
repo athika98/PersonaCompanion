@@ -53,7 +53,7 @@ class ResultsState:
             y = random.randint(0, SCREEN_HEIGHT)
             size = random.randint(2, 5)  # Kleinere Kreise
             color_index = random.randint(0, 7)
-            sundae_colors = [PASSION_PURPLE, COOL_BLUE, JUICY_GREEN, HONEY_YELLOW, 
+            sundae_colors = [VIOLET_VELVET, CLEAN_POOL_BLUE, CHAMELEON_GREEN, HONEY_YELLOW, 
                           LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
             # Mache die Farben transparenter für subtilen Effekt
             color = list(sundae_colors[color_index])
@@ -100,7 +100,7 @@ class ResultsState:
             bar_width = 350
             bar_height = 20
             bar_x = SCREEN_WIDTH // 2 - bar_width // 2
-            pygame.draw.rect(self.game.screen, COOL_BLUE, (bar_x, y_pos + 25, bar_width, bar_height), border_radius=12)
+            pygame.draw.rect(self.game.screen, CLEAN_POOL_BLUE, (bar_x, y_pos + 25, bar_width, bar_height), border_radius=12)
             
             # Bar fill
             fill_width = int(bar_width * score / 100)
@@ -117,7 +117,7 @@ class ResultsState:
             self.game.screen.blit(right_text, (bar_x + bar_width + 10, y_pos + 25 + 3))
         
         # Draw Neuroticism bar
-        draw_trait_bar("Reaktionsstil", neuroticism_score, y_offset, COOL_BLUE, "Spontan", "Bedacht")
+        draw_trait_bar("Reaktionsstil", neuroticism_score, y_offset, CLEAN_POOL_BLUE, "Spontan", "Bedacht")
         
         # Draw Extraversion bar
         draw_trait_bar("Soziale Orientierung", extraversion_score, y_offset + bar_spacing, POMEGRANATE, "Introvertiert", "Extravertiert")
@@ -126,7 +126,7 @@ class ResultsState:
         draw_trait_bar("Kreativität", openness_score, y_offset + bar_spacing * 2, CHERRY_PINK, "Konventionell", "Kreativ")
         
         # Draw Conscientiousness bar
-        draw_trait_bar("Organisation", conscientiousness_score, y_offset + bar_spacing * 3, JUICY_GREEN, "Flexibel", "Strukturiert")
+        draw_trait_bar("Organisation", conscientiousness_score, y_offset + bar_spacing * 3, CHAMELEON_GREEN, "Flexibel", "Strukturiert")
         
         # Draw Agreeableness bar
         draw_trait_bar("Kooperationsverhalten", agreeableness_score, y_offset + bar_spacing * 4, HONEY_YELLOW, "Wettbewerbsorientiert", "Kooperativ")

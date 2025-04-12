@@ -67,7 +67,7 @@ def main():
     except Exception as e:
         print(f"Ein unerwarteter Fehler ist aufgetreten: {e}")
     finally:
-        # Beende pygame ordnungsgemäß
+        # Beende pygame ordnungsgemäss
         pygame.quit()
         sys.exit()
 

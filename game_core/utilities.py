@@ -4,11 +4,15 @@
 """
 Utilities - Sammlung von Hilfsfunktionen für das Spiel
 """
-
+# Bibliotheken importieren
 import pygame
 import random
 import math
 from game_core.constants import *
+
+# ----------------------------------------
+# 1. Beschreibung der Persönlichkeit
+# ----------------------------------------
 
 def get_personality_description(trait, score):
     """
@@ -38,7 +42,7 @@ def get_personality_description(trait, score):
             return (
                 "Pragmatisch mit kreativen Elementen",
                 "Du bevorzugst bewährte Lösungen, bist aber offen für neue Ideen.",
-                "Dein Ansatz ist größtenteils konventionell, mit gelegentlichen kreativen Impulsen."
+                "Dein Ansatz ist grösstenteils konventionell, mit gelegentlichen kreativen Impulsen."
             )
         else:
             return (
@@ -77,20 +81,20 @@ def get_personality_description(trait, score):
         if score > 75:
             return (
                 "Sehr extravertiert und energiegeladen",
-                "Du genießt es, mit anderen Menschen zusammen zu sein und neue Kontakte zu knüpfen.",
+                "Du geniesst es, mit anderen Menschen zusammen zu sein und neue Kontakte zu knüpfen.",
                 "Soziale Interaktionen geben dir Energie und Inspiration."
             )
         elif score > 50:
             return (
                 "Eher extravertiert mit guter Balance",
-                "Du genießt soziale Interaktionen, brauchst aber auch Zeit für dich.",
+                "Du geniesst soziale Interaktionen, brauchst aber auch Zeit für dich.",
                 "Du findest eine gute Balance zwischen Geselligkeit und persönlicher Reflexion."
             )
         elif score > 25:
             return (
                 "Eher introvertiert mit guter Balance",
                 "Du schätzt tiefe Gespräche und brauchst Zeit für dich, um Energie zu tanken.",
-                "Kleine, bedeutungsvolle Treffen sind dir lieber als große Veranstaltungen."
+                "Kleine, bedeutungsvolle Treffen sind dir lieber als grosse Veranstaltungen."
             )
         else:
             return (
@@ -103,7 +107,7 @@ def get_personality_description(trait, score):
         if score > 75:
             return (
                 "Sehr kooperativ und unterstützend",
-                "Du legst großen Wert auf Harmonie und stellst oft die Bedürfnisse anderer über deine eigenen.",
+                "Du legst grossen Wert auf Harmonie und stellst oft die Bedürfnisse anderer über deine eigenen.",
                 "Dein kooperativer Ansatz fördert positive Beziehungen und ein unterstützendes Umfeld."
             )
         elif score > 50:
@@ -183,13 +187,13 @@ def determine_companion_type(personality_traits):
             return (
                 "Beruhigender Begleiter",
                 "Ein sanfter, strukturierter Begleiter, der Sicherheit vermittelt",
-                COOL_BLUE
+                CLEAN_POOL_BLUE
             )
         elif personality_traits["neuroticism"] > 50:
             return (
                 "Ausgleichender Begleiter",
                 "Ein ruhiger, aber motivierender Begleiter mit klaren Abläufen",
-                JUICY_GREEN
+                CHAMELEON_GREEN
             )
         elif personality_traits["neuroticism"] > 25:
             return (
@@ -221,13 +225,13 @@ def determine_companion_type(personality_traits):
             return (
                 "Ruhiger Begleiter",
                 "Ein zurückhaltender Begleiter, der dich unterstützt, ohne zu drängen",
-                JUICY_GREEN
+                CHAMELEON_GREEN
             )
         else:
             return (
                 "Zurückgezogener Begleiter",
                 "Ein Begleiter, der Ruhe und Raum für Reflexion bietet",
-                COOL_BLUE
+                CLEAN_POOL_BLUE
             )
     
     elif dominant_trait == "openness":
@@ -253,7 +257,7 @@ def determine_companion_type(personality_traits):
             return (
                 "Beständiger Begleiter",
                 "Ein verlässlicher Begleiter mit klaren, bewährten Routinen",
-                COOL_BLUE
+                CLEAN_POOL_BLUE
             )
     
     elif dominant_trait == "conscientiousness":
@@ -261,13 +265,13 @@ def determine_companion_type(personality_traits):
             return (
                 "Strukturierter Begleiter",
                 "Ein organisierter Begleiter, der dir hilft, Ordnung zu halten",
-                COOL_BLUE
+                CLEAN_POOL_BLUE
             )
         elif personality_traits["conscientiousness"] > 50:
             return (
                 "Methodischer Begleiter",
                 "Ein zuverlässiger Begleiter mit einer guten Balance aus Struktur und Flexibilität",
-                JUICY_GREEN
+                CHAMELEON_GREEN
             )
         elif personality_traits["conscientiousness"] > 25:
             return (
@@ -286,7 +290,7 @@ def determine_companion_type(personality_traits):
     return (
         "Ausgewogener Begleiter",
         "Ein vielseitiger Begleiter, der sich deinen Bedürfnissen anpasst",
-        JUICY_GREEN
+        CHAMELEON_GREEN
     )
 
 def draw_sundae_confetti(surface, count=100):
@@ -300,7 +304,7 @@ def draw_sundae_confetti(surface, count=100):
     width, height = surface.get_size()
     
     sundae_colors = [
-        PASSION_PURPLE, COOL_BLUE, JUICY_GREEN, HONEY_YELLOW, 
+        VIOLET_VELVET, CLEAN_POOL_BLUE, CHAMELEON_GREEN, HONEY_YELLOW, 
         LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK
     ]
     

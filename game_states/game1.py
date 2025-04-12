@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """
-Game 1 - Das erweiterte Reaktions- und Emotionsspiel "Click & React"
+Game 1 - "Click & React"
 Misst emotionale Stabilität, Stressresistenz und Erholungsfähigkeit für den Neurotizismus-Wert
 """
 
+# Bibliotheken importieren
 import pygame
 import random
 import math
@@ -18,12 +19,12 @@ class Game1State:
         self.initialize()
     
     def initialize(self):
-        # Basis-Spielvariablen
+        # Setzt alle Spielvariablen und Vorbereitungen für den Start
         self.shapes = []
         self.score = 0
         self.time = 60 * 60  # 60 Sekunden bei 60 FPS
         self.last_spawn = 0
-        self.spawn_rate = 1200  # ms - langsamerer Start für bessere Eingewöhnung
+        self.spawn_rate = 1200  # ms
         self.correct_clicks = 0
         self.incorrect_clicks = 0
         self.missed_targets = 0
@@ -41,8 +42,8 @@ class Game1State:
         }
         self.neuroticism_score = 0
         
-        # Neue Messmechanismen für Neurotizismus-Komponenten
-        self.current_phase = "normal"  # normal, stress, recovery, frustration
+        # Messmechanismen für Neurotizismus-Komponenten
+        self.current_phase = "normal"
         self.phase_timer = 0
         self.phase_sequence = ["normal", "stress", "recovery", "frustration", "surprise", "normal", "stress", "recovery"]
         self.current_phase_index = 0
@@ -50,6 +51,7 @@ class Game1State:
         # Stressphase: schnellere Formen, mehr falsche Formen
         # Frustrationsphase: Formen verschwinden schneller, Klicks registrieren manchmal nicht
         # Erholungsphase: langsamere Formen, leichtere Aufgabe
+        # Überraschungsphase: Unerwartete Formen, die schnell verschwinden
         
         self.phase_config = {
             "normal": {
@@ -66,7 +68,7 @@ class Game1State:
                 "shape_lifespan": (30, 90),  # 0.75-2 Sekunden
                 "clickable_accuracy": 1.0,
                 "duration": 60 * 8,           # 8 Sekunden
-                "color": (250, 235, 235)      # Leicht rötlich
+                "color": ARROWHEAD_WHITE
             },
             "recovery": {
                 "spawn_rate": 1500,
@@ -74,7 +76,7 @@ class Game1State:
                 "shape_lifespan": (90, 240),  # 1.5-4 Sekunden
                 "clickable_accuracy": 1.0,
                 "duration": 60 * 6,           # 6 Sekunden
-                "color": (235, 250, 235)      # Leicht grünlich
+                "color": PLACEBO_GREEN
             },
             "frustration": {
                 "spawn_rate": 900,
@@ -82,7 +84,7 @@ class Game1State:
                 "shape_lifespan": (30, 90),   # 0.5-1.5 Sekunden
                 "clickable_accuracy": 0.5,    # Nur 70% der Klicks werden registriert
                 "duration": 60 * 7,           # 7 Sekunden
-                "color": (250, 235, 245)      # Blass-lila
+                "color": PLACEBO_MAGENTA
             },
             "surprise": {
                 "spawn_rate": 300,
@@ -90,7 +92,7 @@ class Game1State:
                 "shape_lifespan": (20, 60),
                 "clickable_accuracy": 0.8,
                 "duration": 60 * 4,
-                "color": (250, 250, 220)  # Leicht gelblich
+                "color": RISING_STAR
             }
         }
         
@@ -268,7 +270,7 @@ class Game1State:
             size = random.randint(20, 40)
             
             # Zufällige Farbe aus der Farbpalette
-            colors = [LILAC_BLUE, SOLID_BLUE, SAILING_BLUE, DIVE_BLUE, DEEP_SEA]
+            colors = [CHAMELEON_GREEN, VIOLET_VELVET, CLEAN_POOL_BLUE, HONEY_YELLOW, ORANGE_PEACH, CHERRY_PINK]
             color = random.choice(colors)
             
             # Zufällige Lebensdauer basierend auf der Phase
@@ -332,7 +334,7 @@ class Game1State:
             self.game.screen.fill(BACKGROUND)
         
         # Header
-        title = self.game.font.render("Click & React", True, text_color)
+        title = self.game.font.render("Click & React", True, TEXT_COLOR)
         self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 30))
         
         if self.state == "intro":
@@ -345,7 +347,7 @@ class Game1State:
     def _render_instructions(self):
         """Zeigt die Spielanweisungen vor dem Start an"""      
         # Titel
-        intro_title = self.game.medium_font.render("Reaktions- und Emotionstest", True, text_color)
+        intro_title = self.game.medium_font.render("Reaktions- und Emotionstest", True, TEXT_COLOR)
         self.game.screen.blit(intro_title, (SCREEN_WIDTH // 2 - intro_title.get_width() // 2, 100))
         
         # Erklärungstext
@@ -384,7 +386,7 @@ class Game1State:
         # Button zeichnen
         self.game.draw_modern_button(
             "Start", button_x, button_y, button_width, button_height,
-            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover
         )
 
         # Rechteck für Klickprüfung speichern
@@ -395,9 +397,9 @@ class Game1State:
             button_height
         )
         
-        # Blob Bild rendern
+        # Blob Bild rendern und unten platzieren
         blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2
-        blob_y = SCREEN_HEIGHT - 120  # Unten platzieren
+        blob_y = SCREEN_HEIGHT - 120
         self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
     
     def _render_game(self):
@@ -413,16 +415,16 @@ class Game1State:
         
         # Phasen-spezifische Anweisungen und Farben
         phase_instructions = {
-            "normal": ("Klicke nur auf die Kreise!", text_color),
-            "stress": ("Schnell! Die Formen bewegen sich!", POMEGRANATE),
-            "recovery": ("Zeit zum Durchatmen. Sammle Punkte!", JUICY_GREEN),
-            "frustration": ("System instabil - manche Klicks werden nicht registriert!", PASSION_PURPLE),
+            "normal": ("Klicke nur auf die Kreise!", DIVE_BLUE),
+            "stress": ("Schnell! Die Formen bewegen sich!", SHINSHU),
+            "recovery": ("Zeit zum Durchatmen. Sammle Punkte!", BROCCOFLOWER),
+            "frustration": ("System instabil - manche Klicks werden nicht registriert!", VIOLET_VELVET),
             "surprise": ("Achtung! Unerwartete Änderung!", HONEY_YELLOW)
         }
         
         # Phasen-Anzeige
         phase_text = self.game.small_font.render(
-            phase_names[self.current_phase], True, text_color
+            phase_names[self.current_phase], True, TEXT_COLOR
         )
         self.game.screen.blit(phase_text, (SCREEN_WIDTH // 2 - phase_text.get_width() // 2, 70))
         
@@ -430,30 +432,29 @@ class Game1State:
         instruction, color = phase_instructions[self.current_phase]
         instruction_text = self.game.small_font.render(instruction, True, color)
         self.game.screen.blit(instruction_text, 
-                          (SCREEN_WIDTH // 2 - instruction_text.get_width() // 2, 95))
+                          (SCREEN_WIDTH // 2 - instruction_text.get_width() // 2, 90))
         
         # Punktekarte links
         self.game.draw_card(20, 20, 140, 60, color=WHITE)
-        score_label = self.game.small_font.render("Punkte", True, text_color)
+        score_label = self.game.small_font.render("Punkte", True, TEXT_COLOR)
         score_value = self.game.medium_font.render(f"{self.score}", True, BLACK)
         self.game.screen.blit(score_label, (30, 25))
         self.game.screen.blit(score_value, (30, 50))
         
         # Zeitkarte rechts
         self.game.draw_card(SCREEN_WIDTH - 160, 20, 140, 60, color=WHITE)
-        time_label = self.game.small_font.render("Zeit", True, text_color)
+        time_label = self.game.small_font.render("Zeit", True, TEXT_COLOR)
         
         # Zeit-Farbänderung je nach Phase
         time_colors = {
-            "normal": ACCENT,
-            "stress": POMEGRANATE,
-            "recovery": JUICY_GREEN,
-            "frustration": PASSION_PURPLE,
+            "normal": DIVE_BLUE,
+            "stress": SHINSHU,
+            "recovery": BROCCOFLOWER,
+            "frustration": VIOLET_VELVET,
             "surprise": HONEY_YELLOW
         }
         
-        time_value = self.game.medium_font.render(f"{self.time // 60}", True, 
-                                              time_colors[self.current_phase])
+        time_value = self.game.medium_font.render(f"{self.time // 60}", True, time_colors[self.current_phase])
         self.game.screen.blit(time_label, (SCREEN_WIDTH - 150, 25))
         self.game.screen.blit(time_value, (SCREEN_WIDTH - 150, 50))
         
@@ -464,8 +465,7 @@ class Game1State:
         game_area_height = SCREEN_HEIGHT - 190
         
         # Phase-spezifischer Spielbereich-Hintergrund
-        self.game.draw_card(game_area_x, game_area_y, game_area_width, game_area_height, 
-                         color=WHITE)
+        self.game.draw_card(game_area_x, game_area_y, game_area_width, game_area_height, color=WHITE)
         
         # Während der Frustration-Phase subtile visuelle Störungen
         if self.current_phase == "frustration" and random.random() < 0.05:
@@ -492,7 +492,7 @@ class Game1State:
             color = shape['color']
             if shape['flash'] > 0:
                 # Kurzes Aufblitzen bei ignorierten Klicks
-                color = PASSION_PURPLE
+                color = VIOLET_VELVET
                 
             if shape['type'] == 'circle':
                 pygame.draw.circle(self.game.screen, color, shape['pos'], 
@@ -521,9 +521,9 @@ class Game1State:
         self.game.draw_progress_bar(50, SCREEN_HEIGHT - 50, SCREEN_WIDTH - 100, 10, 
                                  progress, fill_color=bar_color)
         
-        # Statistiken & ESC-Hinweis
+        # Statistiken (Punkte, Klicks)
         stats_text = self.game.small_font.render(
-            f"Korrekt: {self.correct_clicks}   |   Falsch: {self.incorrect_clicks}", True, text_color)
+            f"Korrekt: {self.correct_clicks}   |   Falsch: {self.incorrect_clicks}", True, TEXT_COLOR)
         self.game.screen.blit(stats_text, (50, SCREEN_HEIGHT - 70))
     
     def advance_to_next_phase(self):
@@ -732,7 +732,7 @@ class Game1State:
     def _render_result(self):
         """Zeigt die Ergebnisseite mit dem Neurotizismus-Balken an"""
         # Titel
-        title = self.game.medium_font.render("Dein Ergebnis:", True, text_color)
+        title = self.game.medium_font.render("Dein Ergebnis:", True, TEXT_COLOR)
         self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 130))
         
         # Ergebnisbalken
@@ -753,11 +753,11 @@ class Game1State:
         self.game.screen.blit(high_text, (scale_x + scale_width - high_text.get_width(), scale_y + scale_height + 10))
         
         # Neurotizismus Beschriftung mittig über dem Balken
-        neuro_text = self.game.medium_font.render("Neurotizismus", True, text_color)
+        neuro_text = self.game.medium_font.render("Neurotizismus", True, TEXT_COLOR)
         self.game.screen.blit(neuro_text, (SCREEN_WIDTH // 2 - neuro_text.get_width() // 2, scale_y - 70))
         
         # Prozentsatz über dem Balken
-        percent_text = self.game.medium_font.render(f"{self.neuroticism_score}%", True, text_color)
+        percent_text = self.game.medium_font.render(f"{self.neuroticism_score}%", True, TEXT_COLOR)
         self.game.screen.blit(percent_text,
                             (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
         
@@ -777,7 +777,7 @@ class Game1State:
         # Button zeichnen mit Hover-Effekt
         self.game.draw_modern_button(
             "Weiter", button_x, button_y, button_width, button_height,
-            text_color, TEXT_LIGHT, self.game.medium_font, 25, hover
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover
         )
         
         # Rechteck für Klickprüfung speichern

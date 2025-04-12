@@ -19,8 +19,8 @@ FPS = 60  # Frames per second (higher values like 60 FPS result in smoother anim
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
+CHAMELEON_GREEN = (0, 255, 0)
+CLEAN_POOL_BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 GRAY = (200, 200, 200)
 LIGHT_BLUE = (173, 216, 230)
@@ -60,7 +60,7 @@ class Player:
         self.speed = 5
 
         # Default player color (used as a fallback if no image is available)
-        self.color = BLUE
+        self.color = CLEAN_POOL_BLUE
 
         # Tracking player behavior
         self.decision_times = []  # Stores time taken for decisions
@@ -105,7 +105,7 @@ class Player:
 ######################## das später noch anschauen #########################################
 # NPC class for social interactions
 class NPC:
-    def __init__(self, x, y, color=GREEN, request_type="help"):
+    def __init__(self, x, y, color=CHAMELEON_GREEN, request_type="help"):
         self.width = 40
         self.height = 60
         self.x = x
@@ -151,12 +151,12 @@ class Path:
 
 # Button class for UI
 class Button:
-    def __init__(self, x, y, width, height, text, color=GRAY, hover_color=WHITE, text_color=BLACK):
+    def __init__(self, x, y, width, height, text, color=GRAY, hover_color=WHITE, TEXT_COLOR=BLACK):
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
         self.color = color
         self.hover_color = hover_color
-        self.text_color = text_color
+        self.TEXT_COLOR = TEXT_COLOR
         self.current_color = color
         
     def draw(self):
@@ -165,7 +165,7 @@ class Button:
         pygame.draw.rect(screen, BLACK, self.rect, 2)  # Button border
         
         # Render text
-        text_surf = font_medium.render(self.text, True, self.text_color)
+        text_surf = font_medium.render(self.text, True, self.TEXT_COLOR)
         text_rect = text_surf.get_rect(center=self.rect.center)
         screen.blit(text_surf, text_rect)
         
@@ -251,7 +251,7 @@ class StartScreen:
         screen.fill(WHITE)
 
         # Render and display the title text
-        title_surf = font_title.render(self.title, True, BLUE)
+        title_surf = font_title.render(self.title, True, CLEAN_POOL_BLUE)
         title_rect = title_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3))
         screen.blit(title_surf, title_rect)
 
@@ -302,7 +302,7 @@ def generate_companion_description(personality_traits):
         if extraversion > 65:
             color_theme = "leuchtenden, sich ständig verändernden Regenbogenfarben"  # vibrant, shifting rainbow colors
         else:
-            color_theme = "sanften Blau-Grün-Tönen, die sich langsam verändern"  # gentle blue-green hues that slowly transform
+            color_theme = "sanften Blau-Grün-Tönen, die sich langsam verändern"  # gentle blue-CHAMELEON_GREEN hues that slowly transform
         
         special_features = []
         if conscientiousness > 60:
@@ -317,7 +317,7 @@ def generate_companion_description(personality_traits):
     elif conscientiousness > 70:
         companion_type = "Organisierter Helfer"  # Organized Helper
         base_form = "ein geometrischer Begleiter"  # a geometric companion
-        color_theme = "klaren Blau- und Weißtönen"  # clean blue and white tones
+        color_theme = "klaren Blau- und Weisstönen"  # clean blue and white tones
         
         special_features = []
         special_features.append("eine klar strukturierte Benutzeroberfläche")  # a clearly organized interface
@@ -354,7 +354,7 @@ def generate_companion_description(personality_traits):
             
     elif neuroticism > 70:
         companion_type = "Beruhigende Präsenz"  # Calming Presence
-        base_form = "ein fließendes, wasserähnliches Wesen"  # a flowing, water-like entity
+        base_form = "ein fliessendes, wasserähnliches Wesen"  # a flowing, water-like entity
         color_theme = "beruhigenden Türkis- und sanften Blautönen"  # soothing teal and gentle blue shades
         
         special_features = []
@@ -367,7 +367,7 @@ def generate_companion_description(personality_traits):
     else:
         companion_type = "Ausgewogener Begleiter"  # Balanced Buddy
         base_form = "ein abgerundeter, symmetrischer Begleiter"  # a rounded, symmetrical companion
-        color_theme = "ausgeglichenen Blau- und Grüntönen"  # balanced blend of blue and green
+        color_theme = "ausgeglichenen Blau- und Grüntönen"  # balanced blend of blue and CHAMELEON_GREEN
         
         special_features = []
         special_features.append("stabile, verlässliche Animationen")  # stable, reliable animations
@@ -434,7 +434,7 @@ class ResultScreen:
         
     def draw(self):
         screen.fill(WHITE)
-        title_surf = font_large.render("Your Personality Profile", True, BLUE)
+        title_surf = font_large.render("Your Personality Profile", True, CLEAN_POOL_BLUE)
         title_rect = title_surf.get_rect(center=(SCREEN_WIDTH // 2, 80))
         screen.blit(title_surf, title_rect)
         
@@ -458,7 +458,7 @@ class ResultScreen:
             # Draw score bar
             bar_width = 300
             pygame.draw.rect(screen, GRAY, (300, y_pos, bar_width, 25))
-            pygame.draw.rect(screen, GREEN, (300, y_pos, bar_width * score / 100, 25))
+            pygame.draw.rect(screen, CHAMELEON_GREEN, (300, y_pos, bar_width * score / 100, 25))
             
             # Draw score percentage
             score_surf = font_small.render(f"{score}%", True, BLACK)
@@ -472,7 +472,7 @@ class ResultScreen:
         
         # Display recommended companion based on traits
         companion = self.get_recommended_companion()
-        comp_surf = font_medium.render(f"Recommended Digital Companion: {companion}", True, BLUE)
+        comp_surf = font_medium.render(f"Recommended Digital Companion: {companion}", True, CLEAN_POOL_BLUE)
         screen.blit(comp_surf, (100, y_pos))
         
         # Draw companion description with word wrap
@@ -654,7 +654,7 @@ class PathChoiceStage:
         self.choice_made_time = None
         
         self.instructions = [
-            "Choose a path to reach the goal (green)",
+            "Choose a path to reach the goal (CHAMELEON_GREEN)",
             "Blue path: Safe but longer",
             "Red path: Faster but with obstacles"
         ]
@@ -743,7 +743,7 @@ class PathChoiceStage:
             pygame.draw.rect(screen, BLACK, obstacle)
         
         # Draw goal
-        pygame.draw.rect(screen, GREEN, self.goal)
+        pygame.draw.rect(screen, CHAMELEON_GREEN, self.goal)
         
         # Draw player
         self.player.draw()
@@ -761,10 +761,10 @@ class SocialInteractionStage:
         
         # Create NPCs with different needs
         self.npcs = [
-            NPC(200, 200, GREEN, "help"),
+            NPC(200, 200, CHAMELEON_GREEN, "help"),
             NPC(600, 200, YELLOW, "cooperation"),
             NPC(200, 400, RED, "competition"),
-            NPC(600, 400, BLUE, "conversation")
+            NPC(600, 400, CLEAN_POOL_BLUE, "conversation")
         ]
         
         self.interactions_completed = 0
@@ -941,7 +941,7 @@ class SocialInteractionStage:
                 screen.blit(text_surf, (20, 20 + i * 25))
             
             # Draw progress
-            progress_surf = font_medium.render(f"Interactions: {self.interactions_completed}/{self.max_interactions}", True, BLUE)
+            progress_surf = font_medium.render(f"Interactions: {self.interactions_completed}/{self.max_interactions}", True, CLEAN_POOL_BLUE)
             screen.blit(progress_surf, (SCREEN_WIDTH - 200, 20))
             
             # Draw timer

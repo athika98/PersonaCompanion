@@ -15,7 +15,7 @@ BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
 LIGHT_BLUE = (173, 216, 230)
 DARK_BLUE = (0, 0, 139)
-GREEN = (0, 255, 0)
+CHAMELEON_GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 ORANGE = (255, 165, 0)
@@ -94,7 +94,7 @@ class NPC:
         
         # Indicate if in conversation
         if self.in_conversation:
-            pygame.draw.circle(screen, GREEN, (self.x, self.y - self.size - 5), 5)
+            pygame.draw.circle(screen, CHAMELEON_GREEN, (self.x, self.y - self.size - 5), 5)
             
     def is_clicked(self, pos):
         distance = math.sqrt((pos[0] - self.x) ** 2 + (pos[1] - self.y) ** 2)
@@ -237,7 +237,7 @@ class SocialNetworkGame:
         energy_text = FONT.render(f"Social Energy: {self.player_stats.social_energy}", True, BLACK)
         self.screen.blit(energy_text, (10, 40))
         pygame.draw.rect(self.screen, GRAY, (10, 60, 180, 20))
-        pygame.draw.rect(self.screen, GREEN, (10, 60, int(180 * self.player_stats.social_energy / 100), 20))
+        pygame.draw.rect(self.screen, CHAMELEON_GREEN, (10, 60, int(180 * self.player_stats.social_energy / 100), 20))
         pygame.draw.rect(self.screen, BLACK, (10, 60, 180, 20), 2)
         
         # Draw day and time
@@ -264,7 +264,7 @@ class SocialNetworkGame:
                 
             if event.is_active(self.player_stats.time):
                 status = "ACTIVE"
-                color = GREEN
+                color = CHAMELEON_GREEN
             else:
                 hours_until = event.start_time - self.player_stats.time
                 status = f"in {hours_until}h"
@@ -398,7 +398,7 @@ class SocialNetworkGame:
             self.screen.blit(option_text, (80, y_offset + 10))
             
             # Lead/Attend buttons
-            pygame.draw.rect(self.screen, GREEN, (80, y_offset + 30, 100, 20))
+            pygame.draw.rect(self.screen, CHAMELEON_GREEN, (80, y_offset + 30, 100, 20))
             lead_text = FONT.render("Lead Event", True, BLACK)
             self.screen.blit(lead_text, (85, y_offset + 32))
             
@@ -464,7 +464,7 @@ class SocialNetworkGame:
         self.screen.blit(option3_text, (455, SCREEN_HEIGHT - 150))
         
         # Draw advance time button
-        pygame.draw.rect(self.screen, GREEN, (SCREEN_WIDTH - 250, SCREEN_HEIGHT - 100, 180, 40))
+        pygame.draw.rect(self.screen, CHAMELEON_GREEN, (SCREEN_WIDTH - 250, SCREEN_HEIGHT - 100, 180, 40))
         pygame.draw.rect(self.screen, BLACK, (SCREEN_WIDTH - 250, SCREEN_HEIGHT - 100, 180, 40), 2)
         advance_text = FONT.render("Advance Time +1h", True, BLACK)
         self.screen.blit(advance_text, (SCREEN_WIDTH - 245, SCREEN_HEIGHT - 90))
@@ -527,7 +527,7 @@ class SocialNetworkGame:
             y_offset += 25
             
         # Draw restart button
-        pygame.draw.rect(self.screen, GREEN, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 40))
+        pygame.draw.rect(self.screen, CHAMELEON_GREEN, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 40))
         pygame.draw.rect(self.screen, BLACK, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 40), 2)
         restart_text = FONT.render("Restart Assessment", True, BLACK)
         self.screen.blit(restart_text, (SCREEN_WIDTH // 2 - restart_text.get_width() // 2, SCREEN_HEIGHT - 70))

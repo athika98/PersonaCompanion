@@ -13,8 +13,8 @@ WIDTH, HEIGHT = 800, 600
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
+CHAMELEON_GREEN = (0, 255, 0)
+CLEAN_POOL_BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 GRAY = (150, 150, 150)
 LIGHT_BLUE = (173, 216, 230)
@@ -29,11 +29,11 @@ TASKS_PER_LEVEL = 3  # number of tasks per difficulty level
 MAX_DIFFICULTY = 3   # maximum difficulty level
 
 class Button:
-    def __init__(self, x, y, width, height, color, text, text_color=BLACK, font_size=24):
+    def __init__(self, x, y, width, height, color, text, TEXT_COLOR=BLACK, font_size=24):
         self.rect = pygame.Rect(x, y, width, height)
         self.color = color
         self.text = text
-        self.text_color = text_color
+        self.TEXT_COLOR = TEXT_COLOR
         self.font = pygame.font.Font(None, font_size)
         self.is_hovered = False
         
@@ -46,7 +46,7 @@ class Button:
         pygame.draw.rect(screen, color, self.rect)
         pygame.draw.rect(screen, BLACK, self.rect, 2)  # Border
         
-        text_surface = self.font.render(self.text, True, self.text_color)
+        text_surface = self.font.render(self.text, True, self.TEXT_COLOR)
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
         
@@ -57,7 +57,7 @@ class Button:
         self.is_hovered = self.rect.collidepoint(mouse_pos)
 
 class Target:
-    def __init__(self, x, y, radius=20, color=GREEN, moving=False, speed=2):
+    def __init__(self, x, y, radius=20, color=CHAMELEON_GREEN, moving=False, speed=2):
         self.x = x
         self.y = y
         self.radius = radius
@@ -170,14 +170,14 @@ class PressureTest:
         
     def _setup_buttons(self):
         # Main menu buttons
-        self.buttons["start"] = Button(WIDTH//2 - 100, HEIGHT//2 - 25, 200, 50, GREEN, "Start Test")
+        self.buttons["start"] = Button(WIDTH//2 - 100, HEIGHT//2 - 25, 200, 50, CHAMELEON_GREEN, "Start Test")
         self.buttons["quit"] = Button(WIDTH//2 - 100, HEIGHT//2 + 50, 200, 50, RED, "Quit")
         
         # Game buttons
         self.buttons["abandon"] = Button(WIDTH - 120, HEIGHT - 50, 100, 40, RED, "Abandon", WHITE, 20)
         
         # Result screen buttons
-        self.buttons["menu"] = Button(WIDTH//2 - 100, HEIGHT - 100, 200, 50, BLUE, "Back to Menu")
+        self.buttons["menu"] = Button(WIDTH//2 - 100, HEIGHT - 100, 200, 50, CLEAN_POOL_BLUE, "Back to Menu")
         
     def generate_targets(self):
         self.targets = []
@@ -207,7 +207,7 @@ class PressureTest:
             is_moving = len(self.targets) < moving_targets
             speed = min(1 + self.difficulty, 5)
             
-            self.targets.append(Target(x, y, radius, GREEN, is_moving, speed))
+            self.targets.append(Target(x, y, radius, CHAMELEON_GREEN, is_moving, speed))
     
     def generate_disruptions(self):
         self.disruption_events = []
@@ -308,7 +308,7 @@ class PressureTest:
                         self.current_task_times.append(click_time)
                         
                         # Show positive feedback
-                        self.show_feedback("+1", GREEN)
+                        self.show_feedback("+1", CHAMELEON_GREEN)
             
             elif self.state == "results":
                 if self.buttons["menu"].is_clicked(mouse_pos):
@@ -552,10 +552,10 @@ class PressureTest:
         # Handle color inversion
         if self.current_disruption and self.current_disruption.active and self.current_disruption.event_type == "color_inversion":
             bg_color = BLACK
-            text_color = WHITE
+            TEXT_COLOR = WHITE
         else:
             bg_color = WHITE
-            text_color = BLACK
+            TEXT_COLOR = BLACK
         
         self.screen.fill(bg_color)
         
@@ -589,17 +589,17 @@ class PressureTest:
         elif time_percentage < 0.6:
             time_color = YELLOW
         else:
-            time_color = GREEN
+            time_color = CHAMELEON_GREEN
             
         pygame.draw.rect(shake_surface, GRAY, (WIDTH//2 - time_bar_width//2, 20, time_bar_width, time_bar_height))
         pygame.draw.rect(shake_surface, time_color, 
                         (WIDTH//2 - time_bar_width//2, 20, int(time_bar_width * time_percentage), time_bar_height))
         
         # Draw task information
-        level_text = self.font.render(f"Level: {self.level} Task: {self.task} Difficulty: {self.difficulty}", True, text_color)
+        level_text = self.font.render(f"Level: {self.level} Task: {self.task} Difficulty: {self.difficulty}", True, TEXT_COLOR)
         shake_surface.blit(level_text, (20, 20))
         
-        score_text = self.font.render(f"Score: {self.task_score}/{len(self.targets)}", True, text_color)
+        score_text = self.font.render(f"Score: {self.task_score}/{len(self.targets)}", True, TEXT_COLOR)
         shake_surface.blit(score_text, (WIDTH - score_text.get_width() - 20, 20))
         
         # Draw disruption warning
@@ -687,7 +687,7 @@ class PressureTest:
         elif score < 6:
             return YELLOW
         else:
-            return GREEN
+            return CHAMELEON_GREEN
     
     def _wrap_text(self, text, chars_per_line):
         words = text.split()

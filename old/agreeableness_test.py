@@ -18,8 +18,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)
 RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
+CHAMELEON_GREEN = (0, 255, 0)
+CLEAN_POOL_BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 PURPLE = (128, 0, 128)
 LIGHT_BLUE = (173, 216, 230)
@@ -145,7 +145,7 @@ class NPC:
         
         # Visual properties
         self.colors = {
-            'friendly': (0, 200, 0),  # Green
+            'friendly': (0, 200, 0),  # CHAMELEON_GREEN
             'neutral': (200, 200, 0),  # Yellow
             'difficult': (200, 100, 0)  # Orange
         }
@@ -183,7 +183,7 @@ class NPC:
         trust_width = int((self.trust_level / 100) * 50)
         trust_color = (
             max(0, min(255, 255 - (self.trust_level * 2.55))),  # Red component decreases
-            max(0, min(255, self.trust_level * 2.55)),  # Green component increases
+            max(0, min(255, self.trust_level * 2.55)),  # CHAMELEON_GREEN component increases
             0  # No blue
         )
         pygame.draw.rect(screen, trust_color, (self.x - 25, self.y + self.radius + 5, trust_width, 8))
@@ -538,7 +538,7 @@ class Game:
         screen.blit(desc_text2, (SCREEN_WIDTH//2 - desc_text2.get_width()//2, 260))
         
         # Start button
-        pygame.draw.rect(screen, GREEN, (SCREEN_WIDTH//2 - 100, 350, 200, 50))
+        pygame.draw.rect(screen, CHAMELEON_GREEN, (SCREEN_WIDTH//2 - 100, 350, 200, 50))
         pygame.draw.rect(screen, BLACK, (SCREEN_WIDTH//2 - 100, 350, 200, 50), 2)
         start_text = font_medium.render("Start Game", True, BLACK)
         screen.blit(start_text, (SCREEN_WIDTH//2 - start_text.get_width()//2, 362))
@@ -583,7 +583,7 @@ class Game:
             
         # Next event button if no event is active
         if not self.event_queue:
-            pygame.draw.rect(screen, GREEN, (SCREEN_WIDTH - 150, 20, 130, 40))
+            pygame.draw.rect(screen, CHAMELEON_GREEN, (SCREEN_WIDTH - 150, 20, 130, 40))
             pygame.draw.rect(screen, BLACK, (SCREEN_WIDTH - 150, 20, 130, 40), 2)
             next_text = font_medium.render("Next Day", True, BLACK)
             screen.blit(next_text, (SCREEN_WIDTH - 145, 28))
@@ -630,11 +630,11 @@ class Game:
             # Show trust change
             if "trust_change" in self.event_results:
                 trust_text = font_medium.render(f"Trust Change: {self.event_results['trust_change']:+.1f}", True,  
-                                             GREEN if self.event_results["trust_change"] >= 0 else RED)
+                                             CHAMELEON_GREEN if self.event_results["trust_change"] >= 0 else RED)
                 screen.blit(trust_text, (SCREEN_WIDTH//2 - trust_text.get_width()//2, 480))
             
             # Continue button
-            pygame.draw.rect(screen, GREEN, (SCREEN_WIDTH//2 - 100, 520, 200, 40))
+            pygame.draw.rect(screen, CHAMELEON_GREEN, (SCREEN_WIDTH//2 - 100, 520, 200, 40))
             pygame.draw.rect(screen, BLACK, (SCREEN_WIDTH//2 - 100, 520, 200, 40), 2)
             continue_text = font_medium.render("Continue", True, BLACK)
             screen.blit(continue_text, (SCREEN_WIDTH//2 - continue_text.get_width()//2, 528))
@@ -672,7 +672,7 @@ class Game:
         
         for i, (x_pos, amount) in enumerate(positions):
             if i % 2 == 0:  # Draw only for 0, 2, 4 positions to avoid clutter
-                pygame.draw.rect(screen, GREEN, (x_pos - button_width//2, button_y, button_width, button_height))
+                pygame.draw.rect(screen, CHAMELEON_GREEN, (x_pos - button_width//2, button_y, button_width, button_height))
                 pygame.draw.rect(screen, BLACK, (x_pos - button_width//2, button_y, button_width, button_height), 2)
                 share_text = font_medium.render(f"Share {amount}", True, BLACK)
                 screen.blit(share_text, (x_pos - share_text.get_width()//2, button_y + 8))
@@ -764,17 +764,17 @@ class Game:
             # Draw bar
             metric_value = int(float(metric.split(":")[1].split("/")[0].strip()))
             bar_width = int((metric_value / 100) * (SCREEN_WIDTH - 250))
-            pygame.draw.rect(screen, GREEN, (300, metrics_y + 50 + i * 30, bar_width, 20))
+            pygame.draw.rect(screen, CHAMELEON_GREEN, (300, metrics_y + 50 + i * 30, bar_width, 20))
             pygame.draw.rect(screen, BLACK, (300, metrics_y + 50 + i * 30, SCREEN_WIDTH - 450, 20), 1)
             
         # Detailed report button
-        pygame.draw.rect(screen, GREEN, (SCREEN_WIDTH//2 - 150, metrics_y + 220, 300, 40))
+        pygame.draw.rect(screen, CHAMELEON_GREEN, (SCREEN_WIDTH//2 - 150, metrics_y + 220, 300, 40))
         pygame.draw.rect(screen, BLACK, (SCREEN_WIDTH//2 - 150, metrics_y + 220, 300, 40), 2)
         report_text = font_medium.render("View Detailed Report", True, BLACK)
         screen.blit(report_text, (SCREEN_WIDTH//2 - report_text.get_width()//2, metrics_y + 228))
         
         # Play again button
-        pygame.draw.rect(screen, BLUE, (SCREEN_WIDTH//2 - 150, metrics_y + 280, 300, 40))
+        pygame.draw.rect(screen, CLEAN_POOL_BLUE, (SCREEN_WIDTH//2 - 150, metrics_y + 280, 300, 40))
         pygame.draw.rect(screen, BLACK, (SCREEN_WIDTH//2 - 150, metrics_y + 280, 300, 40), 2)
         again_text = font_medium.render("Play Again", True, BLACK)
         screen.blit(again_text, (SCREEN_WIDTH//2 - again_text.get_width()//2, metrics_y + 288))
@@ -822,7 +822,7 @@ class Game:
             screen.blit(trust_text, (x_pos - trust_text.get_width()//2, y_pos + 35))
             
         # Back button
-        pygame.draw.rect(screen, BLUE, (SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT - 80, 200, 40))
+        pygame.draw.rect(screen, CLEAN_POOL_BLUE, (SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT - 80, 200, 40))
         pygame.draw.rect(screen, BLACK, (SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT - 80, 200, 40), 2)
         back_text = font_medium.render("Back", True, BLACK)
         screen.blit(back_text, (SCREEN_WIDTH//2 - back_text.get_width()//2, SCREEN_HEIGHT - 72))

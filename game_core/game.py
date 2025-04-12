@@ -148,7 +148,7 @@ class Game:
             transition_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
             
             # Farbige Übergangsbänder
-            sundae_colors = [PASSION_PURPLE, COOL_BLUE, JUICY_GREEN, HONEY_YELLOW, 
+            sundae_colors = [VIOLET_VELVET, CLEAN_POOL_BLUE, CHAMELEON_GREEN, HONEY_YELLOW, 
                             LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
             
             band_height = SCREEN_HEIGHT // len(sundae_colors)
@@ -166,7 +166,7 @@ class Game:
         self.next_state = new_state
     
     # Hilfsfunktionen für die Benutzeroberfläche (UI)
-    def draw_modern_button(self, text, x, y, width, height, color, text_color=text_color, 
+    def draw_modern_button(self, text, x, y, width, height, color, TEXT_COLOR=TEXT_COLOR, 
                          font=None, border_radius=10, hover=False):
         """Zeichnet einen modernen Button mit Schattierung"""
         if font is None:
@@ -188,13 +188,13 @@ class Game:
             pygame.draw.rect(self.screen, color, button_rect, border_radius=border_radius)
             
         # Text auf dem Button
-        text_surf = font.render(text, True, text_color)
+        text_surf = font.render(text, True, TEXT_COLOR)
         text_rect = text_surf.get_rect(center=(x, y))
         self.screen.blit(text_surf, text_rect)
         
         return button_rect
     
-    def draw_card(self, x, y, width, height, color=text_color, border_radius=15, shadow=False):
+    def draw_card(self, x, y, width, height, color=TEXT_COLOR, border_radius=15, shadow=False):
         """Zeichnet eine Karte mit optionalem Schatten"""
         if shadow:
             # Schattenwurf

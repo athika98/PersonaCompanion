@@ -20,8 +20,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (150, 150, 150)
 RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
+CHAMELEON_GREEN = (0, 255, 0)
+CLEAN_POOL_BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 PURPLE = (128, 0, 128)
 CYAN = (0, 255, 255)
@@ -301,7 +301,7 @@ class Game:
         self.input_active = False
         
         # Customization options
-        self.available_colors = [RED, GREEN, BLUE, YELLOW, PURPLE, CYAN, ORANGE]
+        self.available_colors = [RED, CHAMELEON_GREEN, CLEAN_POOL_BLUE, YELLOW, PURPLE, CYAN, ORANGE]
         self.available_shapes = ["circle", "square", "triangle"]
         self.selected_color_index = 0
         self.selected_shape_index = 0
@@ -503,7 +503,7 @@ class Game:
         
         # Name input box
         input_box = pygame.Rect(SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT//2, 200, 30)
-        color = BLUE if self.input_active else GRAY
+        color = CLEAN_POOL_BLUE if self.input_active else GRAY
         pygame.draw.rect(self.screen, color, input_box, 2)
         
         name_surface = self.font.render(self.player_name, True, BLACK)
@@ -511,7 +511,7 @@ class Game:
         
         # Start button
         button_rect = pygame.Rect(SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT//2 + 50, 200, 50)
-        pygame.draw.rect(self.screen, GREEN, button_rect)
+        pygame.draw.rect(self.screen, CHAMELEON_GREEN, button_rect)
         button_text = self.font.render("Start Game", True, BLACK)
         self.screen.blit(button_text, (SCREEN_WIDTH//2 - button_text.get_width()//2, SCREEN_HEIGHT//2 + 65))
         
@@ -556,7 +556,7 @@ class Game:
             
         # Start button
         start_rect = pygame.Rect(SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT//2 + 100, 200, 50)
-        pygame.draw.rect(self.screen, GREEN, start_rect)
+        pygame.draw.rect(self.screen, CHAMELEON_GREEN, start_rect)
         start_text = self.font.render("Start Exploring", True, BLACK)
         self.screen.blit(start_text, (SCREEN_WIDTH//2 - start_text.get_width()//2, SCREEN_HEIGHT//2 + 115))
         
@@ -595,7 +595,7 @@ class Game:
                 
                 # Draw cell background based on type
                 if x == 0 and y == 0:  # Start
-                    pygame.draw.rect(self.screen, GREEN, (cell_x, cell_y, TILE_SIZE, TILE_SIZE))
+                    pygame.draw.rect(self.screen, CHAMELEON_GREEN, (cell_x, cell_y, TILE_SIZE, TILE_SIZE))
                 elif x == self.maze_width - 1 and y == self.maze_height - 1:  # Goal
                     pygame.draw.rect(self.screen, RED, (cell_x, cell_y, TILE_SIZE, TILE_SIZE))
                 elif cell.is_path:

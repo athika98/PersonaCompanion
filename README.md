@@ -401,7 +401,7 @@ The game tracks several key metrics to evaluate neuroticism:
 4. **Persistence vs. Abandonment**: Measures whether players persist through challenging situations or choose to abandon tasks. Players can click an "Abandon" button to skip difficult tasks, which affects their persistence score.
 
 ### Visual Indicators of Pressure
-- A time bar at the top of the screen changes color (green → yellow → red) as time runs out
+- A time bar at the top of the screen changes color (CHAMELEON_GREEN → yellow → red) as time runs out
 - Visual warnings appear during disruptions
 - Feedback messages provide both positive and negative reinforcement
 - The game interface changes during disruptions to create additional pressure
