@@ -19,6 +19,8 @@ from game_states.game3 import Game3State
 from game_states.game4 import Game4State
 from game_states.game5 import Game5State
 from game_states.results import ResultsState
+from game_states.bfi_validation import BFI10State
+from game_states.bfi_results import BFIResultsState
 
 class Game:
     """
@@ -47,7 +49,9 @@ class Game:
             "GAME3": Game3State(self),
             "GAME4": Game4State(self),
             "GAME5": Game5State(self),
-            "RESULTS": ResultsState(self)
+            "RESULTS": ResultsState(self),
+            "BFI10": BFI10State(self),
+            "BFI_RESULTS": BFIResultsState(self)
         }
         
         # Spiel beginnt im Menü
@@ -57,6 +61,9 @@ class Game:
         self.transitioning = True
         self.transition_alpha = 255
         self.next_state = None
+
+        # Initialisiere den BFI-Score
+        self.bfi_scores = {}
     
     def load_fonts(self):
         """Lädt alle benötigten Schriftarten"""

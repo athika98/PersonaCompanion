@@ -19,6 +19,8 @@ class ResultsState:
         """Initialisiert den Ergebniszustand mit einer Referenz auf das Hauptspiel"""
         self.game = game
         self.initialize()
+
+        self.validate_button = pygame.Rect(300, 450, 200, 50)
     
     def initialize(self):
         """Initialisiert den Ergebniszustand"""
@@ -36,7 +38,12 @@ class ResultsState:
                 self.game.user_name = ""
                 self.game.active_input = True
                 self.game.personality_traits = {key: 0 for key in self.game.personality_traits}
-    
+        # BFI-10 Validierung Button
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.validate_button.collidepoint(pygame.mouse.get_pos()):
+                # Verwende transition_to statt change_state
+                self.game.transition_to("BFI10")
+        
     def update(self):
         """Aktualisiert den Zustand (für Animationen etc.)"""
         # Hier könnte zusätzliche Animation oder Logik implementiert werden
@@ -182,4 +189,16 @@ class ResultsState:
         self.game.draw_modern_button(
             "Zurück zum Hauptmenü", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30, 200, 40,
             TEXT_DARK, TEXT_LIGHT, self.game.small_font, 20, hover=False
+        )
+
+        # Zeichne den Validierungsbutton
+        self.validate_button = self.game.draw_modern_button(
+            "Mit BFI-10 validieren", 
+            SCREEN_WIDTH // 2, 
+            450,  # Y-Position anpassen
+            200, 
+            50,
+            SECONDARY,  # Farbe anpassen
+            TEXT_LIGHT,
+            self.game.small_font
         )
