@@ -82,6 +82,13 @@ class Game:
         self.user_name = ""
         self.active_input = True
         
+        # Neue Benutzerdaten für Alter und Geschlecht
+        self.user_age = "18-25"  # Standardwert
+        self.user_gender = "männlich"  # Standardwert
+        
+        # Aktiver Eingabebereich
+        self.active_input_field = "name"  # Kann "name", "age" oder "gender" sein
+        
         # Persönlichkeitsmerkmale für Big Five Modell
         self.personality_traits = {
             "openness": 0,
@@ -228,3 +235,64 @@ class Game:
             fill_width = int(width * progress)
             fill_rect = pygame.Rect(x, y, fill_width, height)
             pygame.draw.rect(self.screen, fill_color, fill_rect, border_radius=border_radius)
+            
+    def draw_dropdown(self, x, y, width, height, options, selected_option, active=False, font=None):
+        """Zeichnet ein Dropdown-Menü"""
+        if font is None:
+            font = self.small_font
+            
+        # Grundlegendes Aussehen des Dropdowns (geschlossen)
+        dropdown_rect = pygame.Rect(x, y, width, height)
+        
+        # Bestimme die Farbe basierend auf dem aktiven Status
+        border_color = PRIMARY if active else TEXT_DARK
+        bg_color = WHITE
+        
+        # Zeichne das Hauptfeld
+        pygame.draw.rect(self.screen, bg_color, dropdown_rect, border_radius=8)
+        pygame.draw.rect(self.screen, border_color, dropdown_rect, 2, border_radius=8)
+        
+        # Ausgewählter Text - kleinere Schrift verwenden
+        selected_text = self.caption_font.render(selected_option, True, TEXT_DARK)
+        self.screen.blit(selected_text, (x + 10, y + (height - selected_text.get_height()) // 2))
+        
+        # Pfeil nach unten zeichnen
+        arrow_size = 6
+        arrow_x = x + width - 15
+        arrow_y = y + height // 2
+        pygame.draw.polygon(self.screen, TEXT_DARK, [
+            (arrow_x, arrow_y - arrow_size//2),
+            (arrow_x + arrow_size, arrow_y - arrow_size//2),
+            (arrow_x + arrow_size//2, arrow_y + arrow_size//2)
+        ])
+        
+        # Wenn das Dropdown aktiv (geöffnet) ist, zeige die Optionen
+        dropdown_options_rect = None
+        if active:
+            # Mache die Dropdown-Optionen etwas kleiner
+            option_height = 30  # Kleinere Höhe für jede Option
+            options_height = len(options) * option_height
+            dropdown_options_rect = pygame.Rect(x, y + height, width, options_height)
+            pygame.draw.rect(self.screen, WHITE, dropdown_options_rect, border_radius=8)
+            pygame.draw.rect(self.screen, border_color, dropdown_options_rect, 2, border_radius=8)
+            
+            for i, option in enumerate(options):
+                option_y = y + height + i * option_height
+                option_rect = pygame.Rect(x, option_y, width, option_height)
+                
+                # Hover-Effekt
+                mouse_pos = pygame.mouse.get_pos()
+                if option_rect.collidepoint(mouse_pos):
+                    pygame.draw.rect(self.screen, NEUTRAL_LIGHT, option_rect, border_radius=0)
+                
+                # Kleinere Schrift für Optionen verwenden
+                option_text = self.caption_font.render(option, True, TEXT_DARK)
+                self.screen.blit(option_text, (x + 10, option_y + (option_height - option_text.get_height()) // 2))
+                
+                # Trennlinie außer für die letzte Option
+                if i < len(options) - 1:
+                    pygame.draw.line(self.screen, NEUTRAL_LIGHT, 
+                                  (x + 5, option_y + option_height), 
+                                  (x + width - 5, option_y + option_height), 1)
+        
+        return dropdown_rect, dropdown_options_rect

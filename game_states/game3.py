@@ -152,7 +152,7 @@ class Game3State:
         
         # Start-Button Position
         button_x = SCREEN_WIDTH // 2
-        button_y = SCREEN_HEIGHT - 120
+        button_y = SCREEN_HEIGHT - 150
         button_width = 200
         button_height = 50
 
@@ -177,10 +177,9 @@ class Game3State:
             button_height
         )
         
-        # Blob links vom Start-Button positionieren
-        button_left_edge = button_x - 100  # Button ist 200px breit
-        blob_x = button_left_edge - BLOB_IMAGE.get_width() - 30  # 30px Abstand zwischen Blob und Button
-        blob_y = SCREEN_HEIGHT - 145  # Vertikal mit dem Button ausrichten
+        # Blob Bild rendern und unten platzieren
+        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2
+        blob_y = SCREEN_HEIGHT - 120
         self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
     
     def _render_pattern(self):
@@ -193,7 +192,7 @@ class Game3State:
         self.game.screen.blit(progress_text, (20, 35))
         
         # Fortschrittsbalken
-        self.game.draw_progress_bar(50, 80, SCREEN_WIDTH - 100, 10, self.current_pattern / len(self.patterns), fill_color=ACCENT)
+        self.game.draw_progress_bar(50, 80, SCREEN_WIDTH - 100, 10, self.current_pattern / len(self.patterns), fill_color=RICH_BURGUNDY)
         
         # Fragenbox
         self.game.draw_card(100, 130, SCREEN_WIDTH - 200, 50, color=BACKGROUND, shadow=False)
@@ -230,7 +229,7 @@ class Game3State:
                              color=WHITE, shadow=False)
             
             # Optionsbuchstabe (A, B, C, D)
-            option_letter = self.game.medium_font.render(option["name"] + ":", True, ACCENT)
+            option_letter = self.game.medium_font.render(option["name"] + ":", True, TEXT_COLOR)
             self.game.screen.blit(option_letter, (self.option_rects[i].x + 15, self.option_rects[i].y + 15))
             
             # Optionsbeschreibung
@@ -274,7 +273,7 @@ class Game3State:
         
         # Skala-Füllung basierend auf Score
         fill_width = int(scale_width * openness_percentage / 100)
-        pygame.draw.rect(self.game.screen, ACCENT, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
+        pygame.draw.rect(self.game.screen, PLACEBO_MAGENTA, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
         
         # Skala-Beschriftungen
         conventional_text = self.game.small_font.render("Konventionell", True, TEXT_DARK)
@@ -319,10 +318,9 @@ class Game3State:
             button_height
         )
         
-        # Blob links vom Weiter-Button platzieren
-        button_left_edge = button_x - 100
-        blob_x = button_left_edge - BLOB_IMAGE.get_width() - 30
-        blob_y = SCREEN_HEIGHT - 100
+        # Blob visual am unteren Rand
+        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2 + 200
+        blob_y = SCREEN_HEIGHT - BLOB_IMAGE.get_height() - 20
         self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
     
     def calculate_openness(self):

@@ -32,7 +32,7 @@ class Game5State:
         self.is_dragging = False
         
         # Button-Rechtecke für die Klickerkennung definieren
-        self.start_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50)
+        self.start_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 150, 200, 50)
         self.continue_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
         
         # Schieberegler-Eigenschaften
@@ -185,9 +185,15 @@ class Game5State:
         
         # Start-Button
         self.game.draw_modern_button(
-            "Start", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 75, 200, 50,
+            "Start", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 150, 200, 50,
             TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover=False
         )
+
+        # Blob Bild rendern und unten platzieren
+        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2
+        blob_y = SCREEN_HEIGHT - 120
+        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
+    
     
     def _render_play(self):
         """Zeigt den Spielbildschirm mit aktuellem Szenario und Schieberegler"""
@@ -253,7 +259,7 @@ class Game5State:
         
         # Knopf zeichnen
         knob_x = slider_start_x + fill_width
-        pygame.draw.circle(self.game.screen, HONEY_YELLOW, 
+        pygame.draw.circle(self.game.screen, TEXT_COLOR, 
                           (knob_x, slider["y"] + slider["height"] // 2), 
                           slider["knob_radius"])
         
@@ -278,18 +284,18 @@ class Game5State:
         # Linke Seite (andere) Ressourcen
         others_resources = int(left_percent / 10)  # Skala 0-10
         for i in range(others_resources):
-            pygame.draw.circle(self.game.screen, HONEY_YELLOW, 
+            pygame.draw.circle(self.game.screen, VIOLET_VELVET, 
                             (180 + (i % 5) * 20, 250 - 20 - 15 * (i // 5)), 8)
         
         # Rechte Seite (selbst) Ressourcen
         self_resources = int(right_percent / 10)  # Skala 0-10
         for i in range(self_resources):
-            pygame.draw.circle(self.game.screen, HONEY_YELLOW, 
+            pygame.draw.circle(self.game.screen, CLEAN_POOL_BLUE, 
                             (SCREEN_WIDTH - 180 - (i % 5) * 20, 250 - 20 - 15 * (i // 5)), 8)
         
         # Weiter-Button
         self.game.draw_modern_button(
-            "Weiter", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 65, 200, 50,
+            "Weiter", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 80, 200, 50,
             TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover=False
         )
     
@@ -300,7 +306,7 @@ class Game5State:
         self.game.draw_card(results_rect.x, results_rect.y, results_rect.width, results_rect.height, color=BACKGROUND)
         
         # Titel
-        result_title = self.game.medium_font.render("Dein Kooperationsverhalten", True, BACKGROUND)
+        result_title = self.game.medium_font.render("Give & Gain", True, BACKGROUND)
         self.game.screen.blit(result_title, (SCREEN_WIDTH // 2 - result_title.get_width() // 2, 150))
         
         # Verträglichkeits-Prozentsatz berechnen
@@ -337,6 +343,9 @@ class Game5State:
         self.game.screen.blit(details_text, (SCREEN_WIDTH // 2 - details_text.get_width() // 2, 260))
 
         """
+        # Titel
+        title = self.game.medium_font.render("Dein Ergebnis:", True, TEXT_COLOR)
+        self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 130))
         
         # Kooperations-Skala zeichnen
         scale_width = SCREEN_WIDTH - 300
@@ -394,9 +403,14 @@ class Game5State:
         
         # Weiter-Button
         self.game.draw_modern_button(
-            "Weiter", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 65, 200, 50,
+            "Weiter", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 80, 200, 50,
             TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover=False
         )
+
+        # Blob visual am unteren Rand
+        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2 + 200
+        blob_y = SCREEN_HEIGHT - BLOB_IMAGE.get_height() - 20
+        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
     
     def end_game(self):
         """Beendet das Spiel und geht zum Ergebnisbildschirm"""

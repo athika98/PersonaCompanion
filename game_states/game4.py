@@ -43,8 +43,8 @@ class Game4State:
         self.organization_strategy = "Nicht erkannt"
         
         # Button-Rechtecke für die Klickerkennung definieren
-        self.start_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50)
-        self.continue_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+        self.start_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 150, 200, 50)
+        self.continue_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 150, 200, 50)
         self.reset_button_rect = pygame.Rect(SCREEN_WIDTH - 120, 60, 100, 40)
         
         # Standardgrösse für alle Objekte
@@ -314,14 +314,13 @@ class Game4State:
         
         # Start-Button
         self.game.draw_modern_button(
-            "Start", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 75, 200, 50,
+            "Start", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 150, 200, 50,
             TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover=False
         )
         
-        # Blob links vom Start-Button positionieren
-        button_left_edge = SCREEN_WIDTH // 2 - 100
-        blob_x = button_left_edge - BLOB_IMAGE.get_width() - 30
-        blob_y = SCREEN_HEIGHT - 145
+        # Blob Bild rendern und unten platzieren
+        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2
+        blob_y = SCREEN_HEIGHT - 120
         self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
     
     def _render_phase(self, phase_number):
@@ -346,7 +345,7 @@ class Game4State:
         if phase_number == 1:
             instruction_text = self.game.small_font.render("Ziehe die Objekte in die Kategorien!", True, TEXT_COLOR)
         else:
-            instruction_text = self.game.small_font.render("Neue Objekte sind hinzugekommen! Passe dein System an.", True, POMEGRANATE)
+            instruction_text = self.game.small_font.render("Neue Objekte sind hinzugekommen! Passe dein System an.", True, RICH_BURGUNDY)
         self.game.screen.blit(instruction_text, (SCREEN_WIDTH // 2 - instruction_text.get_width() // 2, 90))
         
         # Kategoriebereiche zeichnen
@@ -495,27 +494,38 @@ class Game4State:
             y_pos += 28
         
         # Bisherige Ergebnisse anzeigen
-        org_text = self.game.small_font.render(f"Bisher organisiert: {self.phase1_results['organized_items']} von 10 Objekten", True, TEXT_COLOR)
+        org_text = self.game.small_font.render(f"Bisher organisiert: {self.phase1_results['organized_items']} von 10 Objekten", True, TEXT_DARK)
         self.game.screen.blit(org_text, (SCREEN_WIDTH // 2 - org_text.get_width() // 2, y_pos + 20))
         
         # Weiter-Button
         self.game.draw_modern_button(
-            "Weiter zu Phase 2", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 75, 250, 50,
+            "Weiter zu Phase 2", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 150, 250, 50,
             TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover=False
         )
-    
+
+        # Blob Bild rendern und unten platzieren
+        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2
+        blob_y = SCREEN_HEIGHT - 120
+        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
+    """
     def _render_result(self):
-        """Zeigt die Ergebnisse des Organisationsspiels"""
+        #Zeigt die Ergebnisse des Organisationsspiels
+        # Organisations-Skala zeichnen
+        scale_width = SCREEN_WIDTH - 300
+        scale_height = 30
+        scale_x = 150
+        scale_y = 300
+
         # Ergebnisbox
         results_rect = pygame.Rect(100, 100, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 220)
         self.game.draw_card(results_rect.x, results_rect.y, results_rect.width, results_rect.height, color=BACKGROUND)
         
         # Titel
-        result_title = self.game.small_font.render("Deine Organisationsfähigkeit", True, TEXT_COLOR)
-        self.game.screen.blit(result_title, (SCREEN_WIDTH // 2 - result_title.get_width() // 2, 120))
+        title = self.game.medium_font.render("Dein Ergebnis:", True, TEXT_COLOR)
+        self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 130))
         
         # Organisationsstrategie
-        strategy_text = self.game.medium_font.render(f"Erkannte Strategie: {self.organization_strategy}", True, TEXT_COLOR)
+        strategy_text = self.game.small_font.render(f"Erkannte Strategie: {self.organization_strategy}", True, TEXT_COLOR)
         self.game.screen.blit(strategy_text, (SCREEN_WIDTH // 2 - strategy_text.get_width() // 2, 155))
         
         # Beschreibung basierend auf Score
@@ -542,13 +552,12 @@ class Game4State:
         #self.game.screen.blit(description_text, (SCREEN_WIDTH // 2 - description_text.get_width() // 2, 225))
         
         # Punktzahl 
-        score_text = self.game.medium_font.render(f"{self.conscientiousness_score}%", True, POMEGRANATE)
-        self.game.screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, 260))
-        
+        score_text = self.game.medium_font.render(f"{self.conscientiousness_score}%", True, TEXT_COLOR)
+        self.game.screen.blit(score_text, (scale_x + fill_width - score_text.get_width() // 2, scale_y - 40))
+    
         # Detaillierte Bewertungsergebnisse
-        self.game.draw_card(150, 290, SCREEN_WIDTH - 300, 180, color=BACKGROUND, shadow=False)
-        
-        details_y = 305
+        #self.game.draw_card(150, 290, SCREEN_WIDTH - 300, 180, color=BACKGROUND, shadow=False)
+        #details_y = 305
         # Phase 1 Ergebnisse
        # phase1_text = self.game.small_font.render(f"Phase 1: {self.phase1_results['organized_items']} von 10 Objekten organisiert", True, TEXT_DARK)
         #self.game.screen.blit(phase1_text, (170, details_y))
@@ -572,27 +581,27 @@ class Game4State:
           #  details_y += 30
         
         # Gesamtergebnis
-        total_objects = len(self.items_phase1) + len(self.items_phase2)
-        total_organized = self.phase1_results['organized_items'] + self.phase2_results['additional_organized']
-        completion_text = self.game.small_font.render(f"Gesamtorganisation: {total_organized} von {total_objects} Objekten ({int(total_organized/total_objects*100)}%)", True, TEXT_DARK)
-        self.game.screen.blit(completion_text, (170, details_y + 120))
+        #total_objects = len(self.items_phase1) + len(self.items_phase2)
+        #total_organized = self.phase1_results['organized_items'] + self.phase2_results['additional_organized']
+        #completion_text = self.game.small_font.render(f"Gesamtorganisation: {total_organized} von {total_objects} Objekten ({int(total_organized/total_objects*100)}%)", True, TEXT_DARK)
+        #self.game.screen.blit(completion_text, (170, details_y + 120))
         
         # Organisations-Skala zeichnen
         scale_width = SCREEN_WIDTH - 300
-        scale_height = 25
+        scale_height = 30
         scale_x = 150
-        scale_y = 480
+        scale_y = 300
         
         # Skala-Hintergrund
         self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=WHITE, shadow=False)
         
         # Skala-Füllung basierend auf Score
         fill_width = int(scale_width * self.conscientiousness_score / 100)
-        pygame.draw.rect(self.game.screen, POMEGRANATE, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
+        pygame.draw.rect(self.game.screen, PLACEBO_MAGENTA, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
         
         # Skala-Beschriftungen
-        flexible_text = self.game.small_font.render("Spontan", True, TEXT_COLOR)
-        structured_text = self.game.small_font.render("Strukturiert", True, TEXT_COLOR)
+        flexible_text = self.game.small_font.render("Spontan", True, TEXT_DARK)
+        structured_text = self.game.small_font.render("Strukturiert", True, TEXT_DARK)
         
         self.game.screen.blit(flexible_text, (scale_x, scale_y + scale_height + 10))
         self.game.screen.blit(structured_text, (scale_x + scale_width - structured_text.get_width(), scale_y + scale_height + 10))
@@ -602,6 +611,56 @@ class Game4State:
             "Weiter", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 65, 200, 50,
             TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover=False
         )
+        """
+
+    def _render_result(self):
+        """Zeigt die Ergebnisse des Organisationsspiels"""
+        # Ergebnisbox
+        results_rect = pygame.Rect(100, 100, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 220)
+        self.game.draw_card(results_rect.x, results_rect.y, results_rect.width, results_rect.height, color=BACKGROUND)
+        
+        # Titel
+        title = self.game.medium_font.render("Dein Ergebnis:", True, TEXT_COLOR)
+        self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 130))
+        
+        # Organisationsstrategie
+        strategy_text = self.game.small_font.render(f"Erkannte Strategie: {self.organization_strategy}", True, TEXT_COLOR)
+        self.game.screen.blit(strategy_text, (SCREEN_WIDTH // 2 - strategy_text.get_width() // 2, 155))
+        
+        # Organisationsskala zeichnen
+        scale_width = SCREEN_WIDTH - 300
+        scale_height = 30
+        scale_x = 150
+        scale_y = 300
+        
+        # Skala-Hintergrund
+        self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=WHITE, shadow=False)
+        
+        # Skala-Füllung basierend auf Score
+        fill_width = int(scale_width * self.conscientiousness_score / 100)
+        pygame.draw.rect(self.game.screen, PLACEBO_MAGENTA, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
+        
+        # Jetzt, wo fill_width definiert ist, können wir den Score-Text anzeigen
+        score_text = self.game.medium_font.render(f"{self.conscientiousness_score}%", True, TEXT_COLOR)
+        self.game.screen.blit(score_text, (scale_x + fill_width - score_text.get_width() // 2, scale_y - 40))
+        
+        # Skala-Beschriftungen
+        flexible_text = self.game.small_font.render("Spontan", True, TEXT_DARK)
+        structured_text = self.game.small_font.render("Strukturiert", True, TEXT_DARK)
+        
+        self.game.screen.blit(flexible_text, (scale_x, scale_y + scale_height + 10))
+        self.game.screen.blit(structured_text, (scale_x + scale_width - structured_text.get_width(), scale_y + scale_height + 10))
+        
+        # Weiter-Button
+        self.game.draw_modern_button(
+            "Weiter", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 150, 200, 50,
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover=False
+        )
+
+        # Blob visual am unteren Rand
+        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2 + 200
+        blob_y = SCREEN_HEIGHT - BLOB_IMAGE.get_height() - 20
+        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
     
     def start_phase2(self):
         """Startet Phase 2 des Spiels mit neuen Objekten"""

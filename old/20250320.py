@@ -17,7 +17,7 @@ FPS = 60
 BACKGROUND = (248, 250, 252)     # Sehr helles Grau mit Blauton
 PRIMARY = (79, 70, 229)          # Violett/Indigo
 SECONDARY = (16, 185, 129)       # Smaragdgrün
-ACCENT = (239, 68, 68)           # Rot/Koralle
+RICH_BURGUNDY = (239, 68, 68)           # Rot/Koralle
 NEUTRAL = (71, 85, 105)          # Slate Grau
 NEUTRAL_LIGHT = (203, 213, 225)  # Helles Slate
 TEXT_DARK = (15, 23, 42)         # Fast Schwarz
@@ -211,7 +211,7 @@ class Game:
             accent_surface = pygame.Surface((size*2, size*2), pygame.SRCALPHA)
             
             # Zufällige Farbe aus dem Farbschema
-            colors = [PRIMARY, SECONDARY, ACCENT]
+            colors = [PRIMARY, SECONDARY, RICH_BURGUNDY]
             color = list(random.choice(colors)) + [alpha]  # Füge Alpha-Wert hinzu
             
             # Zeichne einen sanften Kreis (Gradient-ähnlich)
@@ -1271,7 +1271,7 @@ class Game:
         # Zeitkarte rechts
         time_card = self.draw_card(SCREEN_WIDTH - 160, 15, 150, 70, shadow=False)
         time_label = self.small_font.render("Zeit:", True, NEUTRAL)
-        time_value = self.medium_font.render(f"{self.game1_time // 60}", True, ACCENT)
+        time_value = self.medium_font.render(f"{self.game1_time // 60}", True, RICH_BURGUNDY)
         self.screen.blit(time_label, (SCREEN_WIDTH - 150, 25))
         self.screen.blit(time_value, (SCREEN_WIDTH - 150, 50))
         
@@ -1296,7 +1296,7 @@ class Game:
         
         # Draw timer bar
         progress = self.game1_time / (60 * 30)
-        self.draw_progress_bar(50, SCREEN_HEIGHT - 30, SCREEN_WIDTH - 100, 10, progress, fill_color=ACCENT)
+        self.draw_progress_bar(50, SCREEN_HEIGHT - 30, SCREEN_WIDTH - 100, 10, progress, fill_color=RICH_BURGUNDY)
         
         # Stats at the bottom
         stats_text = self.small_font.render(

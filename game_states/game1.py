@@ -743,7 +743,7 @@ class Game1State:
         
         self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=WHITE, shadow=False)
         fill_width = int(scale_width * self.neuroticism_score / 100)
-        pygame.draw.rect(self.game.screen, ACCENT,
+        pygame.draw.rect(self.game.screen, PLACEBO_MAGENTA,
                     (scale_x, scale_y, fill_width, scale_height), border_radius=15)
         
         # Labels

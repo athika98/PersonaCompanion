@@ -183,7 +183,7 @@ class Game2State:
             self.game.screen.blit(progress_text, (20, 35))
 
             progress_width = int((self.current_scenario / question_count) * (SCREEN_WIDTH - 100))
-            self.game.draw_progress_bar(50, 80, SCREEN_WIDTH - 100, 10, self.current_scenario / question_count, fill_color=ACCENT)
+            self.game.draw_progress_bar(50, 80, SCREEN_WIDTH - 100, 10, self.current_scenario / question_count, fill_color=RICH_BURGUNDY)
             
             if self.state == "question":
                 self._render_question()
@@ -295,10 +295,10 @@ class Game2State:
         pygame.draw.rect(self.game.screen, WHITE, (slider_start_x, slider["y"], slider["width"], slider["height"]), border_radius=slider["height"] // 2)
         
         fill_width = int(slider["width"] * slider["position"] / 100)
-        pygame.draw.rect(self.game.screen, ACCENT, (slider_start_x, slider["y"], fill_width, slider["height"]), border_radius=slider["height"] // 2)
+        pygame.draw.rect(self.game.screen, PLACEBO_MAGENTA, (slider_start_x, slider["y"], fill_width, slider["height"]), border_radius=slider["height"] // 2)
         
         knob_x = slider_start_x + fill_width
-        pygame.draw.circle(self.game.screen, HONEY_YELLOW, 
+        pygame.draw.circle(self.game.screen, TEXT_COLOR, 
                         (knob_x, slider["y"] + slider["height"] // 2), 
                         slider["knob_radius"])
         
@@ -412,13 +412,13 @@ class Game2State:
         
         # Gefüllter Teil
         fill_width = int(slider["width"] * slider["position"] / 100)
-        pygame.draw.rect(self.game.screen, ACCENT, 
+        pygame.draw.rect(self.game.screen, PLACEBO_MAGENTA, 
                        (slider_start_x, slider["y"], fill_width, slider["height"]), 
                        border_radius=slider["height"] // 2)
         
         # Knopf zeichnen
         knob_x = slider_start_x + fill_width
-        pygame.draw.circle(self.game.screen, HONEY_YELLOW, 
+        pygame.draw.circle(self.game.screen, TEXT_COLOR, 
                           (knob_x, slider["y"] + slider["height"] // 2), 
                           slider["knob_radius"])
 
@@ -455,7 +455,7 @@ class Game2State:
 
         self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=WHITE, shadow=False)
         fill_width = int(scale_width * extraversion_percentage / 100)
-        pygame.draw.rect(self.game.screen, ACCENT,
+        pygame.draw.rect(self.game.screen, PLACEBO_MAGENTA,
                         (scale_x, scale_y, fill_width, scale_height), border_radius=15)
 
         # Labels
@@ -464,8 +464,12 @@ class Game2State:
         self.game.screen.blit(intro_text, (scale_x, scale_y + scale_height + 10))
         self.game.screen.blit(extro_text, (scale_x + scale_width - extro_text.get_width(), scale_y + scale_height + 10))
 
+        # Extraversion Beschriftung mittig über dem Balken
+        neuro_text = self.game.medium_font.render("Extraversion", True, TEXT_COLOR)
+        self.game.screen.blit(neuro_text, (SCREEN_WIDTH // 2 - neuro_text.get_width() // 2, scale_y - 70))
+
         # Prozentsatz über dem Balken
-        percent_text = self.game.medium_font.render(f"{extraversion_percentage}%", True, PRIMARY)
+        percent_text = self.game.medium_font.render(f"{extraversion_percentage}%", True, TEXT_COLOR)
         self.game.screen.blit(percent_text,
                             (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
 

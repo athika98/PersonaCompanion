@@ -30,7 +30,7 @@ BACKGROUND = (234,246,255) # Heller Blauton als Hintergrund
 TEXT_COLOR = (1,32,95) # Dunkeler Blauton für Text
 TEXT_DARK = (15, 23, 42)  # für sekundäre Texte
 TEXT_LIGHT = (248, 250, 252)     # Sehr helles Grau
-ACCENT = (43, 82, 136) # Rot / Rich Burgundy
+
 
 # Weitere Farben
 CHAMELEON_GREEN = (203, 216, 172)
@@ -42,6 +42,7 @@ ORANGE_PEACH = (236, 186, 155)
 POMEGRANATE = (239, 148, 135)
 CHERRY_PINK = (243, 167, 192)
 CARD_BG = (250, 250, 250)  # für bfi_results.py
+RICH_BURGUNDY = (43, 82, 136)
 
 DIVE_BLUE    = (31, 63, 116)
 ARROWHEAD_WHITE = (250, 235, 235)
@@ -62,7 +63,7 @@ DEEP_SEA     = (20, 54, 109)    # #14366D
 # Farbkonstanten
 PRIMARY = (79, 70, 229)          # Violett/Indigo
 SECONDARY = (16, 185, 129)       # Smaragdgrün
-ACCENT = (239, 68, 68)           # Rot/Koralle
+RICH_BURGUNDY = (239, 68, 68)           # Rot/Koralle
 NEUTRAL = (71, 85, 105)          # Slate Grau
 NEUTRAL_LIGHT = (203, 213, 225)  # Helles Slate
 TEXT_LIGHT = (248, 250, 252)     # Sehr helles Grau

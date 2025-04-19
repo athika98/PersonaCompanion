@@ -62,19 +62,19 @@ class BFI10State:
         
         # Titel
         title_text = "Big Five Inventory (BFI-10)"
-        title_surf = self.game.title_font.render(title_text, True, TEXT_COLOR)
+        title_surf = self.game.font.render(title_text, True, TEXT_COLOR)
         title_rect = title_surf.get_rect(center=(SCREEN_WIDTH // 2, 50))
         self.game.screen.blit(title_surf, title_rect)
         
         # Anleitung
         instruction = "Bitte gib an, wie sehr du den folgenden Aussagen zustimmst:"
-        instruction_surf = self.game.medium_font.render(instruction, True, TEXT_COLOR)
+        instruction_surf = self.game.small_font.render(instruction, True, TEXT_COLOR)
         instruction_rect = instruction_surf.get_rect(center=(SCREEN_WIDTH // 2, 100))
         self.game.screen.blit(instruction_surf, instruction_rect)
         
         # Aktuelle Frage
         question_text = self.questions[self.current_question]
-        question_lines = self.wrap_text(question_text, self.game.medium_font, SCREEN_WIDTH - 100)
+        question_lines = self.wrap_text(question_text, self.game.small_font, SCREEN_WIDTH - 100)
         
         y_pos = 200
         for line in question_lines:
@@ -90,17 +90,17 @@ class BFI10State:
         self.likert_buttons = []
         
         for i in range(5):
-            # Verwende die vorhandene Button-Zeichenfunktion
+            # Verwende die vorhandene Button-Zeichenfunktion mit runden Ecken
             button_rect = self.game.draw_modern_button(
                 str(i+1), 
                 200 + i*100, 
                 350, 
                 80, 
                 40, 
-                PRIMARY if self.answers[self.current_question] == i + 1 else NEUTRAL,
-                TEXT_COLOR,
+                PLACEBO_MAGENTA if self.answers[self.current_question] == i + 1 else TEXT_COLOR,
+                TEXT_COLOR if self.answers[self.current_question] == i + 1 else TEXT_LIGHT,
                 self.game.medium_font,
-                hover=False
+                border_radius=15
             )
             self.likert_buttons.append(button_rect)
             
@@ -110,16 +110,17 @@ class BFI10State:
                 label_rect = label_surf.get_rect(center=(200 + i*100, 310))
                 self.game.screen.blit(label_surf, label_rect)
         
-        # Navigation Buttons
+        # Navigation Buttons - Entferne den shadow Parameter
         self.next_button = self.game.draw_modern_button(
             "Weiter", 
             600, 
             450, 
             150, 
             50, 
-            PRIMARY,
             TEXT_COLOR,
-            self.game.medium_font
+            TEXT_LIGHT,
+            self.game.medium_font,
+            border_radius=15
         )
         
         if self.current_question > 0:
@@ -129,19 +130,28 @@ class BFI10State:
                 450, 
                 150, 
                 50, 
-                SECONDARY,
                 TEXT_COLOR,
-                self.game.medium_font
+                TEXT_LIGHT,
+                self.game.medium_font,
+                border_radius=15
             )
         
-        # Fortschrittsanzeige
+        # Fortschrittsanzeige mit angepassten Farben
         self.game.draw_progress_bar(
-            100, 
-            500, 
-            SCREEN_WIDTH - 200, 
-            20, 
-            (self.current_question + 1) / 10
+            100,                # x-Position
+            500,                # y-Position
+            SCREEN_WIDTH - 200, # Breite
+            20,                 # Höhe
+            (self.current_question + 1) / 10,  # Fortschritt
+            bg_color=TEXT_LIGHT,     # Hintergrundfarbe
+            fill_color=PLACEBO_MAGENTA  # Füllfarbe
         )
+        
+        # Mini Blob anzeigen
+        blob_mini = pygame.transform.scale(BLOB_IMAGE, (35, 35))
+        blob_x = SCREEN_WIDTH - blob_mini.get_width() - 15  # 15 Pixel vom rechten Rand
+        blob_y = SCREEN_HEIGHT - blob_mini.get_height() - 20  # 20 Pixel vom unteren Rand
+        self.game.screen.blit(blob_mini, (blob_x, blob_y))
         
     def wrap_text(self, text, font, max_width):
         """Zeilenumbruch für zu lange Texte"""

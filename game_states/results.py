@@ -70,15 +70,15 @@ class ResultsState:
         
         # Header-Box
         header_rect = pygame.Rect(50, 20, SCREEN_WIDTH - 100, 50)
-        self.game.draw_card(header_rect.x, header_rect.y, header_rect.width, header_rect.height, color=PRIMARY)
+        self.game.draw_card(header_rect.x, header_rect.y, header_rect.width, header_rect.height, color=BACKGROUND)
         
         # Titel
-        title = self.game.font.render("Persönlichkeitsprofil", True, TEXT_LIGHT)
+        title = self.game.font.render("Persönlichkeitsprofil", True, TEXT_COLOR)
         self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 30))
         
         # Ergebnis-Box
         result_box = pygame.Rect(50, 80, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 140)
-        self.game.draw_card(result_box.x, result_box.y, result_box.width, result_box.height, color=TEXT_LIGHT)
+        self.game.draw_card(result_box.x, result_box.y, result_box.width, result_box.height, color=BACKGROUND)
         
         # Benutzername
         name_text = self.game.medium_font.render(f"Hallo {self.game.user_name}!", True, TEXT_DARK)
@@ -107,7 +107,7 @@ class ResultsState:
             bar_width = 350
             bar_height = 20
             bar_x = SCREEN_WIDTH // 2 - bar_width // 2
-            pygame.draw.rect(self.game.screen, CLEAN_POOL_BLUE, (bar_x, y_pos + 25, bar_width, bar_height), border_radius=12)
+            pygame.draw.rect(self.game.screen, WHITE, (bar_x, y_pos + 25, bar_width, bar_height), border_radius=12)
             
             # Bar fill
             fill_width = int(bar_width * score / 100)
@@ -124,19 +124,19 @@ class ResultsState:
             self.game.screen.blit(right_text, (bar_x + bar_width + 10, y_pos + 25 + 3))
         
         # Draw Neuroticism bar
-        draw_trait_bar("Reaktionsstil", neuroticism_score, y_offset, CLEAN_POOL_BLUE, "Spontan", "Bedacht")
+        draw_trait_bar("Reaktionsstil", neuroticism_score, y_offset, PLACEBO_MAGENTA, "Spontan", "Bedacht")
         
         # Draw Extraversion bar
-        draw_trait_bar("Soziale Orientierung", extraversion_score, y_offset + bar_spacing, POMEGRANATE, "Introvertiert", "Extravertiert")
+        draw_trait_bar("Soziale Orientierung", extraversion_score, y_offset + bar_spacing, PLACEBO_MAGENTA, "Introvertiert", "Extravertiert")
         
         # Draw Openness bar
-        draw_trait_bar("Kreativität", openness_score, y_offset + bar_spacing * 2, CHERRY_PINK, "Konventionell", "Kreativ")
+        draw_trait_bar("Kreativität", openness_score, y_offset + bar_spacing * 2, PLACEBO_MAGENTA, "Konventionell", "Kreativ")
         
         # Draw Conscientiousness bar
-        draw_trait_bar("Organisation", conscientiousness_score, y_offset + bar_spacing * 3, CHAMELEON_GREEN, "Flexibel", "Strukturiert")
+        draw_trait_bar("Organisation", conscientiousness_score, y_offset + bar_spacing * 3, PLACEBO_MAGENTA, "Flexibel", "Strukturiert")
         
         # Draw Agreeableness bar
-        draw_trait_bar("Kooperationsverhalten", agreeableness_score, y_offset + bar_spacing * 4, HONEY_YELLOW, "Wettbewerbsorientiert", "Kooperativ")
+        draw_trait_bar("Kooperationsverhalten", agreeableness_score, y_offset + bar_spacing * 4, PLACEBO_MAGENTA, "Wettbewerbsorientiert", "Kooperativ")
         
         # Companion section
         y_section = y_offset + bar_spacing * 5 + 20
@@ -152,10 +152,10 @@ class ResultsState:
         # Optional: Draw the companion box if needed
         # self.game.draw_card(companion_box.x, companion_box.y, companion_box.width, companion_box.height, color=BACKGROUND)
 
-        companion_title = self.game.medium_font.render("Dein idealer digitaler Begleiter:", True, TEXT_DARK)
+        companion_title = self.game.small_font.render("Dein idealer digitaler Begleiter:", True, TEXT_DARK)
         self.game.screen.blit(companion_title, (SCREEN_WIDTH // 2 - companion_title.get_width() // 2, y_section))
         
-        companion_type_text = self.game.medium_font.render(companion_type, True, companion_color)
+        companion_type_text = self.game.small_font.render(companion_type, True, companion_color)
         self.game.screen.blit(companion_type_text, (SCREEN_WIDTH // 2 - companion_type_text.get_width() // 2, y_section + 35))
         
         # Beschreibung rendern mit Zeilenumbrüchen falls nötig
@@ -186,19 +186,13 @@ class ResultsState:
         #self.game.screen.blit(thank_you, (SCREEN_WIDTH // 2 - thank_you.get_width() // 2, SCREEN_HEIGHT - 70))
         
         # Restart button mit modern_button
-        self.game.draw_modern_button(
-            "Zurück zum Hauptmenü", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30, 200, 40,
-            TEXT_DARK, TEXT_LIGHT, self.game.small_font, 20, hover=False
-        )
+        #self.game.draw_modern_button(
+        #    "Zurück zum Hauptmenü", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30, 200, 40,
+        #    TEXT_DARK, TEXT_LIGHT, self.game.small_font, 20, hover=False
+        #)
 
         # Zeichne den Validierungsbutton
         self.validate_button = self.game.draw_modern_button(
-            "Mit BFI-10 validieren", 
-            SCREEN_WIDTH // 2, 
-            450,  # Y-Position anpassen
-            200, 
-            50,
-            SECONDARY,  # Farbe anpassen
-            TEXT_LIGHT,
-            self.game.small_font
+            "Mit BFI-10 validieren", SCREEN_WIDTH // 2, SCREEN_HEIGHT -50, 200, 40,
+            TEXT_COLOR, TEXT_LIGHT, self.game.small_font, 20
         )
