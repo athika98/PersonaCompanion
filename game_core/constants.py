@@ -13,7 +13,6 @@ import pygame
 # Pygame initialisieren
 pygame.init()
 
-
 # Bildschirmgrösse festlegen in Pixel
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -21,8 +20,7 @@ SCREEN_HEIGHT = 600
 # Bilder pro Sekunde
 FPS = 60
 
-# Animation Constants --> nacher löschen?
-PULSE_SPEED = 0.05
+# Animation Constants
 TRANSITION_SPEED = 10
 
 # Hauptfarben
@@ -30,7 +28,6 @@ BACKGROUND = (234,246,255) # Heller Blauton als Hintergrund
 TEXT_COLOR = (1,32,95) # Dunkeler Blauton für Text
 TEXT_DARK = (15, 23, 42)  # für sekundäre Texte
 TEXT_LIGHT = (248, 250, 252)     # Sehr helles Grau
-
 
 # Weitere Farben
 CHAMELEON_GREEN = (203, 216, 172)
@@ -41,9 +38,8 @@ LEMON_YELLOW = (241, 232, 156)
 ORANGE_PEACH = (236, 186, 155)
 POMEGRANATE = (239, 148, 135)
 CHERRY_PINK = (243, 167, 192)
-CARD_BG = (250, 250, 250)  # für bfi_results.py
+CARD_BG = (250, 250, 250)
 RICH_BURGUNDY = (43, 82, 136)
-
 DIVE_BLUE    = (31, 63, 116)
 ARROWHEAD_WHITE = (250, 235, 235)
 SHINSHU = (143, 30, 30)
@@ -51,27 +47,12 @@ PLACEBO_GREEN = (235, 250, 235)
 BROCCOFLOWER = (147, 160, 121)
 PLACEBO_MAGENTA = (250, 235, 245)
 RISING_STAR = (250, 250, 220)
-##########
-
-
-# Blauset
-LILAC_BLUE   = (183, 195, 232)  # #B7C3E8
-SOLID_BLUE   = (142, 162, 215)  # #8EA2D7
-SAILING_BLUE = (69, 105, 173)   # #4569AD
-DEEP_SEA     = (20, 54, 109)    # #14366D
-
-# Farbkonstanten
-PRIMARY = (79, 70, 229)          # Violett/Indigo
-SECONDARY = (16, 185, 129)       # Smaragdgrün
-RICH_BURGUNDY = (239, 68, 68)           # Rot/Koralle
-NEUTRAL = (71, 85, 105)          # Slate Grau
-NEUTRAL_LIGHT = (203, 213, 225)  # Helles Slate
-TEXT_LIGHT = (248, 250, 252)     # Sehr helles Grau
-
-# Zusätzliche Farben
+PRIMARY = (79, 70, 229)
+SECONDARY = (16, 185, 129)
+NEUTRAL = (71, 85, 105)
+NEUTRAL_LIGHT = (203, 213, 225)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-GRAY = (100, 100, 100)
 
 # Dateipfad für die Schriftart
 FONT_PATH = os.path.join("assets", "fonts", "Poppins-Regular.ttf")

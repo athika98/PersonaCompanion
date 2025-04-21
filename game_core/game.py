@@ -3,15 +3,18 @@
 
 """
 Game-Klasse
-Die zentrale Steuerungsklasse für das Persona Companion Spiel
+Zentrale Steuerung des Spiels "Persona Companion".
+Verwaltet Spielfluss, Benutzerzustände und Übergänge zwischen den Modulen.
 """
 
 # Bibliotheken importieren
 import pygame
 import sys
 
-# Konstante Werte & Spielzustände aus anderen Dateien laden
+# Konstante Werte und Farben importieren
 from game_core.constants import *
+
+# Spielzustände importieren
 from game_states.menu import MenuState
 from game_states.game1 import Game1State
 from game_states.game2 import Game2State
@@ -23,25 +26,17 @@ from game_states.bfi_validation import BFI10State
 from game_states.bfi_results import BFIResultsState
 
 class Game:
-    """
-    Hauptspielklasse, die die Spiellogik und die Zustandsverwaltung übernimmt
-    """
     def __init__(self):
-        """Initialisiert das Spiel und alle Ressourcen"""
-        # Fenster mit festgelegter Grösse erstellen
+        """Initialisiert das Spiel und seine Hauptkomponenten"""
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("Persona Companion")
-
-        # Framerate-Kontrolle für flüssige Darstellung
         self.clock = pygame.time.Clock()
         
-        # Lade Schriftarten
+        # Lade Schriftarten und Variablen
         self.load_fonts()
-        
-        # Initialisiere Variablen
         self.initialize_variables()
         
-        # Erstelle die Spielabschnitte
+        # Spielzustände definieren
         self.states = {
             "MENU": MenuState(self),
             "GAME1": Game1State(self),
@@ -56,25 +51,20 @@ class Game:
         
         # Spiel beginnt im Menü
         self.current_state = "MENU"
-        
-        # Transition Variablen
-        self.transitioning = True
-        self.transition_alpha = 255
-        self.next_state = None
 
-        # Persönlichkeitsmerkmale für Big Five Modell
-        # Hier ist wichtig, dass die Werte bereits als Anteile (0-1) definiert sind
+        # Persönlichkeitsdaten (Spiel-Score & Fragebogenvergleich)
+        # Standardwerte für die Persönlichkeitsmerkmale
         self.personality_traits = {
-            "openness": 0.5,        # Default: mittlere Werte
+            "openness": 0.5,    # Standardwert
             "conscientiousness": 0.5,
             "extraversion": 0.5,
             "agreeableness": 0.5,
             "neuroticism": 0.5
         }
 
-        # Initialisiere den BFI-Score explizit mit Standardwerten
+        # Standardwerte für die BFI-Scores
         self.bfi_scores = {
-            "openness": 3,
+            "openness": 3,  # Standardwert
             "conscientiousness": 3,
             "extraversion": 3,
             "agreeableness": 3,
@@ -83,7 +73,7 @@ class Game:
     
     def load_fonts(self):
         """Lädt alle benötigten Schriftarten"""
-        self.font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 25)  # Standard
+        self.font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 25)
         self.medium_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 35)
         self.small_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 45)
         self.title_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 20)
@@ -93,19 +83,14 @@ class Game:
         self.caption_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 50)
 
     def initialize_variables(self):
-        """Initialisiert alle Spielvariablen"""
-        # Benutzerdaten
+        """Initialisiert alle benutzerbezogene Variablen"""
         self.user_name = ""
         self.active_input = True
+        self.user_age = ""
+        self.user_gender = ""
+        self.active_input_field = "name"
         
-        # Neue Benutzerdaten für Alter und Geschlecht
-        self.user_age = "18-25"  # Standardwert
-        self.user_gender = "männlich"  # Standardwert
-        
-        # Aktiver Eingabebereich
-        self.active_input_field = "name"  # Kann "name", "age" oder "gender" sein
-        
-        # Persönlichkeitsmerkmale für Big Five Modell
+        # Spielstart setzt Traits zurück
         self.personality_traits = {
             "openness": 0,
             "conscientiousness": 0,
@@ -118,81 +103,33 @@ class Game:
         """Hauptspielschleife"""
         running = True
         while running:
-            # Verarbeite Eingaben
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                elif not self.transitioning:
-                    # Ereignisse an den aktuellen Zustand weiterleiten
+                else:
                     self.states[self.current_state].handle_event(event)
-            
-            # Aktualisierung Zustand
+
             self.update()
-            
-            # Bildschirm aktualisieren
             self.render()
-            
-            # FPS begrenzen
             self.clock.tick(FPS)
     
     def update(self):
         """Aktualisiert den Spielzustand"""
-        
-        # Übergänge verwalten
-        if self.transitioning:
-            self.update_transitions()
-        else:
-            # Aktuellen Zustand aktualisieren
-            self.states[self.current_state].update()
-
-    def update_transitions(self):
-        """Steuert die Animation für Übergänge zwischen Spielzuständen"""
-        if self.transition_alpha > 0:
-            self.transition_alpha = max(0, self.transition_alpha - TRANSITION_SPEED)
-        else:
-            if self.next_state is not None:
-                self.current_state = self.next_state
-                self.next_state = None
-            self.transition_alpha = 0
-            self.transitioning = False
-    
+        self.states[self.current_state].update()
+ 
     def render(self):
         """Zeichnet den aktuellen Spielzustand"""
         # Hintergrund zeichnen
         self.screen.fill(BACKGROUND)
         
         # Aktuellen Spielzustand zeichnen
-        if not self.transitioning or self.transition_alpha < 255:
-            self.states[self.current_state].render()
-        
-        # Übergänge rendern
-        if self.transitioning:
-            self.render_transition()
+        self.states[self.current_state].render()
         
         # Bildschirm aktualisieren
         pygame.display.flip()
-    
-    def render_transition(self):
-        """Zeichnet den Übergangseffekt zwischen Spielzuständen"""
-        if self.transition_alpha > 0:
-            transition_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-            
-            # Farbige Übergangsbänder
-            sundae_colors = [VIOLET_VELVET, CLEAN_POOL_BLUE, CHAMELEON_GREEN, HONEY_YELLOW, 
-                            LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
-            
-            band_height = SCREEN_HEIGHT // len(sundae_colors)
-            for i, color in enumerate(sundae_colors):
-                color_with_alpha = list(color) + [self.transition_alpha]
-                band_rect = (0, i * band_height, SCREEN_WIDTH, band_height)
-                pygame.draw.rect(transition_surface, color_with_alpha, band_rect)
-            
-            self.screen.blit(transition_surface, (0, 0))
-    
-# Ersetze die transition_to-Methode in game.py mit dieser Version:
 
     def transition_to(self, new_state):
-        """Startet einen Übergang zu einem neuen Spielzustand"""
+        """Wechselt zu einem anderen Spielzustand"""
         print(f"\n==== Wechsel von {self.current_state} zu {new_state} ====")
         
         # Debug-Informationen vor dem Zustandswechsel
@@ -223,21 +160,17 @@ class Game:
                     "neuroticism": 3.0
                 }
         
-        # Starte den Übergang
-        self.transitioning = True
-        self.transition_alpha = 255
-        self.next_state = new_state
-        
+        self.current_state = new_state
         print(f"==== Ende des Wechsels von {self.current_state} zu {new_state} ====\n")
-    
-    # Hilfsfunktionen für die Benutzeroberfläche (UI)
-    def draw_modern_button(self, text, x, y, width, height, color, TEXT_COLOR=TEXT_COLOR, 
-                         font=None, border_radius=10, hover=False):
-        """Zeichnet einen modernen Button mit Schattierung"""
+
+    # ----------- UI-Komponenten -----------    
+
+    def draw_modern_button(self, text, x, y, width, height, color, TEXT_COLOR=TEXT_COLOR, font=None, border_radius=10, hover=False):
+        """Zeichnet einen modernen Button mit Schatten und Hover-Effekt"""
         if font is None:
             font = self.medium_font
         
-        # Schatten-Effekt unter dem Button
+        # Schattenwurf
         shadow_rect = pygame.Rect(x - width//2 + 3, y - height//2 + 3, width, height)
         pygame.draw.rect(self.screen, NEUTRAL, shadow_rect, border_radius=border_radius)
         
@@ -260,7 +193,7 @@ class Game:
         return button_rect
     
     def draw_card(self, x, y, width, height, color=TEXT_COLOR, border_radius=15, shadow=False):
-        """Zeichnet eine Karte mit optionalem Schatten"""
+        """Zeichnet eine Karte (für z.B. Ergebnisse)"""
         if shadow:
             # Schattenwurf
             shadow_surf = pygame.Surface((width+10, height+10), pygame.SRCALPHA)
@@ -274,8 +207,7 @@ class Game:
         
         return card_rect
     
-    def draw_progress_bar(self, x, y, width, height, progress, bg_color=NEUTRAL_LIGHT, 
-                        fill_color=PRIMARY, border_radius=10):
+    def draw_progress_bar(self, x, y, width, height, progress, bg_color=NEUTRAL_LIGHT, fill_color=TEXT_COLOR, border_radius=10):
         """Zeichnet einen Fortschrittsbalken"""
         # Hintergrund
         bg_rect = pygame.Rect(x, y, width, height)
@@ -296,7 +228,7 @@ class Game:
         dropdown_rect = pygame.Rect(x, y, width, height)
         
         # Bestimme die Farbe basierend auf dem aktiven Status
-        border_color = PRIMARY if active else TEXT_DARK
+        border_color = TEXT_COLOR if active else TEXT_LIGHT
         bg_color = WHITE
         
         # Zeichne das Hauptfeld
@@ -304,14 +236,14 @@ class Game:
         pygame.draw.rect(self.screen, border_color, dropdown_rect, 2, border_radius=8)
         
         # Ausgewählter Text - kleinere Schrift verwenden
-        selected_text = self.caption_font.render(selected_option, True, TEXT_DARK)
+        selected_text = self.caption_font.render(selected_option, True, TEXT_COLOR)
         self.screen.blit(selected_text, (x + 10, y + (height - selected_text.get_height()) // 2))
         
         # Pfeil nach unten zeichnen
         arrow_size = 6
         arrow_x = x + width - 15
         arrow_y = y + height // 2
-        pygame.draw.polygon(self.screen, TEXT_DARK, [
+        pygame.draw.polygon(self.screen, TEXT_COLOR, [
             (arrow_x, arrow_y - arrow_size//2),
             (arrow_x + arrow_size, arrow_y - arrow_size//2),
             (arrow_x + arrow_size//2, arrow_y + arrow_size//2)
@@ -320,8 +252,7 @@ class Game:
         # Wenn das Dropdown aktiv (geöffnet) ist, zeige die Optionen
         dropdown_options_rect = None
         if active:
-            # Mache die Dropdown-Optionen etwas kleiner
-            option_height = 30  # Kleinere Höhe für jede Option
+            option_height = 30
             options_height = len(options) * option_height
             dropdown_options_rect = pygame.Rect(x, y + height, width, options_height)
             pygame.draw.rect(self.screen, WHITE, dropdown_options_rect, border_radius=8)
@@ -336,11 +267,11 @@ class Game:
                 if option_rect.collidepoint(mouse_pos):
                     pygame.draw.rect(self.screen, NEUTRAL_LIGHT, option_rect, border_radius=0)
                 
-                # Kleinere Schrift für Optionen verwenden
+                # Zeichne die Option
                 option_text = self.caption_font.render(option, True, TEXT_DARK)
                 self.screen.blit(option_text, (x + 10, option_y + (option_height - option_text.get_height()) // 2))
                 
-                # Trennlinie außer für die letzte Option
+                # Trennlinie zwischen Optionen
                 if i < len(options) - 1:
                     pygame.draw.line(self.screen, NEUTRAL_LIGHT, 
                                   (x + 5, option_y + option_height), 
@@ -349,7 +280,7 @@ class Game:
         return dropdown_rect, dropdown_options_rect
 
     def debug_values(self):
-        """Gibt wichtige Spielvariablen für Debugging-Zwecke aus"""
+        """Gibt Spielvariablen für Debugging-Zwecke aus"""
         print("\n--- DEBUG WERTE ---")
         print("Personality Traits:", self.personality_traits)
         print("BFI Scores:", self.bfi_scores)
