@@ -10,8 +10,7 @@ Verwaltet Spielfluss, Benutzerzustände und Übergänge zwischen den Modulen.
 # Bibliotheken importieren
 import pygame
 import sys
-
-# Konstante Werte und Farben importieren
+from game_core.utilities import auto_save_data
 from game_core.constants import *
 
 # Spielzustände importieren
@@ -69,7 +68,10 @@ class Game:
             "extraversion": 3,
             "agreeableness": 3,
             "neuroticism": 3
-}
+        }
+        
+        # Flag für automatisches Speichern
+        self.auto_save_needed = False
     
     def load_fonts(self):
         """Lädt alle benötigten Schriftarten"""
@@ -98,6 +100,9 @@ class Game:
             "agreeableness": 0,
             "neuroticism": 0
         }
+        
+        # Flag für automatisches Speichern zurücksetzen
+        self.auto_save_needed = False
     
     def run(self):
         """Hauptspielschleife"""
@@ -105,6 +110,9 @@ class Game:
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    # Speichere Daten vor dem Beenden, wenn notwendig
+                    if self.auto_save_needed:
+                        self.save_data_automatically()
                     running = False
                 else:
                     self.states[self.current_state].handle_event(event)
@@ -136,6 +144,18 @@ class Game:
         print("Personality Traits vor dem Wechsel:", self.personality_traits)
         print("BFI Scores vor dem Wechsel:", self.bfi_scores)
         
+        # Prüfe, ob wir zu einem Ergebnisbildschirm wechseln
+        if new_state in ["RESULTS", "BFI_RESULTS"]:
+            # Setze das Flag, dass wir Daten speichern müssen
+            self.auto_save_needed = True
+        
+        # Prüfe, ob wir vom Ergebnisbildschirm zurück zum Menü wechseln
+        if self.current_state in ["RESULTS", "BFI_RESULTS"] and new_state == "MENU":
+            # Speichere Daten automatisch, bevor wir zum Menü zurückkehren
+            self.save_data_automatically()
+            # Zurücksetzen, da wir gerade gespeichert haben
+            self.auto_save_needed = False
+        
         # Prüfe, ob ein spezieller Zustandswechsel vorliegt
         if new_state == "BFI_RESULTS":
             # Stelle sicher, dass die personality_traits nicht leer oder alle 0 sind
@@ -162,6 +182,19 @@ class Game:
         
         self.current_state = new_state
         print(f"==== Ende des Wechsels von {self.current_state} zu {new_state} ====\n")
+    
+    def save_data_automatically(self):
+        """Speichert die Benutzerdaten automatisch als CSV"""
+        try:
+            if self.user_name and any(self.personality_traits.values()):
+                from game_core.utilities import auto_save_data
+                filename = auto_save_data(self)
+                if filename:
+                    print(f"Daten automatisch gespeichert in: {filename}")
+                    return True
+        except Exception as e:
+            print(f"Fehler beim automatischen Speichern: {e}")
+        return False
 
 # =============================================================================
 #  UI Komponenten

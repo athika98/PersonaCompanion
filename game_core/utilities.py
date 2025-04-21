@@ -9,11 +9,15 @@ Sammlung von Hilfsfunktionen zur Auswertung und Visualisierung des Persona Compa
 import pygame
 import random
 import math
+import json
+import csv
+import os
+import datetime
 from game_core.constants import *
 
 # =============================================================================
-# 1. Persönlichkeitsbeschreibung auf Basis eines Traits und Scores
-# Wird momentan nicht gebraucht, kann jedoch für zukünftige Erweiterungen nützlich sein
+# Persönlichkeitsbeschreibung auf Basis eines Traits und Scores
+# (Wird momentan nicht gebraucht, kann jedoch für zukünftige Erweiterungen nützlich sein)
 # =============================================================================
 
 def get_personality_description(trait, score):
@@ -165,7 +169,7 @@ def get_personality_description(trait, score):
     )
 
 # =============================================================================
-# 2. Bestimmung des Persona-Typs
+# Bestimmung des Persona-Typs und Begleiters
 # =============================================================================
 
 def determine_persona_type(personality_traits):
@@ -292,3 +296,77 @@ def determine_persona_type(personality_traits):
         best_persona["companion"]["description"],
         best_persona["companion"]["color"]
     )
+
+# =============================================================================
+# 3. Automatisches Speichern der Benutzerdaten
+# =============================================================================
+
+def auto_save_data(game):
+    """
+    Speichert automatisch alle Benutzerdaten im CSV-Format ohne Benutzerinteraktion.
+    
+    Args:
+        game: Das Spiel-Objekt mit allen relevanten Daten
+    
+    Returns:
+        str: Pfad zur gespeicherten Datei oder None bei Fehler
+    """
+    try:
+        # Überprüfen, ob es genug Daten zum Speichern gibt
+        if not game.user_name or not hasattr(game, 'personality_traits'):
+            return None
+            
+        # Wenn die Persönlichkeitswerte alle 0 sind, lohnt es sich nicht zu speichern
+        values_sum = sum(game.personality_traits.values())
+        if values_sum == 0:
+            return None
+        
+        # Erstelle ein Dictionary mit allen relevanten Daten
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        username = game.user_name if game.user_name else "anonymer_benutzer"
+        
+        # Erstelle das data Directory falls es nicht existiert
+        os.makedirs("data", exist_ok=True)
+        
+        # Erstellen und Prüfen der CSV-Datei
+        csv_file = "data/persona_companion_daten.csv"
+        file_exists = os.path.exists(csv_file)
+        
+        # Bestimme den Persona-Typ und Begleiter auf Basis der Persönlichkeitswerte
+        from game_core.utilities import determine_persona_type
+        persona_name, persona_desc, companion_type, companion_desc, companion_color = determine_persona_type(game.personality_traits)
+        
+        # Flache Struktur für CSV erstellen
+        flat_data = {
+            "timestamp": timestamp,
+            "user_name": game.user_name,
+            "user_age": game.user_age if hasattr(game, "user_age") else "",
+            "user_gender": game.user_gender if hasattr(game, "user_gender") else "",
+            "neuroticism": game.personality_traits.get("neuroticism", ""),
+            "extraversion": game.personality_traits.get("extraversion", ""),
+            "openness": game.personality_traits.get("openness", ""),
+            "conscientiousness": game.personality_traits.get("conscientiousness", ""),
+            "agreeableness": game.personality_traits.get("agreeableness", ""),
+            "bfi_neuroticism": game.bfi_scores.get("neuroticism", "") if hasattr(game, "bfi_scores") else "",
+            "bfi_extraversion": game.bfi_scores.get("extraversion", "") if hasattr(game, "bfi_scores") else "",
+            "bfi_openness": game.bfi_scores.get("openness", "") if hasattr(game, "bfi_scores") else "",
+            "bfi_conscientiousness": game.bfi_scores.get("conscientiousness", "") if hasattr(game, "bfi_scores") else "",
+            "bfi_agreeableness": game.bfi_scores.get("agreeableness", "") if hasattr(game, "bfi_scores") else "",
+            "persona_name": persona_name,
+            "companion_type": companion_type
+        }
+        
+        # In CSV-Datei schreiben (anhängen oder neu erstellen)
+        with open(csv_file, 'a', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=flat_data.keys())
+            
+            # Schreibe Header nur, wenn die Datei neu erstellt wurde
+            if not file_exists:
+                writer.writeheader()
+                
+            writer.writerow(flat_data)
+        
+        return csv_file
+    except Exception as e:
+        print(f"Fehler bei der automatischen Speicherung: {str(e)}")
+        return None
