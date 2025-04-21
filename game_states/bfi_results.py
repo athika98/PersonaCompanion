@@ -3,107 +3,132 @@ from game_core.constants import *  # Importiere die Konstanten
 
 class BFIResultsState:
     def __init__(self, game):
+        """Initialisiert den BFIResultsState mit einer Referenz zum Hauptspiel"""
         self.game = game
-        self.comparison_results = {}
+        self.comparison_results = {}  # Wird später mit Vergleichsdaten gefüllt
         self.back_button = None
+        self.initialized = False  # Flag um zu prüfen ob initialized wurde
         
     def initialize(self):
-        # Hier vergleichen wir die Spielergebnisse mit den BFI-10 Ergebnissen
+        """Wird aufgerufen, wenn dieser State aktiviert wird"""
+        print("\n=== INITIALISIERUNG VON BFIResultsState ===")
+        # Sofort die Vergleichsdaten berechnen
         self.compare_results()
+        self.initialized = True
+        print(f"Initialisierung abgeschlossen, Daten vorhanden: {bool(self.comparison_results)}")
+        print("=== ENDE DER INITIALISIERUNG ===\n")
         
     def handle_event(self, event):
+        """Verarbeitet Benutzereingaben"""
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.back_button and self.back_button.collidepoint(pygame.mouse.get_pos()):
                 self.game.transition_to("MENU")  # Zurück zum Hauptmenü
     
     def update(self):
-        pass
+        """Aktualisiert den State (in diesem Fall nicht notwendig)"""
+        # Falls noch nicht initialisiert, initialisieren
+        if not self.initialized or not self.comparison_results:
+            print("Nachininitialisierung im update()...")
+            self.compare_results()
+            self.initialized = True
     
     def render(self):
+        """Zeichnet die Benutzeroberfläche"""
         self.game.screen.fill(BACKGROUND)
         
         # Titel
         title_text = "Vergleich: Spielergebnis vs. BFI-10"
-        title_surf = self.game.title_font.render(title_text, True, TEXT_COLOR)
+        title_surf = self.game.title_font.render(title_text, True, TEXT_DARK)
         title_rect = title_surf.get_rect(center=(SCREEN_WIDTH // 2, 50))
         self.game.screen.blit(title_surf, title_rect)
         
-        # Debug: Prüfe, ob comparison_results vorhanden sind
+        # Debug-Werte anzeigen
+        debug_text1 = self.game.small_font.render(f"Spiel-Werte: {self.game.personality_traits}", True, TEXT_DARK)
+        debug_text2 = self.game.small_font.render(f"BFI-Werte: {self.game.bfi_scores}", True, TEXT_DARK)
+        debug_text3 = self.game.small_font.render(f"Vergleichsdaten vorhanden: {bool(self.comparison_results)}", True, TEXT_DARK)
+        
+        self.game.screen.blit(debug_text1, (50, 100))
+        self.game.screen.blit(debug_text2, (50, 120))
+        self.game.screen.blit(debug_text3, (50, 140))
+        
+        # Wenn das comparison_results Dictionary leer ist, versuche es noch einmal zu füllen
         if not self.comparison_results:
-            print("Fehler: Keine Vergleichsdaten vorhanden!")
-            debug_text = self.game.medium_font.render("Keine Vergleichsdaten vorhanden!", True, POMEGRANATE)
-            self.game.screen.blit(debug_text, (50, 120))
+            print("Keine Vergleichsdaten beim Rendern - versuche erneut zu initialisieren")
+            self.compare_results()
+            
+        # Prüfen, ob Vergleichsdaten vorhanden sind
+        if not self.comparison_results:
+            error_text = self.game.medium_font.render("Keine Vergleichsdaten vorhanden!", True, POMEGRANATE)
+            self.game.screen.blit(error_text, (SCREEN_WIDTH // 2 - error_text.get_width() // 2, 200))
+            
+            # Zurück-Button
+            self.back_button = self.game.draw_modern_button(
+                "Zurück zum Menü", 
+                SCREEN_WIDTH // 2, 
+                300, 
+                200, 
+                50, 
+                PRIMARY,
+                TEXT_COLOR,
+                self.game.medium_font,
+                border_radius=15
+            )
+            return
         
         # Zeichne die Vergleichsergebnisse
-        y_pos = 120
+        y_pos = 160
         for trait, values in self.comparison_results.items():
-            # Debug: Prüfe Werte für jedes Trait
-            print(f"Zeichne {trait}: {values}")
+            # Erstelle eine Karte für jedes Persönlichkeitsmerkmal
+            card_rect = pygame.Rect(50, y_pos, SCREEN_WIDTH - 100, 70)
+            pygame.draw.rect(self.game.screen, WHITE, card_rect, border_radius=10)
             
-            try:
-                # Erstelle eine Karte für jedes Persönlichkeitsmerkmal
-                # Mit try-except um mögliche Fehler abzufangen
-                try:
-                    card_rect = self.game.draw_card(50, y_pos, SCREEN_WIDTH - 100, 70, CARD_BG)
-                except TypeError:
-                    # Versuche ohne shadow Parameter
-                    try:
-                        card_rect = pygame.Rect(50, y_pos, SCREEN_WIDTH - 100, 70)
-                        pygame.draw.rect(self.game.screen, CARD_BG, card_rect, border_radius=10)
-                    except:
-                        # Fallback ohne border_radius
-                        card_rect = pygame.Rect(50, y_pos, SCREEN_WIDTH - 100, 70)
-                        pygame.draw.rect(self.game.screen, CARD_BG, card_rect)
-                
-                # Merkmalname
-                trait_text = self.game.medium_font.render(f"{trait}:", True, TEXT_DARK)
-                self.game.screen.blit(trait_text, (70, y_pos + 15))
-                
-                # Spielergebnis
-                game_score_text = self.game.medium_font.render(f"Spiel: {values['game']:.1f}", True, TEXT_DARK)
-                self.game.screen.blit(game_score_text, (250, y_pos + 15))
-                
-                # BFI-10 Ergebnis
-                bfi_score_text = self.game.medium_font.render(f"BFI-10: {values['bfi']:.1f}", True, TEXT_DARK)
-                self.game.screen.blit(bfi_score_text, (400, y_pos + 15))
-                
-                # Übereinstimmung
-                match_score = 100 - min(100, abs(values['game'] - values['bfi']) * 20)  # Prozentuale Übereinstimmung
-                match_color = self.get_match_color(match_score)
-                match_text = self.game.medium_font.render(f"Übereinstimmung: {match_score:.0f}%", True, match_color)
-                self.game.screen.blit(match_text, (600, y_pos + 15))
-                
-                # Zeichne Übereinstimmungsbalken
-                bar_width = 300
-                bar_height = 15
-                bar_x = (SCREEN_WIDTH - bar_width) // 2
-                bar_y = y_pos + 45
-                
-                # Hintergrund
-                pygame.draw.rect(self.game.screen, BACKGROUND, pygame.Rect(bar_x, bar_y, bar_width, bar_height), border_radius=5)
-                
-                # Füllstand
-                fill_width = int(bar_width * (match_score / 100))
-                if fill_width > 0:
-                    pygame.draw.rect(self.game.screen, match_color, pygame.Rect(bar_x, bar_y, fill_width, bar_height), border_radius=5)
-                
-            except Exception as e:
-                print(f"Fehler beim Zeichnen von {trait}: {e}")
-                
+            # Merkmalname
+            trait_text = self.game.medium_font.render(f"{trait}:", True, TEXT_DARK)
+            self.game.screen.blit(trait_text, (70, y_pos + 15))
+            
+            # Spielergebnis
+            game_score_text = self.game.medium_font.render(f"Spiel: {values['game']:.1f}", True, TEXT_DARK)
+            self.game.screen.blit(game_score_text, (250, y_pos + 15))
+            
+            # BFI-10 Ergebnis
+            bfi_score_text = self.game.medium_font.render(f"BFI-10: {values['bfi']:.1f}", True, TEXT_DARK)
+            self.game.screen.blit(bfi_score_text, (400, y_pos + 15))
+            
+            # Übereinstimmung
+            match_score = 100 - min(100, abs(values['game'] - values['bfi']) * 20)  # Prozentuale Übereinstimmung
+            match_color = self.get_match_color(match_score)
+            match_text = self.game.medium_font.render(f"Übereinstimmung: {match_score:.0f}%", True, match_color)
+            self.game.screen.blit(match_text, (600, y_pos + 15))
+            
+            # Zeichne Übereinstimmungsbalken
+            bar_width = 300
+            bar_height = 15
+            bar_x = (SCREEN_WIDTH - bar_width) // 2
+            bar_y = y_pos + 45
+            
+            # Hintergrund
+            pygame.draw.rect(self.game.screen, NEUTRAL_LIGHT, pygame.Rect(bar_x, bar_y, bar_width, bar_height), border_radius=5)
+            
+            # Füllstand
+            fill_width = int(bar_width * (match_score / 100))
+            if fill_width > 0:
+                pygame.draw.rect(self.game.screen, match_color, pygame.Rect(bar_x, bar_y, fill_width, bar_height), border_radius=5)
+            
             y_pos += 90
         
         # Gesamtübereinstimmung
         total_match = sum([100 - min(100, abs(v['game'] - v['bfi']) * 20) for v in self.comparison_results.values()]) / 5
         match_color = self.get_match_color(total_match)
         
-        # Gesamtübereinstimmungs-Karte (entferne shadow Parameter)
-        self.game.draw_card(50, y_pos, SCREEN_WIDTH - 100, 70, CARD_BG)
+        # Gesamtübereinstimmungs-Karte
+        card_rect = pygame.Rect(50, y_pos, SCREEN_WIDTH - 100, 70)
+        pygame.draw.rect(self.game.screen, WHITE, card_rect, border_radius=10)
         
         total_text = self.game.heading_font.render(f"Gesamtübereinstimmung: {total_match:.0f}%", True, match_color)
         total_rect = total_text.get_rect(center=(SCREEN_WIDTH // 2, y_pos + 35))
         self.game.screen.blit(total_text, total_rect)
         
-        # Zurück-Button (füge border_radius hinzu für den gleichen Stil)
+        # Zurück-Button
         self.back_button = self.game.draw_modern_button(
             "Zurück zum Menü", 
             SCREEN_WIDTH // 2, 
@@ -123,54 +148,69 @@ class BFIResultsState:
         self.game.screen.blit(blob_mini, (blob_x, blob_y))
     
     def compare_results(self):
-        # Prüfen, ob die erforderlichen Attribute existieren
-        if not hasattr(self.game, 'personality_traits'):
-            print("Warnung: game.personality_traits nicht gefunden, setze Standardwerte")
-            self.game.personality_traits = {
-                "openness": 0.5,
-                "conscientiousness": 0.5,
-                "extraversion": 0.5,
-                "agreeableness": 0.5,
-                "neuroticism": 0.5
+        """Vergleicht die Spielergebnisse mit den BFI-10 Ergebnissen"""
+        print("\n----- VERGLEICH DER ERGEBNISSE -----")
+        
+        try:
+            # Zeige aktuelle Werte an (Debug)
+            print("Spiel-Werte:", self.game.personality_traits)
+            print("BFI-Werte:", self.game.bfi_scores)
+            
+            # Direkte Überprüfung, ob Daten existieren
+            if not hasattr(self.game, 'personality_traits') or not self.game.personality_traits:
+                print("FEHLER: Keine personality_traits gefunden!")
+                return
+                
+            if not hasattr(self.game, 'bfi_scores') or not self.game.bfi_scores:
+                print("FEHLER: Keine bfi_scores gefunden!")
+                return
+                
+            # Sicherstellen, dass alle Traits vorhanden sind
+            expected_traits = ['openness', 'conscientiousness', 'extraversion', 'agreeableness', 'neuroticism']
+            for trait in expected_traits:
+                if trait not in self.game.personality_traits:
+                    print(f"WARNUNG: {trait} fehlt in personality_traits!")
+                if trait not in self.game.bfi_scores:
+                    print(f"WARNUNG: {trait} fehlt in bfi_scores!")
+            
+            # Konvertiere die Spielwerte von 0-100 Skala auf 1-5 Skala
+            game_scores = {}
+            for trait, value in self.game.personality_traits.items():
+                # Umrechnung von 0-100 auf 1-5 Skala, mit Typkonvertierung
+                game_scores[trait] = (float(value) / 100) * 4 + 1
+
+            # Explizites Typecasting für bfi_scores
+            bfi_values = {}
+            for trait, value in self.game.bfi_scores.items():
+                try:
+                    bfi_values[trait] = float(value)
+                except (ValueError, TypeError):
+                    print(f"FEHLER beim Konvertieren von BFI-Wert für {trait}: {value}")
+                    bfi_values[trait] = 3.0  # Standardwert bei Fehler
+                    
+            # Erstelle die Vergleichsdaten
+            self.comparison_results = {
+                "Offenheit": {"game": game_scores.get("openness", 3.0), "bfi": bfi_values.get("openness", 3.0)},
+                "Gewissenhaftigkeit": {"game": game_scores.get("conscientiousness", 3.0), "bfi": bfi_values.get("conscientiousness", 3.0)},
+                "Extraversion": {"game": game_scores.get("extraversion", 3.0), "bfi": bfi_values.get("extraversion", 3.0)},
+                "Verträglichkeit": {"game": game_scores.get("agreeableness", 3.0), "bfi": bfi_values.get("agreeableness", 3.0)},
+                "Neurotizismus": {"game": game_scores.get("neuroticism", 3.0), "bfi": bfi_values.get("neuroticism", 3.0)}
             }
             
-        if not hasattr(self.game, 'bfi_scores'):
-            print("Warnung: game.bfi_scores nicht gefunden, setze Standardwerte")
-            self.game.bfi_scores = {
-                "openness": 3,
-                "conscientiousness": 3,
-                "extraversion": 3,
-                "agreeableness": 3,
-                "neuroticism": 3
-            }
-                
-        # Normalisiere die Spielergebnisse auf die 1-5 Skala
-        # Da die Spielergebnisse vermutlich zwischen 0-1 oder 0-100 liegen
-        
-        # Debug-Ausgaben
-        print("personality_traits:", self.game.personality_traits)
-        print("bfi_scores:", self.game.bfi_scores)
-        
-        # Wenn deine Spielwerte zwischen 0-1 liegen:
-        game_scores = {
-            "openness": self.game.personality_traits.get("openness", 0) * 4 + 1,  # Skalieren auf 1-5
-            "conscientiousness": self.game.personality_traits.get("conscientiousness", 0) * 4 + 1,
-            "extraversion": self.game.personality_traits.get("extraversion", 0) * 4 + 1,
-            "agreeableness": self.game.personality_traits.get("agreeableness", 0) * 4 + 1,
-            "neuroticism": self.game.personality_traits.get("neuroticism", 0) * 4 + 1
-        }
-        
-        # Vergleichsdaten erstellen
-        self.comparison_results = {
-            "Offenheit": {"game": game_scores["openness"], "bfi": self.game.bfi_scores["openness"]},
-            "Gewissenhaftigkeit": {"game": game_scores["conscientiousness"], "bfi": self.game.bfi_scores["conscientiousness"]},
-            "Extraversion": {"game": game_scores["extraversion"], "bfi": self.game.bfi_scores["extraversion"]},
-            "Verträglichkeit": {"game": game_scores["agreeableness"], "bfi": self.game.bfi_scores["agreeableness"]},
-            "Neurotizismus": {"game": game_scores["neuroticism"], "bfi": self.game.bfi_scores["neuroticism"]}
-        }
-        
-        # Debug: Prüfe, ob die Vergleichsdaten korrekt sind
-        print("Vergleichsdaten:", self.comparison_results)
+            # Debug-Ausgabe der Vergleichsdaten
+            print("Vergleichsdaten:", self.comparison_results)
+            
+            # Debug-Ausgabe der einzelnen Übereinstimmungen
+            for trait, values in self.comparison_results.items():
+                match_score = 100 - min(100, abs(values['game'] - values['bfi']) * 20)
+                print(f"{trait}: Spiel={values['game']:.1f}, BFI={values['bfi']:.1f}, Übereinstimmung={match_score:.0f}%")
+            
+        except Exception as e:
+            print(f"FEHLER beim Vergleich der Ergebnisse: {e}")
+            import traceback
+            traceback.print_exc()
+            
+        print("----------------------------------\n")
     
     def get_match_color(self, match_score):
         """Gibt eine Farbe basierend auf dem Übereinstimmungswert zurück"""

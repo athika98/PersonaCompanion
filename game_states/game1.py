@@ -706,11 +706,21 @@ class Game1State:
         
         # Persönlichkeitsmerkmal aktualisieren (umgekehrte Skala - höherer Wert = mehr Neurotizismus)
         self.game.personality_traits["neuroticism"] = self.neuroticism_score
-    
+
     def end_game(self):
         """Beendet das Spiel und berechnet den Neurotizismus-Score"""
         self.calculate_neuroticism()
-        self.state = "result"
+        
+        # Debug-Ausgabe
+        print(f"Game1 - Neurotizismus-Score berechnet: {self.neuroticism_score}")
+        
+        # Persönlichkeitsmerkmal aktualisieren - als Prozentwert (0-100)
+        self.game.personality_traits["neuroticism"] = self.neuroticism_score
+        print(f"Game1 - personality_traits['neuroticism'] gesetzt auf: {self.game.personality_traits['neuroticism']}")
+            
+        # Zum nächsten Spiel
+        self.game.transition_to("GAME2")
+        self.game.states["GAME2"].initialize()
     
     def render_multiline_text(self, text, font, color, x, y, max_width, line_height):
         """Zeichnet mehrzeiligen Text automatisch umgebrochen"""

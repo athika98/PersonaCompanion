@@ -293,6 +293,131 @@ def determine_companion_type(personality_traits):
         CHAMELEON_GREEN
     )
 
+def determine_persona_type(personality_traits):
+    """
+    Bestimmt den Persona-Typ basierend auf den Persönlichkeitsmerkmalen
+    
+    Args:
+        personality_traits (dict): Die Persönlichkeitsmerkmale mit Scores
+        
+    Returns:
+        tuple: (persona_name, persona_desc, companion_type, companion_desc, companion_color)
+    """
+    # Kategorisierung der Persönlichkeitsmerkmale
+    trait_categories = {}
+    for trait, score in personality_traits.items():
+        if score > 75:
+            trait_categories[trait] = "high"
+        elif score > 50:
+            trait_categories[trait] = "medium_high"
+        elif score > 25:
+            trait_categories[trait] = "medium_low"
+        else:
+            trait_categories[trait] = "low"
+    
+    # Definition der fünf Personas mit den zugehörigen Persönlichkeitsprofilen
+    personas = {
+        "Strukturorientierter Planer": {
+            "profile": {
+                "conscientiousness": ["high", "medium_high"],
+                "verträglichkeit": ["medium_high", "medium_low"],
+                "extraversion": ["medium_low", "low"],
+                "openness": ["medium_high", "medium_low"],
+                "neuroticism": ["medium_low", "low"]
+            },
+            "description": "Du bist strukturiert, planst sorgfältig und bevorzugst klare Strukturen. Du bist kooperativ, aber auch bestimmt in deinen eigenen Bedürfnissen. Du bevorzugst kleinere, bedeutungsvolle soziale Interaktionen und bist offen für neue Ansätze, wenn deren Nutzen erkennbar ist.",
+            "companion": {
+                "type": "Organisationssystem",
+                "description": "Ein minimalistisches, symmetrisches digitales Objekt mit klaren Linien und harmonischen Proportionen. Es verwendet beruhigende Blau- und Grautöne und zeigt sanfte, vorhersehbare Bewegungsmuster.",
+                "color": CLEAN_POOL_BLUE
+            }
+        },
+        "Sozialer Enthusiast": {
+            "profile": {
+                "extraversion": ["high", "medium_high"],
+                "agreeableness": ["high", "medium_high"],
+                "openness": ["medium_high", "medium_low"],
+                "conscientiousness": ["medium_high", "medium_low"],
+                "neuroticism": ["medium_low", "low"]
+            },
+            "description": "Du genießt soziale Interaktionen und teilst gerne Erfahrungen. Du bist kooperativ und harmoniebedürftig. Du bist offen für neue Erfahrungen, besonders in sozialen Kontexten und kannst organisiert sein, lässt dich aber auch leicht ablenken.",
+            "companion": {
+                "type": "Interaktives Wesen",
+                "description": "Ein interaktives, emotionales Wesen mit ausdrucksstarker Mimik und Gestik, das auf dich reagiert und eine persönliche Bindung aufbaut. Es verwendet warme, lebendige Farben wie Orange und Gelb und zeigt dynamische, responsive Bewegungen.",
+                "color": HONEY_YELLOW
+            }
+        },
+        "Vorsichtiger Beobachter": {
+            "profile": {
+                "neuroticism": ["high", "medium_high"],
+                "extraversion": ["low", "medium_low"],
+                "conscientiousness": ["medium_high", "medium_low"],
+                "agreeableness": ["medium_high", "medium_low"],
+                "openness": ["low", "medium_low"]
+            },
+            "description": "Du neigst zu Sorgen und intensiven emotionalen Reaktionen. Du bevorzugst ruhige, kontrollierte Umgebungen. Du kannst sorgfältig sein, wirst aber durch Ängste abgelenkt. Du bist grundsätzlich kooperativ, kannst aber zurückhaltend sein.",
+            "companion": {
+                "type": "Beruhigende Umgebung",
+                "description": "Eine beruhigende, naturinspirierte Umgebung mit sanften Elementen, die auf Interaktion reagieren, ohne zu überfordern. Sie verwendet kühle, beruhigende Blau- und Grüntöne und zeigt langsame, fließende Bewegungen.",
+                "color": CHAMELEON_GREEN
+            }
+        },
+        "Kreativer Entdecker": {
+            "profile": {
+                "openness": ["high", "medium_high"],
+                "extraversion": ["medium_high", "medium_low"],
+                "neuroticism": ["medium_high", "medium_low"],
+                "conscientiousness": ["low", "medium_low"],
+                "agreeableness": ["medium_high", "medium_low"]
+            },
+            "description": "Du suchst neue Erfahrungen und kreative Ansätze. Du genießt den Austausch von Ideen und Erfahrungen. Du bist emotional responsiv, aber nicht übermäßig besorgt. Du bist spontan und flexibel, manchmal auf Kosten von Struktur.",
+            "companion": {
+                "type": "Transformierendes Objekt",
+                "description": "Ein sich ständig entwickelndes, transformierendes Objekt, das unerwartete Formen annimmt und auf kreative Interaktion reagiert. Es zeigt abstrakte, fließende Formen mit ungewöhnlichen Texturen und dynamischen Farbwechseln.",
+                "color": CHERRY_PINK
+            }
+        },
+        "Leistungsorientierter Optimierer": {
+            "profile": {
+                "conscientiousness": ["high", "medium_high"],
+                "extraversion": ["medium_high", "medium_low"],
+                "neuroticism": ["low", "medium_low"],
+                "openness": ["medium_high", "medium_low"],
+                "agreeableness": ["low", "medium_low"]
+            },
+            "description": "Du bist zielorientiert und diszipliniert. Du bist energiegeladen und durchsetzungsfähig, dabei emotional stabil und belastbar. Du bist offen für neue Ansätze, wenn sie Effizienz versprechen, und eher wettbewerbsorientiert als kooperativ.",
+            "companion": {
+                "type": "Leistungssystem",
+                "description": "Ein dynamisches, leistungsbezogenes System mit klaren Metriken, Zielen und Fortschrittsvisualisierungen. Es verwendet energetisierende Farben wie Rot und Blau und zeigt schnelle, präzise Bewegungen, die Kraft und Dynamik vermitteln.",
+                "color": POMEGRANATE
+            }
+        }
+    }
+    
+    # Berechnung der Übereinstimmung mit jeder Persona
+    persona_scores = {}
+    for name, persona in personas.items():
+        score = 0
+        for trait, categories in persona["profile"].items():
+            # Korrigieren Sie 'verträglichkeit' zu 'agreeableness', falls nötig
+            trait_key = "agreeableness" if trait == "verträglichkeit" else trait
+            if trait_key in trait_categories and trait_categories[trait_key] in categories:
+                score += 1
+        persona_scores[name] = score
+    
+    # Persona mit der höchsten Übereinstimmung auswählen
+    best_match = max(persona_scores.items(), key=lambda x: x[1])
+    best_persona_name = best_match[0]
+    best_persona = personas[best_persona_name]
+    
+    return (
+        best_persona_name,
+        best_persona["description"],
+        best_persona["companion"]["type"],
+        best_persona["companion"]["description"],
+        best_persona["companion"]["color"]
+    )
+
 def draw_sundae_confetti(surface, count=100):
     """
     Zeichnet zufällige Sundae-farbige Konfetti-Punkte auf die angegebene Oberfläche

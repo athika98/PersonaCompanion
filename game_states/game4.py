@@ -915,11 +915,18 @@ class Game4State:
         ) - reset_penalty
         
         self.conscientiousness_score = int(min(100, max(0, final_score)))
-    
+
     def end_game(self):
         """Beendet das Spiel und geht zum nächsten Spiel"""
         # Speichere den Gewissenhaftigkeitswert
-        self.game.personality_traits["conscientiousness"] = self.conscientiousness_score
+        conscientiousness_score = self.conscientiousness_score
+        
+        # Debug-Ausgabe
+        print(f"Game4 - Conscientiousness-Score berechnet: {conscientiousness_score}")
+        
+        # Persönlichkeitsmerkmal aktualisieren - als Prozentwert (0-100)
+        self.game.personality_traits["conscientiousness"] = conscientiousness_score
+        print(f"Game4 - personality_traits['conscientiousness'] gesetzt auf: {self.game.personality_traits['conscientiousness']}")
         
         # Zum nächsten Spiel
         self.game.transition_to("GAME5")

@@ -62,8 +62,24 @@ class Game:
         self.transition_alpha = 255
         self.next_state = None
 
-        # Initialisiere den BFI-Score
-        self.bfi_scores = {}
+        # Persönlichkeitsmerkmale für Big Five Modell
+        # Hier ist wichtig, dass die Werte bereits als Anteile (0-1) definiert sind
+        self.personality_traits = {
+            "openness": 0.5,        # Default: mittlere Werte
+            "conscientiousness": 0.5,
+            "extraversion": 0.5,
+            "agreeableness": 0.5,
+            "neuroticism": 0.5
+        }
+
+        # Initialisiere den BFI-Score explizit mit Standardwerten
+        self.bfi_scores = {
+            "openness": 3,
+            "conscientiousness": 3,
+            "extraversion": 3,
+            "agreeableness": 3,
+            "neuroticism": 3
+}
     
     def load_fonts(self):
         """Lädt alle benötigten Schriftarten"""
@@ -173,11 +189,46 @@ class Game:
             
             self.screen.blit(transition_surface, (0, 0))
     
+# Ersetze die transition_to-Methode in game.py mit dieser Version:
+
     def transition_to(self, new_state):
         """Startet einen Übergang zu einem neuen Spielzustand"""
+        print(f"\n==== Wechsel von {self.current_state} zu {new_state} ====")
+        
+        # Debug-Informationen vor dem Zustandswechsel
+        print("Personality Traits vor dem Wechsel:", self.personality_traits)
+        print("BFI Scores vor dem Wechsel:", self.bfi_scores)
+        
+        # Prüfe, ob ein spezieller Zustandswechsel vorliegt
+        if new_state == "BFI_RESULTS":
+            # Stelle sicher, dass die personality_traits nicht leer oder alle 0 sind
+            if not any(self.personality_traits.values()):
+                print("WARNUNG: Alle personality_traits sind 0 oder leer! Setze Standardwerte...")
+                self.personality_traits = {
+                    "openness": 50,
+                    "conscientiousness": 50,
+                    "extraversion": 50,
+                    "agreeableness": 50,
+                    "neuroticism": 50
+                }
+            
+            # Stelle sicher, dass die BFI-Scores vorhanden sind
+            if not hasattr(self, 'bfi_scores') or not self.bfi_scores:
+                print("WARNUNG: Keine BFI-Scores gefunden! Setze Standardwerte...")
+                self.bfi_scores = {
+                    "openness": 3.0,
+                    "conscientiousness": 3.0,
+                    "extraversion": 3.0,
+                    "agreeableness": 3.0,
+                    "neuroticism": 3.0
+                }
+        
+        # Starte den Übergang
         self.transitioning = True
         self.transition_alpha = 255
         self.next_state = new_state
+        
+        print(f"==== Ende des Wechsels von {self.current_state} zu {new_state} ====\n")
     
     # Hilfsfunktionen für die Benutzeroberfläche (UI)
     def draw_modern_button(self, text, x, y, width, height, color, TEXT_COLOR=TEXT_COLOR, 
@@ -296,3 +347,11 @@ class Game:
                                   (x + width - 5, option_y + option_height), 1)
         
         return dropdown_rect, dropdown_options_rect
+
+    def debug_values(self):
+        """Gibt wichtige Spielvariablen für Debugging-Zwecke aus"""
+        print("\n--- DEBUG WERTE ---")
+        print("Personality Traits:", self.personality_traits)
+        print("BFI Scores:", self.bfi_scores)
+        print("Aktueller Zustand:", self.current_state)
+        print("------------------\n")

@@ -322,7 +322,7 @@ class Game3State:
         blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2 + 200
         blob_y = SCREEN_HEIGHT - BLOB_IMAGE.get_height() - 20
         self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
-    
+
     def calculate_openness(self):
         """Berechnet den Offenheits-Score basierend auf den Spielergebnissen"""
         # Berechnen und speichern des endgültigen Offenheits-Scores als Prozentsatz
@@ -330,11 +330,18 @@ class Game3State:
         openness_percentage = int((self.openness_score / max_possible_score) * 100)
         
         # Persönlichkeitsmerkmal aktualisieren
-        self.game.personality_traits["openness"] = openness_percentage
+        return openness_percentage
 
     def end_game(self):
         """Beendet das Spiel und berechnet den Offenheits-Score"""
-        self.calculate_openness()
+        openness_score = self.calculate_openness()
+        
+        # Debug-Ausgabe
+        print(f"Game3 - Openness-Score berechnet: {openness_score}")
+        
+        # Persönlichkeitsmerkmal aktualisieren - als Prozentwert (0-100)
+        self.game.personality_traits["openness"] = openness_score
+        print(f"Game3 - personality_traits['openness'] gesetzt auf: {self.game.personality_traits['openness']}")
         
         # Zum nächsten Spiel
         self.game.transition_to("GAME4")

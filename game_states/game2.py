@@ -118,8 +118,12 @@ class Game2State:
             # Weiter-Button
             if hasattr(self, 'continue_button_rect') and self.continue_button_rect.collidepoint(mouse_x, mouse_y):
                 # Berechnen und speichern des endgültigen Extraversions-Scores als Prozentsatz
-                extraversion_percentage = int((self.extraversion_score / len(self.scenarios)) * 100)
+                sum_weighted_scores = sum([a["value"] * a.get("weight", 1.0) for a in self.answers])
+                sum_weights = sum([a.get("weight", 1.0) for a in self.answers])
+                extraversion_percentage = int((sum_weighted_scores / sum_weights) * 100)
                 self.game.personality_traits["extraversion"] = extraversion_percentage
+                print(f"Neuer personality_traits Wert für extraversion: {extraversion_percentage}")
+
                 
                 # Zum nächsten Spiel
                 self.game.transition_to("GAME3")
@@ -552,3 +556,19 @@ class Game2State:
             lines.append(self.game.small_font.render(' '.join(current_line), True, TEXT_COLOR))
         
         return lines
+
+    def end_game(self):
+        """Beendet das Spiel und geht zum nächsten Spiel"""
+        # Berechnen und speichern des endgültigen Extraversions-Scores als Prozentsatz
+        extraversion_percentage = int((self.extraversion_score / len(self.scenarios)) * 100)
+        
+        # Debug-Ausgabe
+        print(f"Game2 - Extraversion-Score berechnet: {extraversion_percentage}")
+        
+        # Persönlichkeitsmerkmal aktualisieren - als Prozentwert (0-100)
+        self.game.personality_traits["extraversion"] = extraversion_percentage
+        print(f"Game2 - personality_traits['extraversion'] gesetzt auf: {self.game.personality_traits['extraversion']}")
+            
+        # Zum nächsten Spiel
+        self.game.transition_to("GAME3")
+        self.game.states["GAME3"].initialize()

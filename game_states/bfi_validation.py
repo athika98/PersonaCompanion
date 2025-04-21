@@ -28,7 +28,17 @@ class BFI10State:
         self.prev_button = pygame.Rect(400, 450, 150, 50)
         
     def initialize(self):
-        pass
+        # Hier können wir sicherstellen, dass die BFI-Scores zurückgesetzt werden
+        # um sicherzustellen, dass alte Daten nicht stören
+        self.game.bfi_scores = {
+            "openness": 3,
+            "conscientiousness": 3,
+            "extraversion": 3,
+            "agreeableness": 3,
+            "neuroticism": 3
+        }
+        self.answers = [None] * 10
+        self.current_question = 0
     
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -110,7 +120,7 @@ class BFI10State:
                 label_rect = label_surf.get_rect(center=(200 + i*100, 310))
                 self.game.screen.blit(label_surf, label_rect)
         
-        # Navigation Buttons - Entferne den shadow Parameter
+        # Navigation Buttons
         self.next_button = self.game.draw_modern_button(
             "Weiter", 
             600, 
@@ -173,17 +183,30 @@ class BFI10State:
         return lines
         
     def calculate_bfi_scores(self):
-        # Reverse-coding für Items 1, 3, 4, 5, 7, 9
+        """
+        Berechnet die BFI-10 Scores basierend auf den Antworten
+        und speichert sie im Game-Objekt
+        """
+        # Debug: Ausgabe der Antworten vor der Berechnung
+        print("BFI Antworten vor Umkehrung:", self.answers)
+        
+        # Erstelle eine Kopie der Antworten, um die Originale nicht zu verändern
+        answers_copy = self.answers.copy()
+        
+        # Reverse-coding für Items 1, 3, 4, 5, 7, 9 (Indizes 0, 2, 3, 4, 6, 8)
         reverse_items = [0, 2, 3, 4, 6, 8]
         for i in reverse_items:
-            self.answers[i] = 6 - self.answers[i]  # 5-Punkt-Skala wird umgekehrt
+            answers_copy[i] = 6 - answers_copy[i]  # 5-Punkt-Skala wird umgekehrt
+        
+        # Debug: Ausgabe der Antworten nach der Umkehrung
+        print("BFI Antworten nach Umkehrung:", answers_copy)
         
         # Berechne Dimension Scores
-        extraversion = (self.answers[0] + self.answers[5]) / 2
-        agreeableness = (self.answers[1] + self.answers[6]) / 2
-        conscientiousness = (self.answers[2] + self.answers[7]) / 2
-        neuroticism = (self.answers[3] + self.answers[8]) / 2
-        openness = (self.answers[4] + self.answers[9]) / 2
+        extraversion = (answers_copy[0] + answers_copy[5]) / 2
+        agreeableness = (answers_copy[1] + answers_copy[6]) / 2
+        conscientiousness = (answers_copy[2] + answers_copy[7]) / 2
+        neuroticism = (answers_copy[3] + answers_copy[8]) / 2
+        openness = (answers_copy[4] + answers_copy[9]) / 2
         
         # Speichere im Spielobjekt
         self.game.bfi_scores = {
@@ -193,3 +216,6 @@ class BFI10State:
             "agreeableness": agreeableness,
             "neuroticism": neuroticism
         }
+        
+        # Debug: Ausgabe der berechneten Scores
+        print("Berechnete BFI Scores:", self.game.bfi_scores)

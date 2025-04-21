@@ -417,7 +417,13 @@ class Game5State:
         # Berechnen und speichern des endgültigen Verträglichkeits-Scores als Prozentsatz
         max_possible_score = 100 * len(self.scenarios)
         agreeableness_percentage = int((self.agreeableness_score / max_possible_score) * 100)
+        
+        # Debug-Ausgabe
+        print(f"Game5 - Agreeableness-Score berechnet: {agreeableness_percentage}")
+        
+        # Persönlichkeitsmerkmal aktualisieren - als Prozentwert (0-100)
         self.game.personality_traits["agreeableness"] = agreeableness_percentage
+        print(f"Game5 - personality_traits['agreeableness'] gesetzt auf: {self.game.personality_traits['agreeableness']}")
         
         # Zum Ergebnisbildschirm
         self.game.transition_to("RESULTS")
