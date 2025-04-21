@@ -298,7 +298,7 @@ def determine_persona_type(personality_traits):
     )
 
 # =============================================================================
-# 3. Automatisches Speichern der Benutzerdaten
+# Automatisches Speichern der Benutzerdaten
 # =============================================================================
 
 def auto_save_data(game):

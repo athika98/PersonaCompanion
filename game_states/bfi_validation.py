@@ -1,9 +1,20 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+BFI Validation State
+Zeigt das BFI-10 (Big Five Inventory) Fragebogen-Modul.
+Nutzer beantworten 10 Aussagen, jeweils auf einer 5-Punkte-Likert-Skala.
+"""
+
+# Bibliotheken importieren
 import pygame
 from game_core.constants import *  # Importiere die Konstanten
 
 class BFI10State:
     def __init__(self, game):
         self.game = game
+        # Die 10 Fragen des BFI-10
         self.questions = [
             "Ich bin eher zurückhaltend, reserviert.",
             "Ich schenke anderen leicht Vertrauen, glaube an das Gute im Menschen.",
@@ -24,12 +35,12 @@ class BFI10State:
         for i in range(5):
             self.likert_buttons.append(pygame.Rect(200 + i*100, 350, 80, 40))
         
+        # Navigation Buttons
         self.next_button = pygame.Rect(600, 450, 150, 50)
         self.prev_button = pygame.Rect(400, 450, 150, 50)
         
     def initialize(self):
-        # Hier können wir sicherstellen, dass die BFI-Scores zurückgesetzt werden
-        # um sicherzustellen, dass alte Daten nicht stören
+        """Wird beim Start des Spiels aufgerufen, um den Zustand zu initialisieren"""
         self.game.bfi_scores = {
             "openness": 3,
             "conscientiousness": 3,
@@ -41,6 +52,7 @@ class BFI10State:
         self.current_question = 0
     
     def handle_event(self, event):
+        """Verarbeitet Benutzereingaben"""
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = pygame.mouse.get_pos()
             
@@ -65,10 +77,12 @@ class BFI10State:
                 self.current_question -= 1
     
     def update(self):
+        """BFI benötigt keine laufende Aktualisierung"""
         pass
     
     def render(self):
-        self.game.screen.fill(BACKGROUND)  # Verwende deine vorhandene Hintergrundfarbe
+        """Zeichnet die aktuelle Frage und die Buttons"""
+        self.game.screen.fill(BACKGROUND)
         
         # Titel
         title_text = "Big Five Inventory (BFI-10)"
@@ -146,7 +160,7 @@ class BFI10State:
                 border_radius=15
             )
         
-        # Fortschrittsanzeige mit angepassten Farben
+        # Fortschrittsanzeige
         self.game.draw_progress_bar(
             100,                # x-Position
             500,                # y-Position
@@ -158,7 +172,7 @@ class BFI10State:
         )
         
         # Mini Blob anzeigen
-        blob_mini = pygame.transform.scale(BLOB_IMAGE, (35, 35))
+        blob_mini = pygame.transform.scale(BLOB_IMAGE, (60, 60))
         blob_x = SCREEN_WIDTH - blob_mini.get_width() - 15  # 15 Pixel vom rechten Rand
         blob_y = SCREEN_HEIGHT - blob_mini.get_height() - 20  # 20 Pixel vom unteren Rand
         self.game.screen.blit(blob_mini, (blob_x, blob_y))

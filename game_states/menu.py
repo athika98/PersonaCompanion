@@ -4,7 +4,7 @@
 """
 Menu - Startbildschirm des Spiels
 """
-
+# Bibliotheken importieren
 import pygame
 import math
 import random
