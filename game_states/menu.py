@@ -46,7 +46,7 @@ class MenuState:
             if self.name_input_rect and self.name_input_rect.collidepoint(mouse_x, mouse_y):
                 self.game.active_input_field = "name"
                 self.game.active_input = True
-                # Dropdown-Menüs schließen
+                # Dropdown-Menüs schliessen
                 self.age_dropdown_active = False
                 self.gender_dropdown_active = False
                 return
@@ -92,7 +92,7 @@ class MenuState:
                     self.game.states["GAME1"].initialize()
                 return
                 
-            # Wenn irgendwo anders geklickt wurde, schließe die Dropdowns
+            # Wenn irgendwo anders geklickt wurde, schliesse die Dropdowns
             self.age_dropdown_active = False
             self.gender_dropdown_active = False
         

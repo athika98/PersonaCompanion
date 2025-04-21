@@ -219,6 +219,6 @@ class BFIResultsState:
         elif match_score >= 60:
             return HONEY_YELLOW  # Gut
         elif match_score >= 40:
-            return ORANGE_PEACH  # Mittelmäßig
+            return ORANGE_PEACH  # Mittelmässig
         else:
             return POMEGRANATE  # Schlecht

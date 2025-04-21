@@ -163,7 +163,9 @@ class Game:
         self.current_state = new_state
         print(f"==== Ende des Wechsels von {self.current_state} zu {new_state} ====\n")
 
-    # ----------- UI-Komponenten -----------    
+# =============================================================================
+#  UI Komponenten
+# =============================================================================
 
     def draw_modern_button(self, text, x, y, width, height, color, TEXT_COLOR=TEXT_COLOR, font=None, border_radius=10, hover=False):
         """Zeichnet einen modernen Button mit Schatten und Hover-Effekt"""

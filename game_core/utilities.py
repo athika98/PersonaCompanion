@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Utilities - Sammlung von Hilfsfunktionen für das Spiel
+Utilities
+Sammlung von Hilfsfunktionen zur Auswertung und Visualisierung des Persona Companion Spiel.
 """
 # Bibliotheken importieren
 import pygame
@@ -10,20 +11,21 @@ import random
 import math
 from game_core.constants import *
 
-# ----------------------------------------
-# 1. Beschreibung der Persönlichkeit
-# ----------------------------------------
+# =============================================================================
+# 1. Persönlichkeitsbeschreibung auf Basis eines Traits und Scores
+# Wird momentan nicht gebraucht, kann jedoch für zukünftige Erweiterungen nützlich sein
+# =============================================================================
 
 def get_personality_description(trait, score):
     """
-    Gibt eine Beschreibung basierend auf dem Persönlichkeitsmerkmal und dem Score zurück
+    Liefert eine Beschreibung basierend auf Persönlichkeitsmerkmal und Score.
     
     Args:
-        trait (str): Das Persönlichkeitsmerkmal (openness, conscientiousness, usw.)
-        score (int): Der Score (0-100)
-        
+        trait (str): z.B. "openness", "conscientiousness"
+        score (int): Wert zwischen 0-100
+    
     Returns:
-        tuple: (level_name, description, details)
+        tuple: (level_name, description, detail)
     """
     if trait == "openness":
         if score > 75:
@@ -162,136 +164,9 @@ def get_personality_description(trait, score):
         "Diese Eigenschaft trägt zu deinem vielseitigen Charakterprofil bei."
     )
 
-def determine_companion_type(personality_traits):
-    """
-    Bestimmt den passenden Begleitertyp basierend auf den Persönlichkeitsmerkmalen
-    
-    Args:
-        personality_traits (dict): Die Persönlichkeitsmerkmale mit Scores
-        
-    Returns:
-        tuple: (companion_type, companion_desc, companion_color)
-    """
-    # Finde das dominante Merkmal
-    dominant_trait = "balanced"
-    highest_score = 0
-    
-    for trait, score in personality_traits.items():
-        if score > highest_score and trait != "agreeableness":  # Agreeableness separat behandeln
-            highest_score = score
-            dominant_trait = trait
-    
-    # Spezifischen Begleiter basierend auf dem dominanten Merkmal bestimmen
-    if dominant_trait == "neuroticism":
-        if personality_traits["neuroticism"] > 75:
-            return (
-                "Beruhigender Begleiter",
-                "Ein sanfter, strukturierter Begleiter, der Sicherheit vermittelt",
-                CLEAN_POOL_BLUE
-            )
-        elif personality_traits["neuroticism"] > 50:
-            return (
-                "Ausgleichender Begleiter",
-                "Ein ruhiger, aber motivierender Begleiter mit klaren Abläufen",
-                CHAMELEON_GREEN
-            )
-        elif personality_traits["neuroticism"] > 25:
-            return (
-                "Dynamischer Begleiter",
-                "Ein energiegeladener Begleiter, der Abwechslung bietet",
-                HONEY_YELLOW
-            )
-        else:
-            return (
-                "Abenteuerlicher Begleiter", 
-                "Ein spontaner, unkonventioneller Begleiter für neue Erfahrungen",
-                POMEGRANATE
-            )
-    
-    elif dominant_trait == "extraversion":
-        if personality_traits["extraversion"] > 75:
-            return (
-                "Sozialer Begleiter",
-                "Ein geselliger, interaktiver Begleiter für gemeinsame Aktivitäten",
-                POMEGRANATE
-            )
-        elif personality_traits["extraversion"] > 50:
-            return (
-                "Kommunikativer Begleiter",
-                "Ein gesprächiger Begleiter, der auf deine Bedürfnisse eingeht",
-                HONEY_YELLOW
-            )
-        elif personality_traits["extraversion"] > 25:
-            return (
-                "Ruhiger Begleiter",
-                "Ein zurückhaltender Begleiter, der dich unterstützt, ohne zu drängen",
-                CHAMELEON_GREEN
-            )
-        else:
-            return (
-                "Zurückgezogener Begleiter",
-                "Ein Begleiter, der Ruhe und Raum für Reflexion bietet",
-                CLEAN_POOL_BLUE
-            )
-    
-    elif dominant_trait == "openness":
-        if personality_traits["openness"] > 75:
-            return (
-                "Kreativer Begleiter",
-                "Ein unkonventioneller Begleiter voller überraschender Ideen",
-                CHERRY_PINK
-            )
-        elif personality_traits["openness"] > 50:
-            return (
-                "Inspirierender Begleiter",
-                "Ein Begleiter, der neue Perspektiven eröffnet und zum Nachdenken anregt",
-                POMEGRANATE
-            )
-        elif personality_traits["openness"] > 25:
-            return (
-                "Entdeckender Begleiter",
-                "Ein Begleiter, der subtile Abwechslung in deinen Alltag bringt",
-                HONEY_YELLOW
-            )
-        else:
-            return (
-                "Beständiger Begleiter",
-                "Ein verlässlicher Begleiter mit klaren, bewährten Routinen",
-                CLEAN_POOL_BLUE
-            )
-    
-    elif dominant_trait == "conscientiousness":
-        if personality_traits["conscientiousness"] > 75:
-            return (
-                "Strukturierter Begleiter",
-                "Ein organisierter Begleiter, der dir hilft, Ordnung zu halten",
-                CLEAN_POOL_BLUE
-            )
-        elif personality_traits["conscientiousness"] > 50:
-            return (
-                "Methodischer Begleiter",
-                "Ein zuverlässiger Begleiter mit einer guten Balance aus Struktur und Flexibilität",
-                CHAMELEON_GREEN
-            )
-        elif personality_traits["conscientiousness"] > 25:
-            return (
-                "Flexibler Begleiter",
-                "Ein anpassungsfähiger Begleiter, der deinen Bedürfnissen nachkommt",
-                HONEY_YELLOW
-            )
-        else:
-            return (
-                "Spontaner Begleiter",
-                "Ein kreativer, improvisierender Begleiter für unerwartete Situationen",
-                CHERRY_PINK
-            )
-    
-    # Fallback für ausgeglichene Profile
-    return (
-        "Ausgewogener Begleiter",
-        "Ein vielseitiger Begleiter, der sich deinen Bedürfnissen anpasst",
-        CHAMELEON_GREEN
-    )
+# =============================================================================
+# 2. Bestimmung des Persona-Typs
+# =============================================================================
 
 def determine_persona_type(personality_traits):
     """
@@ -303,7 +178,7 @@ def determine_persona_type(personality_traits):
     Returns:
         tuple: (persona_name, persona_desc, companion_type, companion_desc, companion_color)
     """
-    # Kategorisierung der Persönlichkeitsmerkmale
+    #  Klassifizierung der Score-Werte in Kategorien
     trait_categories = {}
     for trait, score in personality_traits.items():
         if score > 75:
@@ -340,7 +215,7 @@ def determine_persona_type(personality_traits):
                 "conscientiousness": ["medium_high", "medium_low"],
                 "neuroticism": ["medium_low", "low"]
             },
-            "description": "Du genießt soziale Interaktionen und teilst gerne Erfahrungen. Du bist kooperativ und harmoniebedürftig. Du bist offen für neue Erfahrungen, besonders in sozialen Kontexten und kannst organisiert sein, lässt dich aber auch leicht ablenken.",
+            "description": "Du geniesst soziale Interaktionen und teilst gerne Erfahrungen. Du bist kooperativ und harmoniebedürftig. Du bist offen für neue Erfahrungen, besonders in sozialen Kontexten und kannst organisiert sein, lässt dich aber auch leicht ablenken.",
             "companion": {
                 "type": "Interaktives Wesen",
                 "description": "Ein interaktives, emotionales Wesen mit ausdrucksstarker Mimik und Gestik, das auf dich reagiert und eine persönliche Bindung aufbaut. Es verwendet warme, lebendige Farben wie Orange und Gelb und zeigt dynamische, responsive Bewegungen.",
@@ -358,7 +233,7 @@ def determine_persona_type(personality_traits):
             "description": "Du neigst zu Sorgen und intensiven emotionalen Reaktionen. Du bevorzugst ruhige, kontrollierte Umgebungen. Du kannst sorgfältig sein, wirst aber durch Ängste abgelenkt. Du bist grundsätzlich kooperativ, kannst aber zurückhaltend sein.",
             "companion": {
                 "type": "Beruhigende Umgebung",
-                "description": "Eine beruhigende, naturinspirierte Umgebung mit sanften Elementen, die auf Interaktion reagieren, ohne zu überfordern. Sie verwendet kühle, beruhigende Blau- und Grüntöne und zeigt langsame, fließende Bewegungen.",
+                "description": "Eine beruhigende, naturinspirierte Umgebung mit sanften Elementen, die auf Interaktion reagieren, ohne zu überfordern. Sie verwendet kühle, beruhigende Blau- und Grüntöne und zeigt langsame, fliessende Bewegungen.",
                 "color": CHAMELEON_GREEN
             }
         },
@@ -370,10 +245,10 @@ def determine_persona_type(personality_traits):
                 "conscientiousness": ["low", "medium_low"],
                 "agreeableness": ["medium_high", "medium_low"]
             },
-            "description": "Du suchst neue Erfahrungen und kreative Ansätze. Du genießt den Austausch von Ideen und Erfahrungen. Du bist emotional responsiv, aber nicht übermäßig besorgt. Du bist spontan und flexibel, manchmal auf Kosten von Struktur.",
+            "description": "Du suchst neue Erfahrungen und kreative Ansätze. Du geniesst den Austausch von Ideen und Erfahrungen. Du bist emotional responsiv, aber nicht übermässig besorgt. Du bist spontan und flexibel, manchmal auf Kosten von Struktur.",
             "companion": {
                 "type": "Transformierendes Objekt",
-                "description": "Ein sich ständig entwickelndes, transformierendes Objekt, das unerwartete Formen annimmt und auf kreative Interaktion reagiert. Es zeigt abstrakte, fließende Formen mit ungewöhnlichen Texturen und dynamischen Farbwechseln.",
+                "description": "Ein sich ständig entwickelndes, transformierendes Objekt, das unerwartete Formen annimmt und auf kreative Interaktion reagiert. Es zeigt abstrakte, fliessende Formen mit ungewöhnlichen Texturen und dynamischen Farbwechseln.",
                 "color": CHERRY_PINK
             }
         },
@@ -417,26 +292,3 @@ def determine_persona_type(personality_traits):
         best_persona["companion"]["description"],
         best_persona["companion"]["color"]
     )
-
-def draw_sundae_confetti(surface, count=100):
-    """
-    Zeichnet zufällige Sundae-farbige Konfetti-Punkte auf die angegebene Oberfläche
-    
-    Args:
-        surface (pygame.Surface): Die Oberfläche, auf die gezeichnet werden soll
-        count (int): Die Anzahl der Konfetti-Punkte
-    """
-    width, height = surface.get_size()
-    
-    sundae_colors = [
-        VIOLET_VELVET, CLEAN_POOL_BLUE, CHAMELEON_GREEN, HONEY_YELLOW, 
-        LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK
-    ]
-    
-    for _ in range(count):
-        x = random.randint(0, width)
-        y = random.randint(0, height)
-        size = random.randint(2, 8)
-        color = random.choice(sundae_colors)
-        
-        pygame.draw.circle(surface, color, (x, y), size)
