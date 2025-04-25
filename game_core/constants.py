@@ -61,6 +61,13 @@ FONT_PATH = os.path.join("assets", "fonts", "Poppins-Regular.ttf")
 BLOB_IMAGE = pygame.image.load("assets/images/happy_blob2.png")
 BLOB_IMAGE = pygame.transform.smoothscale(BLOB_IMAGE, (150, 150))  # Grösse anpassen
 
+# Begleiter-Bilder 
+COMPANION_ORGANIZATION_IMAGE = pygame.image.load("assets/images/companion_organization.png")
+COMPANION_INTERACTIVE_IMAGE = pygame.image.load("assets/images/companion_interactive.png")
+COMPANION_CALMING_IMAGE = pygame.image.load("assets/images/companion_calming.png")
+COMPANION_CREATIVE_IMAGE = pygame.image.load("assets/images/companion_creative.png")
+COMPANION_PERFORMANCE_IMAGE = pygame.image.load("assets/images/companion_performance.png")
+
 # SPIEL 2: Szenarien, um Persönlichkeitstyp "Extravertiert vs. Introvertiert" abzufragen
 # Jede Situation zeigt eine Frage und zwei Antwortmöglichkeiten (A und B)
 GAME2_SCENARIOS = [
