@@ -59,7 +59,7 @@ class BFIResultsState:
             self.game.screen.blit(error_text, (SCREEN_WIDTH // 2 - error_text.get_width() // 2, 200))
             
             # Zurück-Button
-            self.back_button = self.game.draw_modern_button(
+            self.back_button = self.game.draw_button(
                 "Zurück zum Menü", 
                 SCREEN_WIDTH // 2, 
                 300, 
@@ -129,7 +129,7 @@ class BFIResultsState:
         self.game.screen.blit(total_text, total_rect)
         
         # Zurück-Button
-        self.back_button = self.game.draw_modern_button(
+        self.back_button = self.game.draw_button(
             "Zurück zum Menü", 
             SCREEN_WIDTH // 2, 
             y_pos + 80,
@@ -217,7 +217,7 @@ class BFIResultsState:
         if match_score >= 80:
             return CHAMELEON_GREEN  # Sehr gut
         elif match_score >= 60:
-            return HONEY_YELLOW  # Gut
+            return DARK_YELLOW  # Gut
         elif match_score >= 40:
             return ORANGE_PEACH  # Mittelmässig
         else:

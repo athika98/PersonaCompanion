@@ -19,22 +19,34 @@ class MenuState:
         self.game = game
         
         # Altersgruppen-Optionen
-        self.age_options = ["unter 18", "18-25", "26-35", "36-45", "46-55", "über 55"]
-        
+        self.age_options = [
+            "16-25",
+            "26-35",
+            "36-45",
+            "46-55",
+            "56-65",
+            "66-75",
+            "über 75"
+        ]
+
         # Geschlechts-Optionen
-        self.gender_options = ["männlich", "weiblich", "divers"]
+        self.gender_options = [
+            "männlich",
+            "weiblich",
+            "divers"
+        ]
         
         # Dropdown-Status
         self.age_dropdown_active = False
         self.gender_dropdown_active = False
         
-        # Dropdown-Rechtecke für Klickerkennung
+        # Dropdown-Rechtecke initialisieren
         self.age_dropdown_rect = None
         self.age_options_rect = None
         self.gender_dropdown_rect = None
         self.gender_options_rect = None
         
-        # Eingabefelder-Rechtecke
+        # Eingabefelder-Rechteck initialisieren
         self.name_input_rect = None
         
     def handle_event(self, event):
@@ -61,7 +73,7 @@ class MenuState:
             
             if self.age_dropdown_active and self.age_options_rect and self.age_options_rect.collidepoint(mouse_x, mouse_y):
                 # Berechne, welche Option angeklickt wurde
-                option_height = 30  # Kleinere Höhe jeder Option
+                option_height = 30
                 option_index = (mouse_y - self.age_options_rect.y) // option_height
                 if 0 <= option_index < len(self.age_options):
                     self.game.user_age = self.age_options[option_index]
@@ -78,7 +90,7 @@ class MenuState:
             
             if self.gender_dropdown_active and self.gender_options_rect and self.gender_options_rect.collidepoint(mouse_x, mouse_y):
                 # Berechne, welche Option angeklickt wurde
-                option_height = 30  # Kleinere Höhe jeder Option
+                option_height = 30
                 option_index = (mouse_y - self.gender_options_rect.y) // option_height
                 if 0 <= option_index < len(self.gender_options):
                     self.game.user_gender = self.gender_options[option_index]
@@ -106,7 +118,7 @@ class MenuState:
                         self.game.transition_to("GAME1")
                         self.game.states["GAME1"].initialize()
                 else:
-                    if len(self.game.user_name) < 20:  # Namenslänge begrenzen
+                    if len(self.game.user_name) < 20:  # Maximal 20 Zeichen
                         self.game.user_name += event.unicode
     
     def update(self):
@@ -114,57 +126,45 @@ class MenuState:
         pass
     
     def render(self):
-        """Zeichnet das Hauptmenü ohne Inhalts-Karte"""
-        # Direktes Zeichnen des Hintergrunds
-        #self.render_custom_background()
-        self.game.screen.fill(BACKGROUND)  # Setzt den Hintergrund auf ein einheitliches Hellblau
+        """Zeichnet das Hauptmenü"""
+        # Hintergrundfarbe setzen
+        self.game.screen.fill(BACKGROUND)
 
-        # Titel  auf dem Hintergrund rendern
-        title = self.game.font.render("Persona Companion", True, TEXT_COLOR)
-        self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, SCREEN_HEIGHT // 8))
+        # Titel auf dem Hintergrund rendern
+        title = self.game.title_font_bold.render("PERSONA COMPANION", True, TEXT_COLOR)
+        self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, TITLE_Y_POSITION))
 
-        # Blob Bild rendern
-        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2
-        blob_y = SCREEN_HEIGHT // 5 # Position zwischen Titel und Willkommenstext
-        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
+        # Tiktik Bild rendern
+        tiktik_x = SCREEN_WIDTH // 2 - WINKEND_TIKTIK_IMAGE.get_width() // 2
+        tiktik_y = SCREEN_HEIGHT // 6
+        self.game.screen.blit(WINKEND_TIKTIK_IMAGE, (tiktik_x, tiktik_y))
               
         # Begrüssungstext rendern
-        y_offset = blob_y + BLOB_IMAGE.get_height() - 10  # Weniger Abstand
-    
-        # "Willkommen"-Text entfernt für mehr Platz
-        
-        description1 = self.game.small_font.render(
-            "Erkunde deine Persönlichkeit durch spannende Mini-Spiele und finde heraus, welcher Typ am besten zu dir passt.", 
-            True, TEXT_DARK)
-        description2 = self.game.small_font.render(
-            "Am Ende erwartet dich ein digitaler Begleiter, der perfekt auf dich abgestimmt ist.", 
-            True, TEXT_DARK)
-        
-        # Weniger Abstand zwischen den Beschreibungstexten
+        y_offset = tiktik_y + WINKEND_TIKTIK_IMAGE.get_height() + 20 # Position unter dem Bild
+        description1 = self.game.body_font.render("Hi, mein Name ist Tiktik und ich begleite dich durchs ganze Spiel.", True, TEXT_DARK)
+        description2 = self.game.body_font.render("Erkunde deine Persönlichkeit durch spannende Mini-Spiele und finde heraus, welcher Begleiter am besten zu dir passt.", True, TEXT_DARK)
         self.game.screen.blit(description1, (SCREEN_WIDTH // 2 - description1.get_width() // 2, y_offset))
         self.game.screen.blit(description2, (SCREEN_WIDTH // 2 - description2.get_width() // 2, y_offset + 30))
         
-        # Name input field - linke Seite
-        name_label = self.game.small_font.render("Dein Name:", True, TEXT_COLOR)
-        self.game.screen.blit(name_label, (SCREEN_WIDTH // 4 - 100, y_offset + 70))
-        
-        # Eingabefeld für den Namen
+        # Namen Eingabe - linke Seite
+        name_label = self.game.small_font.render("Name:", True, TEXT_COLOR)
+        self.game.screen.blit(name_label, (SCREEN_WIDTH // 4 - 100, y_offset + 75))
+
         name_input_rect = self.render_input_field(
             SCREEN_WIDTH // 4 - 100, 
-            y_offset + 90, 
+            y_offset + 95, 
             180, 35, 
             self.game.active_input_field == "name" and self.game.active_input
         )
         self.name_input_rect = name_input_rect
         
-        # Geschlechtsauswahl mit Dropdown - Mitte
+        # Geschlechtsauswahl mit Dropdown - mittlere Seite
         gender_label = self.game.small_font.render("Geschlecht:", True, TEXT_COLOR)
-        self.game.screen.blit(gender_label, (SCREEN_WIDTH // 2 - 90, y_offset + 70))
-        
-        # Dropdown für Geschlecht
+        self.game.screen.blit(gender_label, (SCREEN_WIDTH // 2 - 90, y_offset + 75))
+
         gender_dropdown_rect, gender_options_rect = self.game.draw_dropdown(
             SCREEN_WIDTH // 2 - 90,
-            y_offset + 90,
+            y_offset + 95,
             180, 35,
             self.gender_options,
             self.game.user_gender,
@@ -175,12 +175,12 @@ class MenuState:
         
         # Altersauswahl mit Dropdown - rechte Seite
         age_label = self.game.small_font.render("Alter:", True, TEXT_COLOR)
-        self.game.screen.blit(age_label, (SCREEN_WIDTH * 3 // 4 - 90, y_offset + 70))
+        self.game.screen.blit(age_label, (SCREEN_WIDTH * 3 // 4 - 90, y_offset + 75))
         
         # Dropdown für Alter
         age_dropdown_rect, age_options_rect = self.game.draw_dropdown(
             SCREEN_WIDTH * 3 // 4 - 90,
-            y_offset + 90,
+            y_offset + 95,
             180, 35,
             self.age_options,
             self.game.user_age,
@@ -188,40 +188,38 @@ class MenuState:
         )
         self.age_dropdown_rect = age_dropdown_rect
         self.age_options_rect = age_options_rect
-        
-        # Start-Button rendern mit Hover-Effekt
-        button_x, button_y = SCREEN_WIDTH // 2, y_offset + 260
-        
+
+        # Das Button-Rechteck erstellen
+        button_rect = pygame.Rect(
+            button_x - button_width // 2,
+            button_y - button_height // 2,
+            button_width,
+            button_height
+        )
+
         # Prüfen, ob die Maus über dem Button ist
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        hover = (mouse_x >= button_x - 80 and mouse_x <= button_x + 80 and 
-                mouse_y >= button_y - 18 and mouse_y <= button_y + 25)
-        
-        # Button nur aktivieren, wenn der Name nicht leer ist
-        button_color = TEXT_COLOR if self.game.user_name else NEUTRAL_LIGHT
-        button_text_color = TEXT_LIGHT if self.game.user_name else NEUTRAL
-        
-        button_rect = self.game.draw_modern_button(
-            "Start", button_x, button_y, 200, 50, 
-            button_color, button_text_color, self.game.medium_font, 25, hover and self.game.user_name
+        hover = button_rect.collidepoint(mouse_x, mouse_y)
+
+        # Button zeichnen mit Hover-Effekt
+        self.game.draw_button(
+            "Start", button_x, button_y, button_width, button_height,
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, hover
         )
-        
+
+        # Rechteck für Klickprüfung speichern
         self.start_button_rect = button_rect
-    
-    
+
+
     def render_custom_background(self):
-        """Zeichnet einen angepassten Hintergrund mit langsameren Animationen"""
-        # Grundfarbe
+        """löschen"""
         self.game.screen.fill(BACKGROUND)
-        
-        # Subtiles Raster
-        grid_color = (240, 242, 245)  # Sehr helles Grau
         grid_spacing = 30
         
         for x in range(0, SCREEN_WIDTH, grid_spacing):
             for y in range(0, SCREEN_HEIGHT, grid_spacing):
                 # Kleine Punkte Hintergrund
-                pygame.draw.circle(self.game.screen, grid_color, (x, y), 1)
+                pygame.draw.circle(self.game.screen, WHITE, (x, y), 1)
         
         # Subtile Farbakzente mit langsamerer Animation
         animation_speed_factor = 0.002  # Reduziert die Geschwindigkeit (höher = langsamer)
@@ -257,23 +255,16 @@ class MenuState:
             self.game.screen.blit(accent_surface, (x - size + x_offset, y - size + y_offset))
 
     def render_input_field(self, x, y, width, height, active):
-        """Zeichnet ein modernes Eingabefeld ohne Umrandung, aber mit Schatten"""
-        background_color = (255, 255, 255)  # Eingabefeld-Hintergrund
-        shadow_color = (0, 0, 0, 50)  # Weicher Schatten
-        border_color = PRIMARY if active else TEXT_DARK
-
-        # Schatten für Tiefe
-        shadow_rect = pygame.Rect(x + 3, y + 3, width, height)
-        shadow_surface = pygame.Surface((width, height), pygame.SRCALPHA)
-        pygame.draw.rect(shadow_surface, shadow_color, (0, 0, width, height), border_radius=12)
-        self.game.screen.blit(shadow_surface, (x + 2, y + 2))
+        """Zeichnet das Eingabefeld für den Namen"""
+        background_color = WHITE
+        border_color = TEXT_COLOR if active else TEXT_LIGHT
 
         # Hintergrund des Eingabefelds
         input_rect = pygame.Rect(x, y, width, height)
-        pygame.draw.rect(self.game.screen, background_color, input_rect, border_radius=12)
+        pygame.draw.rect(self.game.screen, background_color, input_rect)
         
         # Umrandung mit Farbe basierend auf aktivem Status
-        pygame.draw.rect(self.game.screen, border_color, input_rect, 2, border_radius=12)
+        pygame.draw.rect(self.game.screen, border_color, input_rect, 2)
 
         # Text anzeigen
         name_text = self.game.caption_font.render(self.game.user_name, True, TEXT_DARK)

@@ -2,18 +2,19 @@
 # -*- coding: utf-8 -*-
 
 """
-Game 5 - "Give & Gain"
-Misst Verträglichkeit durch Ressourcenverteilung
+Game 5 - "Harmony Village"
+Misst Verträglichkeit durch kooperative Entscheidungen in einer virtuellen Gemeinschaft
 """
 
 import pygame
+import random
 import math
 from game_core.constants import *
 
 class Game5State:
     """
-    Game5State verwaltet das Kooperationsspiel, bei dem der Spieler
-    Ressourcen zwischen sich und anderen verteilen muss
+    Game5State verwaltet das Harmony Village Spiel, bei dem der Spieler
+    Entscheidungen in einem virtuellen Dorf treffen muss
     """
     def __init__(self, game):
         """Initialisiert den Spielzustand mit einer Referenz auf das Hauptspiel"""
@@ -24,125 +25,221 @@ class Game5State:
         """Initialisiert oder setzt das Spiel zurück"""
         self.state = "instruction"  # Zustände: instruction, play, result
         self.agreeableness_score = 0
-        self.round = 0
-        self.choices = []
-        self.total_rounds = len(GAME5_SCENARIOS)
+        self.max_score = 0
+        self.day = 1
+        self.max_days = 5
+        self.current_scenario = None
         self.transition_timer = 0
-        self.slider_position = 50  # Schieberegler beginnt in der Mitte (0-100)
-        self.is_dragging = False
+        self.villagers = []
+        self.village_happiness = 70  # Startwert zwischen 0-100
+        
+        # Dorf-Community initialisieren
+        self.initialize_villagers()
         
         # Button-Rechtecke für die Klickerkennung definieren
         self.start_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 150, 200, 50)
+        self.option_buttons = []
         self.continue_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
         
-        # Schieberegler-Eigenschaften
-        self.slider = {
-            "x": SCREEN_WIDTH // 2,
-            "y": 350,
-            "width": 400,
-            "height": 20,
-            "knob_radius": 15,
-            "min_value": 0,
-            "max_value": 100
-        }
+        # Verschiedene mögliche Szenarien vorbereiten
+        self.scenarios = [
+            {
+                "title": "Ressourcenknappheit",
+                "description": "Es gibt nicht genug Nahrung für alle. Wie verteilst du die Vorräte?",
+                "options": [
+                    {"text": "Gleich unter allen aufteilen, auch wenn es bedeutet, dass alle etwas hungrig bleiben", "score": 8, "effect": "harmony"},
+                    {"text": "Den stärksten Arbeitern mehr geben, damit sie produktiv bleiben können", "score": 4, "effect": "productivity"},
+                    {"text": "Den Kindern und Älteren Priorität geben, der Rest muss sich einschränken", "score": 6, "effect": "care"},
+                    {"text": "Für dich und deine engsten Verbündeten sorgen, der Rest kommt später", "score": 2, "effect": "self"}
+                ]
+            },
+            {
+                "title": "Streit zwischen Nachbarn",
+                "description": "Zwei Dorfbewohner streiten über die Grenze ihrer Gärten. Wie gehst du vor?",
+                "options": [
+                    {"text": "Einen Kompromiss aushandeln, der beide Seiten berücksichtigt", "score": 8, "effect": "harmony"},
+                    {"text": "Die Grenze genau vermessen und strikt nach Regeln entscheiden", "score": 5, "effect": "justice"},
+                    {"text": "Den Garten zu Gemeinschaftsland erklären, das beide nutzen können", "score": 7, "effect": "community"},
+                    {"text": "Dich heraushalten, sie sollen es selbst regeln", "score": 3, "effect": "distance"}
+                ]
+            },
+            {
+                "title": "Neue Ideen",
+                "description": "Ein Dorfbewohner schlägt neue Methoden vor, die traditionelle Praktiken in Frage stellen.",
+                "options": [
+                    {"text": "Die Ideen anhören und einen sanften Übergang zu neuen Methoden schaffen", "score": 7, "effect": "progress"},
+                    {"text": "Bei den bewährten Traditionen bleiben, um Konflikte zu vermeiden", "score": 5, "effect": "tradition"},
+                    {"text": "Die Gemeinschaft entscheiden lassen, was sie bevorzugt", "score": 8, "effect": "democracy"},
+                    {"text": "Die effizienteste Methode durchsetzen, egal ob traditionell oder neu", "score": 4, "effect": "efficiency"}
+                ]
+            },
+            {
+                "title": "Arbeitseinteilung",
+                "description": "Es gibt viele Arbeiten im Dorf zu erledigen. Wie organisierst du das?",
+                "options": [
+                    {"text": "Jeder tut, was er am besten kann und hilft anderen bei Bedarf", "score": 8, "effect": "cooperation"},
+                    {"text": "Klare Aufgaben zuweisen basierend auf Fähigkeiten", "score": 6, "effect": "organization"},
+                    {"text": "Alle rotieren durch verschiedene Aufgaben für Fairness", "score": 7, "effect": "fairness"},
+                    {"text": "Die wichtigsten Aufgaben priorisieren, der Rest kann warten", "score": 4, "effect": "priority"}
+                ]
+            },
+            {
+                "title": "Feierplanung",
+                "description": "Das Dorf plant ein Fest. Wie gehst du an die Organisation heran?",
+                "options": [
+                    {"text": "Alle Wünsche berücksichtigen, damit jeder etwas hat, das ihm gefällt", "score": 9, "effect": "inclusion"},
+                    {"text": "Ein Komitee der erfahrensten Festplaner entscheiden lassen", "score": 5, "effect": "expertise"},
+                    {"text": "Die Mehrheit entscheiden lassen, was für die Feier geplant wird", "score": 6, "effect": "majority"},
+                    {"text": "Ein einfaches, ressourcenschonendes Fest planen", "score": 4, "effect": "practicality"}
+                ]
+            },
+        ]
         
-        # Szenarien für das Spiel
-        self.scenarios = GAME5_SCENARIOS
+        # Event-Log initialisieren
+        self.event_log = []
+    
+    def initialize_villagers(self):
+        """Erstellt virtuelle Dorfbewohner mit verschiedenen Eigenschaften"""
+        villager_names = ["Emma", "Noah", "Sophia", "Liam", "Olivia", "Jackson", "Ava", "Aiden", "Isabella", "Lucas"]
+        personalities = ["freundlich", "fleissig", "kreativ", "traditionell", "innovativ", "ruhig", "energetisch", "hilfsbereit", "analytisch", "fürsorglich"]
+        
+        self.villagers = []
+        for i in range(6):  # 6 Dorfbewohner erstellen
+            self.villagers.append({
+                "name": random.choice(villager_names),
+                "personality": random.choice(personalities),
+                "happiness": random.randint(60, 90),
+                "x": random.randint(150, SCREEN_WIDTH - 150),
+                "y": random.randint(200, 400),
+                "color": (
+                    random.randint(100, 255),
+                    random.randint(100, 255),
+                    random.randint(100, 255)
+                )
+            })
     
     def handle_event(self, event):
         """Verarbeitet Benutzereingaben"""
         if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_x, mouse_y = event.pos
+            mouse_pos = event.pos
             
             # Anweisungsbildschirm - Start-Button
-            if self.state == "instruction":
-                if self.start_button_rect.collidepoint(mouse_x, mouse_y):
-                    self.state = "play"
-                    self.round = 0
-                    return
+            if self.state == "instruction" and self.start_button_rect.collidepoint(mouse_pos):
+                self.state = "play"
+                self.select_next_scenario()
+                return
             
-            # Spielbildschirm - Slider-Interaktion und Weiter-Button
+            # Spielbildschirm - Optionen und Weiter-Button
             elif self.state == "play":
-                # Überprüfen, ob der Slider-Knob geklickt wurde
-                slider = self.slider
-                knob_x = slider["x"] - slider["width"] // 2 + (slider["width"] * self.slider_position // 100)
-                knob_rect = pygame.Rect(knob_x - slider["knob_radius"], 
-                                      slider["y"] - slider["knob_radius"],
-                                      slider["knob_radius"] * 2, 
-                                      slider["knob_radius"] * 2)
-                
-                if knob_rect.collidepoint(mouse_x, mouse_y):
-                    self.is_dragging = True
-                
-                # Überprüfen, ob der Weiter-Button geklickt wurde
-                if self.continue_button_rect.collidepoint(mouse_x, mouse_y):
-                    # Wahl aufzeichnen
-                    self.choices.append({
-                        "round": self.round,
-                        "scenario": self.scenarios[self.round]["title"],
-                        "value": self.slider_position
-                    })
-                    
-                    # Score-Beitrag berechnen
-                    # Grosszügigere Wahlen (niedrigerer Slider-Wert) erhöhen Verträglichkeit
-                    cooperation_score = 100 - self.slider_position  # Skala umkehren
-                    self.agreeableness_score += cooperation_score
-                    
-                    # Zur nächsten Runde oder zu Ergebnissen
-                    self.round += 1
-                    if self.round >= len(self.scenarios):
-                        self.state = "result"
-                    else:
-                        # Slider-Position für nächste Runde zurücksetzen
-                        self.slider_position = 50
+                # Prüfen, ob eine Option gewählt wurde
+                for i, button in enumerate(self.option_buttons):
+                    if button.collidepoint(mouse_pos) and self.current_scenario:
+                        self.process_choice(i)
+                        return
             
             # Ergebnisbildschirm - Weiter-Button
-            elif self.state == "result":
-                if self.continue_button_rect.collidepoint(mouse_x, mouse_y):
-                    # Spiel beenden und zum finalen Bildschirm wechseln
-                    self.end_game()
-        
-        elif event.type == pygame.MOUSEBUTTONUP:
-            # Aufhören, den Slider zu ziehen
-            self.is_dragging = False
-        
-        elif event.type == pygame.MOUSEMOTION and self.is_dragging and self.state == "play":
-            # Slider-Position aktualisieren
-            mouse_x, mouse_y = event.pos
-            slider = self.slider
-            slider_start_x = slider["x"] - slider["width"] // 2
+            elif self.state == "result" and self.continue_button_rect.collidepoint(mouse_pos):
+                self.end_game()
+    
+    def select_next_scenario(self):
+        """Wählt das nächste Szenario für das Spiel aus"""
+        if self.scenarios:
+            self.current_scenario = self.scenarios.pop(random.randint(0, len(self.scenarios) - 1))
             
-            # Position innerhalb der Slider-Grenzen berechnen
-            relative_x = max(0, min(slider["width"], mouse_x - slider_start_x))
-            self.slider_position = int((relative_x / slider["width"]) * 100)
+            # Option-Buttons neu erstellen
+            self.option_buttons = []
+            for i in range(len(self.current_scenario["options"])):
+                self.option_buttons.append(pygame.Rect(
+                    150, 
+                    300 + i * 80, 
+                    SCREEN_WIDTH - 300, 
+                    70
+                ))
+        else:
+            # Keine Szenarien mehr, zu den Ergebnissen wechseln
+            self.state = "result"
+    
+    def process_choice(self, option_index):
+        """Verarbeitet die getroffene Entscheidung"""
+        if not self.current_scenario:
+            return
+            
+        chosen_option = self.current_scenario["options"][option_index]
+        
+        # Punkte zum Score hinzufügen
+        self.agreeableness_score += chosen_option["score"]
+        self.max_score += 10  # Maximal 10 Punkte pro Entscheidung
+        
+        # Effekt auf das Dorf anwenden
+        effect = chosen_option["effect"]
+        
+        # Log-Eintrag erstellen
+        log_entry = {
+            "day": self.day,
+            "scenario": self.current_scenario["title"],
+            "choice": chosen_option["text"],
+            "effect": effect
+        }
+        self.event_log.append(log_entry)
+        
+        # Dorf-Glück aktualisieren basierend auf der Wahl
+        if effect in ["harmony", "cooperation", "inclusion", "community", "care"]:
+            self.village_happiness += random.randint(5, 10)
+        elif effect in ["justice", "democracy", "fairness", "progress"]:
+            self.village_happiness += random.randint(2, 7)
+        elif effect in ["efficiency", "organization", "expertise", "tradition", "priority"]:
+            self.village_happiness += random.randint(-3, 5)
+        elif effect in ["distance", "self", "practicality"]:
+            self.village_happiness += random.randint(-5, 2)
+        
+        # Glückswert begrenzen
+        self.village_happiness = max(0, min(100, self.village_happiness))
+        
+        # Villager-Glück aktualisieren
+        for villager in self.villagers:
+            # Glück ändert sich basierend auf dem Dorf-Glück und einem Zufallsfaktor
+            villager_change = random.randint(-5, 5)
+            if self.village_happiness > 75:
+                villager_change += random.randint(0, 5)
+            elif self.village_happiness < 40:
+                villager_change -= random.randint(0, 5)
+            
+            villager["happiness"] = max(0, min(100, villager["happiness"] + villager_change))
+        
+        # Zum nächsten Tag übergehen
+        self.day += 1
+        
+        if self.day > self.max_days:
+            self.state = "result"
+        else:
+            self.select_next_scenario()
     
     def update(self):
         """Aktualisiert den Spielzustand"""
-        # Behandeln von Übergängen oder Animationen, falls benötigt
-        if self.state == "play" and self.transition_timer > 0:
-            self.transition_timer -= 1
+        # Animationen für Dorfbewohner
+        if self.state == "play" or self.state == "result":
+            for villager in self.villagers:
+                # Leichte Bewegung der Dorfbewohner
+                villager["x"] += random.uniform(-0.5, 0.5)
+                villager["y"] += random.uniform(-0.5, 0.5)
+                
+                # Im sichtbaren Bereich halten
+                villager["x"] = max(100, min(SCREEN_WIDTH - 100, villager["x"]))
+                villager["y"] = max(150, min(450, villager["y"]))
     
     def render(self):
         """Zeichnet den Spielbildschirm"""
         self.game.screen.fill(BACKGROUND)
         
-        # Subtiles Hintergrundmuster erstellen
-        for x in range(0, SCREEN_WIDTH, 40):
-            for y in range(0, SCREEN_HEIGHT, 40):
-                color_shift = int(10 * math.sin((x + y) / 100 + pygame.time.get_ticks() / 2000))
-                color = (
-                    min(255, BACKGROUND[0] - color_shift),
-                    min(255, BACKGROUND[1] - color_shift),
-                    min(255, BACKGROUND[2] - color_shift)
-                )
-                pygame.draw.circle(self.game.screen, color, (x, y), 2)
+        # Hintergrund mit einfachem Dorfmotiv
+        self.draw_village_background()
         
         # Header
         header_rect = pygame.Rect(0, 0, SCREEN_WIDTH, 100)
         pygame.draw.rect(self.game.screen, BACKGROUND, header_rect)
         
         # Spieltitel
-        game_title = self.game.font.render("Give & Gain", True, TEXT_COLOR)
+        game_title = self.game.font.render("Harmony Village", True, TEXT_COLOR)
         self.game.screen.blit(game_title, (SCREEN_WIDTH // 2 - game_title.get_width() // 2, 30))
         
         # Benutzername anzeigen
@@ -157,24 +254,97 @@ class Game5State:
         elif self.state == "result":
             self._render_result()
     
+    def draw_village_background(self):
+        """Zeichnet den Dorfhintergrund mit stilisierten Häusern"""
+        # Himmel (heller Hintergrund)
+        sky_color = (200, 230, 255)
+        pygame.draw.rect(self.game.screen, sky_color, (0, 100, SCREEN_WIDTH, 400))
+        
+        # Sonne oder Mond (je nach Tageszeit)
+        sun_color = (255, 240, 180)
+        pygame.draw.circle(self.game.screen, sun_color, (100, 150), 30)
+        
+        # Berge im Hintergrund
+        mountain_color = (100, 140, 100)
+        for i in range(5):
+            points = [
+                (i * 200, 300),
+                ((i * 200) + 100, 200 + random.randint(-20, 20)),
+                ((i + 1) * 200, 300)
+            ]
+            pygame.draw.polygon(self.game.screen, mountain_color, points)
+        
+        # Häuser
+        self.draw_houses()
+        
+        # Dorfbewohner als bunte Kreise darstellen
+        for villager in self.villagers:
+            # Körper
+            pygame.draw.circle(self.game.screen, villager["color"], (int(villager["x"]), int(villager["y"])), 15)
+            
+            # Gesicht (glücklich oder traurig je nach Zufriedenheit)
+            if villager["happiness"] > 60:
+                # Glückliches Gesicht
+                pygame.draw.arc(self.game.screen, (0, 0, 0), 
+                              (int(villager["x"]) - 8, int(villager["y"]) - 5, 16, 16),
+                              math.pi, 2 * math.pi, 2)
+            else:
+                # Trauriges Gesicht
+                pygame.draw.arc(self.game.screen, (0, 0, 0), 
+                              (int(villager["x"]) - 8, int(villager["y"]) + 5, 16, 16),
+                              0, math.pi, 2)
+            
+            # Name über dem Dorfbewohner
+            name_text = self.game.small_font.render(villager["name"], True, (0, 0, 0))
+            self.game.screen.blit(name_text, (int(villager["x"]) - name_text.get_width() // 2, int(villager["y"]) - 35))
+    
+    def draw_houses(self):
+        """Zeichnet stilisierte Häuser für das Dorf"""
+        house_positions = [(200, 350), (400, 360), (600, 350), (800, 360)]
+        
+        for pos in house_positions:
+            # Hauswand
+            house_color = (random.randint(180, 220), random.randint(100, 160), random.randint(80, 120))
+            pygame.draw.rect(self.game.screen, house_color, (pos[0], pos[1], 80, 60))
+            
+            # Dach
+            roof_color = (random.randint(60, 100), random.randint(60, 100), random.randint(60, 100))
+            points = [
+                (pos[0] - 10, pos[1]),
+                (pos[0] + 40, pos[1] - 30),
+                (pos[0] + 90, pos[1])
+            ]
+            pygame.draw.polygon(self.game.screen, roof_color, points)
+            
+            # Fenster
+            window_color = (220, 220, 255) if self.village_happiness > 60 else (150, 150, 180)
+            pygame.draw.rect(self.game.screen, window_color, (pos[0] + 15, pos[1] + 15, 20, 20))
+            pygame.draw.rect(self.game.screen, window_color, (pos[0] + 45, pos[1] + 15, 20, 20))
+            
+            # Tür
+            pygame.draw.rect(self.game.screen, (100, 70, 40), (pos[0] + 30, pos[1] + 30, 20, 30))
+    
     def _render_instructions(self):
-        """Zeigt den Anweisungsbildschirm für das Kooperationsspiel"""
+        """Zeigt den Anweisungsbildschirm für das Harmony Village Spiel"""
         # Anweisungsbox
-        instruction_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250)
+        instruction_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 300)
         self.game.draw_card(instruction_rect.x, instruction_rect.y, instruction_rect.width, instruction_rect.height, color=BACKGROUND)
         
         # Titel
-        instruction_title = self.game.medium_font.render("Ressourcen-Verteilung", True, TEXT_COLOR)
+        instruction_title = self.game.medium_font.render("Willkommen in Harmony Village!", True, TEXT_COLOR)
         self.game.screen.blit(instruction_title, (SCREEN_WIDTH // 2 - instruction_title.get_width() // 2, 150))
         
         # Anweisungstext
         instructions = [
-            "In diesem Spiel geht es darum, wie du begrenzte Ressourcen verteilst.",
-            "Du wirst verschiedene Situationen erleben, in denen du entscheiden musst,",
-            "wie viel du für dich behältst und wie viel du mit anderen teilst.",
+            "In diesem Spiel bist du der Leiter eines kleinen Dorfes namens Harmony Village.",
+            "Deine Aufgabe ist es, wichtige Entscheidungen zu treffen, die das Wohlbefinden",
+            "und die Zufriedenheit aller Dorfbewohner beeinflussen.",
             "",
-            "Es gibt keine richtigen oder falschen Antworten!",
-            "Entscheide einfach, wie du es in der jeweiligen Situation machen würdest."
+            "Du wirst mit verschiedenen Herausforderungen konfrontiert,",
+            "und deine Entscheidungen zeigen, wie du mit anderen umgehst.",
+            "",
+            "Denke daran: Es gibt keine richtigen oder falschen Antworten!",
+            "Entscheide so, wie es für dich und dein Dorf am besten erscheint."
         ]
         
         y_pos = 200
@@ -184,181 +354,121 @@ class Game5State:
             y_pos += 30
         
         # Start-Button
-        self.game.draw_modern_button(
-            "Start", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 150, 200, 50,
+        self.game.draw_button(
+            "Start", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 120, 200, 50,
             TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover=False
         )
-
-        # Blob Bild rendern und unten platzieren
-        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2
-        blob_y = SCREEN_HEIGHT - 120
-        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
-    
     
     def _render_play(self):
-        """Zeigt den Spielbildschirm mit aktuellem Szenario und Schieberegler"""
-        # Fortschrittsanzeige
-        if self.round < len(self.scenarios):
-            progress_text = self.game.small_font.render(
-                f"Szenario {self.round + 1} von {len(self.scenarios)}", 
-                True, 
-                WHITE
-            )
-            self.game.screen.blit(progress_text, (20, 60))
+        """Zeigt den Spielbildschirm mit aktuellem Szenario und Optionen"""
+        if not self.current_scenario:
+            return
             
-            # Fortschrittsbalken
-            self.game.draw_progress_bar(20, 80, SCREEN_WIDTH - 40, 10, 
-                                     (self.round + 1) / len(self.scenarios), fill_color=POMEGRANATE)
+        # Tag und Dorf-Glück anzeigen
+        day_text = self.game.small_font.render(f"Tag {self.day} von {self.max_days}", True, TEXT_COLOR)
+        self.game.screen.blit(day_text, (20, 60))
         
-        # Aktuelles Szenario
-        current = self.scenarios[self.round]
+        happiness_text = self.game.small_font.render(f"Dorf-Zufriedenheit: {self.village_happiness}%", True, TEXT_COLOR)
+        self.game.screen.blit(happiness_text, (SCREEN_WIDTH - 20 - happiness_text.get_width(), 60))
+        
+        # Fortschrittsbalken
+        self.game.draw_progress_bar(20, 80, SCREEN_WIDTH - 40, 10, 
+                                 self.day / self.max_days, fill_color=POMEGRANATE)
         
         # Szenariobox
-        scenario_rect = pygame.Rect(100, 120, SCREEN_WIDTH - 200, 80)
+        scenario_rect = pygame.Rect(100, 120, SCREEN_WIDTH - 200, 100)
         self.game.draw_card(scenario_rect.x, scenario_rect.y, scenario_rect.width, scenario_rect.height, color=BACKGROUND)
         
         # Szenariotitel
-        title_text = self.game.medium_font.render(current["title"], True, TEXT_COLOR)
-        self.game.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 130))
+        title_text = self.game.medium_font.render(self.current_scenario["title"], True, TEXT_COLOR)
+        self.game.screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 140))
         
         # Szenariobeschreibung
-        desc_text = self.game.small_font.render(current["description"], True, TEXT_DARK)
-        self.game.screen.blit(desc_text, (SCREEN_WIDTH // 2 - desc_text.get_width() // 2, 170))
+        desc_text = self.game.small_font.render(self.current_scenario["description"], True, TEXT_DARK)
+        self.game.screen.blit(desc_text, (SCREEN_WIDTH // 2 - desc_text.get_width() // 2, 180))
         
-        # Ressourcen-Label
-        resource_text = self.game.small_font.render(f"Verteile: {current['resource']}", True, TEXT_DARK)
-        self.game.screen.blit(resource_text, (SCREEN_WIDTH // 2 - resource_text.get_width() // 2, 220))
+        # Options heading
+        option_heading = self.game.medium_font.render("Wie möchtest du handeln?", True, TEXT_COLOR)
+        self.game.screen.blit(option_heading, (SCREEN_WIDTH // 2 - option_heading.get_width() // 2, 240))
         
-        # Charaktere/Bilder zeichnen
-        # Linke Seite - Andere
-        other_rect = pygame.Rect(150, 250, 150, 80)
-        self.game.draw_card(other_rect.x, other_rect.y, other_rect.width, other_rect.height, color=CLEAN_POOL_BLUE)
-        other_label = self.game.small_font.render("Andere", True, TEXT_COLOR)
-        self.game.screen.blit(other_label, (150 + 75 - other_label.get_width() // 2, 280))
-        
-        # Rechte Seite - Selbst
-        self_rect = pygame.Rect(SCREEN_WIDTH - 150 - 150, 250, 150, 80)
-        self.game.draw_card(self_rect.x, self_rect.y, self_rect.width, self_rect.height, color=VIOLET_VELVET)
-        self_label = self.game.small_font.render("Du", True, TEXT_COLOR)
-        self.game.screen.blit(self_label, (SCREEN_WIDTH - 150 - 75 - self_label.get_width() // 2, 280))
-        
-        # Slider zeichnen
-        slider = self.slider
-        slider_start_x = slider["x"] - slider["width"] // 2
-        
-        # Slider-Hintergrund
-        pygame.draw.rect(self.game.screen, WHITE, 
-                       (slider_start_x, slider["y"], slider["width"], slider["height"]), 
-                       border_radius=slider["height"] // 2)
-        
-        # Gefüllter Teil
-        fill_width = int(slider["width"] * self.slider_position / 100)
-        pygame.draw.rect(self.game.screen, PLACEBO_MAGENTA, 
-                       (slider_start_x, slider["y"], fill_width, slider["height"]), 
-                       border_radius=slider["height"] // 2)
-        
-        # Knopf zeichnen
-        knob_x = slider_start_x + fill_width
-        pygame.draw.circle(self.game.screen, TEXT_COLOR, 
-                          (knob_x, slider["y"] + slider["height"] // 2), 
-                          slider["knob_radius"])
-        
-        # Aktuelle Verteilungsprozente zeichnen
-        left_percent = 100 - self.slider_position
-        right_percent = self.slider_position
-        
-        left_percent_text = self.game.medium_font.render(f"{left_percent}%", True, CLEAN_POOL_BLUE)
-        right_percent_text = self.game.medium_font.render(f"{right_percent}%", True, VIOLET_VELVET)
-        
-        self.game.screen.blit(left_percent_text, (150 + 75 - left_percent_text.get_width() // 2, 350))
-        self.game.screen.blit(right_percent_text, (SCREEN_WIDTH - 150 - 75 - right_percent_text.get_width() // 2, 350))
-        
-        # Slider-Beschriftungen
-        left_label = self.game.small_font.render(current["left_label"], True, TEXT_DARK)
-        right_label = self.game.small_font.render(current["right_label"], True, TEXT_DARK)
-        
-        self.game.screen.blit(left_label, (slider_start_x - 10 - left_label.get_width(), slider["y"] + 30))
-        self.game.screen.blit(right_label, (slider_start_x + slider["width"] + 10, slider["y"] + 30))
-        
-        # Ressourcen-Visualisierung basierend auf Verteilung
-        # Linke Seite (andere) Ressourcen
-        others_resources = int(left_percent / 10)  # Skala 0-10
-        for i in range(others_resources):
-            pygame.draw.circle(self.game.screen, VIOLET_VELVET, 
-                            (180 + (i % 5) * 20, 250 - 20 - 15 * (i // 5)), 8)
-        
-        # Rechte Seite (selbst) Ressourcen
-        self_resources = int(right_percent / 10)  # Skala 0-10
-        for i in range(self_resources):
-            pygame.draw.circle(self.game.screen, CLEAN_POOL_BLUE, 
-                            (SCREEN_WIDTH - 180 - (i % 5) * 20, 250 - 20 - 15 * (i // 5)), 8)
-        
-        # Weiter-Button
-        self.game.draw_modern_button(
-            "Weiter", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 80, 200, 50,
-            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover=False
-        )
+        # Option-Buttons zeichnen
+        for i, option in enumerate(self.current_scenario["options"]):
+            button_rect = self.option_buttons[i]
+            hover = button_rect.collidepoint(pygame.mouse.get_pos())
+            
+            # Button-Hintergrund
+            card_color = DARK_VIOLET if hover else BACKGROUND
+            self.game.draw_card(button_rect.x, button_rect.y, button_rect.width, button_rect.height, color=card_color)
+            
+            # Option-Text
+            option_text = self.game.small_font.render(option["text"], True, TEXT_COLOR if hover else TEXT_DARK)
+            text_y = button_rect.y + button_rect.height // 2 - option_text.get_height() // 2
+            self.game.screen.blit(option_text, (button_rect.x + 20, text_y))
     
     def _render_result(self):
-        """Zeigt die Ergebnisse des Kooperationsspiels"""
+        """Zeigt die Ergebnisse des Spiels"""
         # Ergebnisbox
         results_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250)
         self.game.draw_card(results_rect.x, results_rect.y, results_rect.width, results_rect.height, color=BACKGROUND)
         
         # Titel
-        result_title = self.game.medium_font.render("Give & Gain", True, BACKGROUND)
+        result_title = self.game.medium_font.render("Dorf-Chronik", True, TEXT_COLOR)
         self.game.screen.blit(result_title, (SCREEN_WIDTH // 2 - result_title.get_width() // 2, 150))
         
-        # Verträglichkeits-Prozentsatz berechnen
-        max_possible_score = 100 * len(self.scenarios)
-        agreeableness_percentage = int((self.agreeableness_score / max_possible_score) * 100)
-        
-        # Kooperationslevel und Beschreibung bestimmen
-        """
-        if agreeableness_percentage > 75:
-            cooperation_level = "Sehr kooperativ und unterstützend"
-            description = "Du legst grossen Wert auf Harmonie und stellst oft die Bedürfnisse anderer über deine eigenen."
-            details = "Dein kooperativer Ansatz fördert positive Beziehungen und ein unterstützendes Umfeld."
-        elif agreeableness_percentage > 50:
-            cooperation_level = "Kooperativ mit gesunder Balance"
-            description = "Du bist grundsätzlich kooperativ, achtest aber auch auf deine eigenen Bedürfnisse."
-            details = "Diese Balance ermöglicht dir, sowohl gute Beziehungen zu pflegen als auch deine Ziele zu erreichen."
-        elif agreeableness_percentage > 25:
-            cooperation_level = "Eher wettbewerbsorientiert mit kooperativen Elementen"
-            description = "Du fokussierst dich oft auf deine eigenen Ziele, kannst aber bei Bedarf kooperieren."
-            details = "Dein durchsetzungsfähiger Stil hilft dir, deine Interessen zu vertreten."
+        # Verträglichkeits-Score berechnen (0-100)
+        if self.max_score > 0:  # Verhindere Division durch Null
+            agreeableness_percentage = int((self.agreeableness_score / self.max_score) * 100)
         else:
-            cooperation_level = "Stark wettbewerbsorientiert"
-            description = "Du priorisierst konsequent deine eigenen Ziele und Bedürfnisse."
-            details = "Diese Eigenständigkeit kann in kompetitiven Umgebungen von Vorteil sein."
+            agreeableness_percentage = 50  # Standardwert, falls keine Entscheidungen getroffen wurden
+            
+        # Dorf-Zufriedenheit anzeigen
+        village_text = self.game.medium_font.render(f"Finale Dorf-Zufriedenheit: {self.village_happiness}%", True, TEXT_COLOR)
+        self.game.screen.blit(village_text, (SCREEN_WIDTH // 2 - village_text.get_width() // 2, 190))
         
-        # Ergebnistext rendern
-        level_text = self.game.medium_font.render(cooperation_level, True, PRIMARY)
-        self.game.screen.blit(level_text, (SCREEN_WIDTH // 2 - level_text.get_width() // 2, 190))
+        # Führungsstil basierend auf Entscheidungen
+        leadership_style = ""
+        if agreeableness_percentage > 80:
+            leadership_style = "Harmoniesuchend und kooperativ"
+        elif agreeableness_percentage > 65:
+            leadership_style = "Ausgewogen und teamorientiert"
+        elif agreeableness_percentage > 50:
+            leadership_style = "Pragmatisch mit Gemeinschaftssinn"
+        elif agreeableness_percentage > 35:
+            leadership_style = "Effizient mit eigenem Fokus"
+        else:
+            leadership_style = "Unabhängig und zielorientiert"
+            
+        style_text = self.game.medium_font.render(f"Dein Führungsstil: {leadership_style}", True, TEXT_COLOR)
+        self.game.screen.blit(style_text, (SCREEN_WIDTH // 2 - style_text.get_width() // 2, 230))
         
-        description_text = self.game.small_font.render(description, True, TEXT_DARK)
-        self.game.screen.blit(description_text, (SCREEN_WIDTH // 2 - description_text.get_width() // 2, 230))
+        # Event-Log anzeigen (die letzten Entscheidungen)
+        log_title = self.game.medium_font.render("Deine Entscheidungen:", True, TEXT_DARK)
+        self.game.screen.blit(log_title, (150, 280))
         
-        details_text = self.game.small_font.render(details, True, TEXT_DARK)
-        self.game.screen.blit(details_text, (SCREEN_WIDTH // 2 - details_text.get_width() // 2, 260))
-
-        """
-        # Titel
-        title = self.game.medium_font.render("Dein Ergebnis:", True, TEXT_COLOR)
-        self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 130))
+        y_pos = 320
+        for entry in self.event_log:
+            day_text = self.game.small_font.render(f"Tag {entry['day']}: {entry['scenario']}", True, DARK_VIOLET)
+            self.game.screen.blit(day_text, (170, y_pos))
+            
+            choice_text = self.game.small_font.render(f"→ {entry['choice']}", True, TEXT_DARK)
+            self.game.screen.blit(choice_text, (190, y_pos + 25))
+            
+            y_pos += 60
+            if y_pos > SCREEN_HEIGHT - 150:  # Verhindere, dass Text über den Bildschirm hinausgeht
+                break
         
-        # Kooperations-Skala zeichnen
+        # Verträglichkeits-Skala zeichnen
         scale_width = SCREEN_WIDTH - 300
         scale_height = 30
         scale_x = 150
-        scale_y = 350  # Verschoben von 300 auf 350
+        scale_y = SCREEN_HEIGHT - 140
         
         # Skala-Hintergrund
         self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=CLEAN_POOL_BLUE, shadow=False)
         
         # Skala-Füllung basierend auf Score
         fill_width = int(scale_width * agreeableness_percentage / 100)
-        pygame.draw.rect(self.game.screen, VIOLET_VELVET, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
+        pygame.draw.rect(self.game.screen, DARK_VIOLET, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
         
         # Skala-Beschriftungen
         competitive_text = self.game.small_font.render("Wettbewerbsorientiert", True, TEXT_DARK)
@@ -371,52 +481,19 @@ class Game5State:
         percent_text = self.game.medium_font.render(f"{agreeableness_percentage}%", True, TEXT_COLOR)
         self.game.screen.blit(percent_text, (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
         
-        # Wahlübersicht auskommentiert
-        """
-        summary_title = self.game.small_font.render("Deine Entscheidungen:", True, TEXT_DARK)
-        self.game.screen.blit(summary_title, (scale_x, 370))
-        
-        # Wahlübersicht anzeigen
-        y_pos = 400
-        for i, choice in enumerate(self.choices):
-            scenario_title = choice["scenario"]
-            share_value = 100 - choice["value"]  # Umkehren für "Teilprozentsatz"
-            
-            share_color = CLEAN_POOL_BLUE
-            if share_value > 75:
-                share_color = CHAMELEON_GREEN
-            elif share_value > 50:
-                share_color = HONEY_YELLOW
-            elif share_value > 25:
-                share_color = ORANGE_PEACH
-            else:
-                share_color = POMEGRANATE
-            
-            summary_text = self.game.small_font.render(
-                f"{scenario_title}: {share_value}% geteilt", 
-                True,
-                share_color
-            )
-            self.game.screen.blit(summary_text, (scale_x + 20, y_pos))
-            y_pos += 30
-        """
-        
         # Weiter-Button
-        self.game.draw_modern_button(
-            "Weiter", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 80, 200, 50,
+        self.game.draw_button(
+            "Weiter", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50, 200, 50,
             TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover=False
         )
-
-        # Blob visual am unteren Rand
-        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2 + 200
-        blob_y = SCREEN_HEIGHT - BLOB_IMAGE.get_height() - 20
-        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
     
     def end_game(self):
         """Beendet das Spiel und geht zum Ergebnisbildschirm"""
         # Berechnen und speichern des endgültigen Verträglichkeits-Scores als Prozentsatz
-        max_possible_score = 100 * len(self.scenarios)
-        agreeableness_percentage = int((self.agreeableness_score / max_possible_score) * 100)
+        if self.max_score > 0:  # Verhindere Division durch Null
+            agreeableness_percentage = int((self.agreeableness_score / self.max_score) * 100)
+        else:
+            agreeableness_percentage = 50  # Standardwert, falls keine Entscheidungen getroffen wurden
         
         # Debug-Ausgabe
         print(f"Game5 - Agreeableness-Score berechnet: {agreeableness_percentage}")

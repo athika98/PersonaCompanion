@@ -115,13 +115,13 @@ class BFI10State:
         
         for i in range(5):
             # Verwende die vorhandene Button-Zeichenfunktion mit runden Ecken
-            button_rect = self.game.draw_modern_button(
+            button_rect = self.game.draw_button(
                 str(i+1), 
                 200 + i*100, 
                 350, 
                 80, 
                 40, 
-                PLACEBO_MAGENTA if self.answers[self.current_question] == i + 1 else TEXT_COLOR,
+                LIGHT_PINK if self.answers[self.current_question] == i + 1 else TEXT_COLOR,
                 TEXT_COLOR if self.answers[self.current_question] == i + 1 else TEXT_LIGHT,
                 self.game.medium_font,
                 border_radius=15
@@ -135,7 +135,7 @@ class BFI10State:
                 self.game.screen.blit(label_surf, label_rect)
         
         # Navigation Buttons
-        self.next_button = self.game.draw_modern_button(
+        self.next_button = self.game.draw_button(
             "Weiter", 
             600, 
             450, 
@@ -148,7 +148,7 @@ class BFI10State:
         )
         
         if self.current_question > 0:
-            self.prev_button = self.game.draw_modern_button(
+            self.prev_button = self.game.draw_button(
                 "Zurück", 
                 400, 
                 450, 
@@ -168,7 +168,7 @@ class BFI10State:
             20,                 # Höhe
             (self.current_question + 1) / 10,  # Fortschritt
             bg_color=TEXT_LIGHT,     # Hintergrundfarbe
-            fill_color=PLACEBO_MAGENTA  # Füllfarbe
+            fill_color=LIGHT_PINK  # Füllfarbe
         )
         
         # Mini Blob anzeigen

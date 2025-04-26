@@ -223,7 +223,7 @@ def determine_persona_type(personality_traits):
             "companion": {
                 "type": "Interaktives Wesen",
                 "description": "Ein interaktives, emotionales Wesen mit ausdrucksstarker Mimik und Gestik, das auf dich reagiert und eine persönliche Bindung aufbaut. Es verwendet warme, lebendige Farben wie Orange und Gelb und zeigt dynamische, responsive Bewegungen.",
-                "color": HONEY_YELLOW
+                "color": DARK_YELLOW
             }
         },
         "Vorsichtiger Beobachter": {

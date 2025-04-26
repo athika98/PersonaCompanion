@@ -84,6 +84,11 @@ class Game:
         self.body_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 40)
         self.caption_font = pygame.font.Font(FONT_PATH, SCREEN_HEIGHT // 50)
 
+        self.font_bold = pygame.font.Font(FONT_PATH_BOLD, SCREEN_HEIGHT // 25)
+        self.heading_font_bold = pygame.font.Font(FONT_PATH_BOLD, SCREEN_HEIGHT // 25)
+        self.title_font_bold = pygame.font.Font(FONT_PATH_BOLD, SCREEN_HEIGHT // 20)
+        self.small_font_bold = pygame.font.Font(FONT_PATH_BOLD, SCREEN_HEIGHT // 40)
+
     def initialize_variables(self):
         """Initialisiert alle benutzerbezogene Variablen"""
         self.user_name = ""
@@ -200,17 +205,17 @@ class Game:
 #  UI Komponenten
 # =============================================================================
 
-    def draw_modern_button(self, text, x, y, width, height, color, TEXT_COLOR=TEXT_COLOR, font=None, border_radius=10, hover=False):
-        """Zeichnet einen modernen Button mit Schatten und Hover-Effekt"""
+    def draw_button(self, text, x, y, width, height, color, text_color=TEXT_COLOR, font=None, border_radius=10, hover=False):
+        """Zeichnet einen  Button mit Schatten und Hover-Effekt"""
         if font is None:
             font = self.medium_font
         
-        # Schattenwurf
+        # Berechne das Button-Rechteck
+        button_rect = pygame.Rect(x - width//2, y - height//2, width, height)
+        
+        # Schatten-Effekt unter dem Button
         shadow_rect = pygame.Rect(x - width//2 + 3, y - height//2 + 3, width, height)
         pygame.draw.rect(self.screen, NEUTRAL, shadow_rect, border_radius=border_radius)
-        
-        # Hauptfäche des Buttons
-        button_rect = pygame.Rect(x - width//2, y - height//2, width, height)
         
         # Hover-Effekt
         if hover:
@@ -219,14 +224,14 @@ class Game:
             pygame.draw.rect(self.screen, hover_color, button_rect, border_radius=border_radius)
         else:
             pygame.draw.rect(self.screen, color, button_rect, border_radius=border_radius)
-            
+                
         # Text auf dem Button
-        text_surf = font.render(text, True, TEXT_COLOR)
+        text_surf = font.render(text, True, text_color)
         text_rect = text_surf.get_rect(center=(x, y))
         self.screen.blit(text_surf, text_rect)
         
-        return button_rect
-    
+        return button_rect  # Gibt das Button-Rechteck zurück
+        
     def draw_card(self, x, y, width, height, color=TEXT_COLOR, border_radius=15, shadow=False):
         """Zeichnet eine Karte (für z.B. Ergebnisse)"""
         if shadow:
@@ -263,14 +268,14 @@ class Game:
         dropdown_rect = pygame.Rect(x, y, width, height)
         
         # Bestimme die Farbe basierend auf dem aktiven Status
+        background_color = WHITE
         border_color = TEXT_COLOR if active else TEXT_LIGHT
-        bg_color = WHITE
         
         # Zeichne das Hauptfeld
-        pygame.draw.rect(self.screen, bg_color, dropdown_rect, border_radius=8)
-        pygame.draw.rect(self.screen, border_color, dropdown_rect, 2, border_radius=8)
+        pygame.draw.rect(self.screen, background_color, dropdown_rect)
+        pygame.draw.rect(self.screen, border_color, dropdown_rect, 2)
         
-        # Ausgewählter Text - kleinere Schrift verwenden
+        # Ausgewählter Text
         selected_text = self.caption_font.render(selected_option, True, TEXT_COLOR)
         self.screen.blit(selected_text, (x + 10, y + (height - selected_text.get_height()) // 2))
         
@@ -290,8 +295,8 @@ class Game:
             option_height = 30
             options_height = len(options) * option_height
             dropdown_options_rect = pygame.Rect(x, y + height, width, options_height)
-            pygame.draw.rect(self.screen, WHITE, dropdown_options_rect, border_radius=8)
-            pygame.draw.rect(self.screen, border_color, dropdown_options_rect, 2, border_radius=8)
+            pygame.draw.rect(self.screen, WHITE, dropdown_options_rect)
+            pygame.draw.rect(self.screen, border_color, dropdown_options_rect, 2)
             
             for i, option in enumerate(options):
                 option_y = y + height + i * option_height
@@ -300,7 +305,7 @@ class Game:
                 # Hover-Effekt
                 mouse_pos = pygame.mouse.get_pos()
                 if option_rect.collidepoint(mouse_pos):
-                    pygame.draw.rect(self.screen, NEUTRAL_LIGHT, option_rect, border_radius=0)
+                    pygame.draw.rect(self.screen, NEUTRAL_LIGHT, option_rect)
                 
                 # Zeichne die Option
                 option_text = self.caption_font.render(option, True, TEXT_DARK)

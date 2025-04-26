@@ -88,7 +88,7 @@ class ResultsState:
             y = random.randint(0, SCREEN_HEIGHT)
             size = random.randint(2, 5)
             color_index = random.randint(0, 7)
-            sundae_colors = [VIOLET_VELVET, CLEAN_POOL_BLUE, CHAMELEON_GREEN, HONEY_YELLOW, 
+            sundae_colors = [DARK_VIOLET, CLEAN_POOL_BLUE, CHAMELEON_GREEN, DARK_YELLOW, 
                           LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
             color = list(sundae_colors[color_index])
             color = (color[0], color[1], color[2], 150)  # Transparenz hinzufügen
@@ -149,7 +149,7 @@ class ResultsState:
             self.game.screen.blit(right_text, (bar_x + bar_width + 10, y_pos + 25 + 3))
         
         # Draw Neuroticism bar
-        draw_trait_bar("Reaktionsstil", neuroticism_score, y_offset, DIVE_BLUE, "Spontan", "Bedacht")
+        draw_trait_bar("Reaktionsstil", neuroticism_score, y_offset, DARK_BLUE, "Spontan", "Bedacht")
         
         # Draw Extraversion bar
         draw_trait_bar("Soziale Orientierung", extraversion_score, y_offset + bar_spacing, POMEGRANATE, "Introvertiert", "Extravertiert")
@@ -161,7 +161,7 @@ class ResultsState:
         draw_trait_bar("Organisation", conscientiousness_score, y_offset + bar_spacing * 3, CHAMELEON_GREEN, "Flexibel", "Strukturiert")
         
         # Draw Agreeableness bar
-        draw_trait_bar("Kooperationsverhalten", agreeableness_score, y_offset + bar_spacing * 4, HONEY_YELLOW, "Wettbewerbsorientiert", "Kooperativ")
+        draw_trait_bar("Kooperationsverhalten", agreeableness_score, y_offset + bar_spacing * 4, DARK_YELLOW, "Wettbewerbsorientiert", "Kooperativ")
         
         # Kurzübersicht zum Persönlichkeitstyp
         y_section = y_offset + bar_spacing * 5 + 20
@@ -170,7 +170,7 @@ class ResultsState:
         self.game.screen.blit(summary_text, (SCREEN_WIDTH // 2 - summary_text.get_width() // 2, y_section))
         
         # Weiter-Button zur zweiten Seite
-        next_button = self.game.draw_modern_button(
+        next_button = self.game.draw_button(
             "Weiter", SCREEN_WIDTH - 90, SCREEN_HEIGHT - 30, 120, 40,
             TEXT_COLOR, TEXT_LIGHT, self.game.small_font, 20, hover=False
         )
@@ -223,13 +223,13 @@ class ResultsState:
         self.game.screen.blit(scaled_image, (image_x, image_y))
         
         # Zurück-Button zur ersten Seite
-        prev_button = self.game.draw_modern_button(
+        prev_button = self.game.draw_button(
             "Zurück", 90, SCREEN_HEIGHT - 30, 120, 40,
             TEXT_COLOR, TEXT_LIGHT, self.game.small_font, 20, hover=False
         )
         
         # BFI-10 Validierungsbutton
-        validate_button = self.game.draw_modern_button(
+        validate_button = self.game.draw_button(
             "Mit BFI-10 validieren", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30, 200, 40,
             TEXT_COLOR, TEXT_LIGHT, self.game.small_font, 20, hover=False
         )

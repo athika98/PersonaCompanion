@@ -2,173 +2,296 @@
 # -*- coding: utf-8 -*-
 
 """
-Game 3 - "Complete me"
-Misst Offenheit für Erfahrungen durch Kreativitäts-Muster-Vervollständigung
+Game 3 - "Creative Explorer"
+Misst Offenheit für Erfahrungen durch interaktives Zeichnen und kreative Entscheidungen
 """
 # Bibliotheken importieren
 import pygame
 import math
+import random
 from game_core.constants import *
 
 class Game3State:
     def __init__(self, game):
         self.game = game
-        # Bilder für Muster laden
-        self.pattern_images = {
-            "line_sequence": pygame.image.load("assets/patterns/line_sequence.png"),
-            "color_arrangement": pygame.image.load("assets/patterns/color_arrangement.png"),
-            "shape_completion": pygame.image.load("assets/patterns/shape_completion.png"),
-            "abstract_pattern": pygame.image.load("assets/patterns/abstract_pattern.png"),
-            "weather_sequence": pygame.image.load("assets/patterns/weather_sequence.png")
-        }
         
-        # Bilder skalieren für konsistente Grösse
-        for key in self.pattern_images:
-            self.pattern_images[key] = pygame.transform.scale(
-                self.pattern_images[key], 
-                (300, 100)  # Alle Musterbilder auf die gleiche Grösse skalieren
-            )
-            
+        # Canvas für Zeichnungen
+        self.canvas = pygame.Surface((600, 300))
+        self.canvas.fill(WHITE)
+        # Stimulus-Bilder laden
+        self.stimuli = SCENARIO_IMAGES
+        
         self.initialize()
     
     def initialize(self):
-        self.patterns = GAME3_PATTERNS
-        self.current_pattern = 0
-        self.choices = []
-        self.state = "intro"  # Zustände: intro, pattern, result
+        self.state = "intro"  # Zustände: intro, draw, interpret, result
         self.openness_score = 0
-        self.choice = None
-        self.transition_timer = 0
+        self.max_score = 0
+        self.current_task = 0
+        self.drawing = False
+        self.last_pos = None
+        self.stroke_width = 3
+        self.current_color = (0, 0, 0)  # Schwarz als Startfarbe
+        self.drawing_time = 0
+        self.color_changes = 0
+        self.strokes = 0
+        self.complexity_score = 0
+        self.task_results = []
         
-        # Option-Rechtecke für die Kollisionserkennung definieren
-        self.option_rects = []
-        for i in range(4):
-            # Alle Boxen zentriert untereinander
-            box_x = SCREEN_WIDTH // 2 - 250
-            box_y = 270 + i * 60
-            self.option_rects.append(pygame.Rect(box_x, box_y, 500, 50))
+        # Verfügbare Farben
+        self.colors = [
+            (0, 0, 0),      # Schwarz
+            (255, 0, 0),    # Rot
+            (0, 128, 0),    # Grün
+            (0, 0, 255),    # Blau
+            (255, 165, 0),  # Orange
+            (128, 0, 128),  # Lila
+            (0, 128, 128),  # Türkis
+            (255, 0, 255),  # Magenta
+        ]
+        
+        # Rechtecke für Farbauswahl
+        self.color_rects = []
+        for i, color in enumerate(self.colors):
+            self.color_rects.append(pygame.Rect(50 + i * 40, 520, 30, 30))
+        
+        # Stimulus für jede Aufgabe auswählen
+        self.stimuli_order = list(self.stimuli.keys())
+        random.shuffle(self.stimuli_order)
+        
+        # Kreative Aufgaben aus constants.py übernehmen und dynamisch Stimulus zuweisen
+        self.tasks = []
+        for i, task in enumerate(GAME3_TASKS):
+            task_copy = task.copy()
+            if i < len(self.stimuli_order):
+                task_copy["stimulus"] = self.stimuli_order[i]
+            self.tasks.append(task_copy)
+        
+        # Button-Rechtecke
+        self.start_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 150, 200, 50)
+        self.submit_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+        self.continue_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
     
     def handle_event(self, event):
         """Verarbeitet Benutzereingaben"""
         if self.state == "intro":
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if hasattr(self, 'start_button_rect') and self.start_button_rect.collidepoint(event.pos):
-                    self.state = "pattern"
+                if self.start_button_rect.collidepoint(event.pos):
+                    self.state = "draw"
+                    self.reset_canvas()
+                    self.drawing_time = 0
                     return
-                
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                self.state = "pattern"
-                return
-            
-        # Muster-Bildschirm - Optionsauswahl
-        elif self.state == "pattern":
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_x, mouse_y = event.pos
-                # Optionsboxen (A, B, C, D)
-                for i, option in enumerate(self.patterns[self.current_pattern]["options"]):
-                    if self.option_rects[i].collidepoint(mouse_x, mouse_y):
-                        self.choice = option["name"]
-                        self.openness_score += option["openness_value"]
-                        self.choices.append({
-                            "pattern": self.current_pattern,
-                            "choice": option["name"],
-                            "value": option["value"],
-                            "openness_value": option["openness_value"]
-                        })
-                        
-                        # Zum nächsten Muster oder zu Ergebnissen
-                        self.current_pattern += 1
-                        if self.current_pattern >= len(self.patterns):
-                            self.state = "result"
-                        return
-            
-            # Vorzeitiges Beenden mit ESC
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                self.calculate_openness()
-                self.state = "result"
         
-        # Ergebnisbildschirm - Weiter-Button
+        elif self.state == "draw":
+            # Maus gedrückt - Zeichnen beginnen
+            if event.type == pygame.MOUSEBUTTONDOWN and event.pos[1] < 500:
+                self.drawing = True
+                self.last_pos = event.pos
+                self.strokes += 1
+            
+            # Maus losgelassen - Zeichnen beenden
+            elif event.type == pygame.MOUSEBUTTONUP:
+                self.drawing = False
+                self.last_pos = None
+            
+            # Maus bewegt - zeichnen, wenn gedrückt
+            elif event.type == pygame.MOUSEMOTION and self.drawing:
+                if self.last_pos:
+                    # Auf das Canvas zeichnen
+                    pygame.draw.line(
+                        self.canvas,
+                        self.current_color,
+                        (self.last_pos[0] - (SCREEN_WIDTH - 600) // 2, self.last_pos[1] - 150),
+                        (event.pos[0] - (SCREEN_WIDTH - 600) // 2, event.pos[1] - 150),
+                        self.stroke_width
+                    )
+                    self.last_pos = event.pos
+            
+            # Farbauswahl-Klick
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                for i, rect in enumerate(self.color_rects):
+                    if rect.collidepoint(event.pos):
+                        if self.current_color != self.colors[i]:
+                            self.current_color = self.colors[i]
+                            self.color_changes += 1
+                
+                # Submit-Button prüfen
+                if self.submit_button_rect.collidepoint(event.pos):
+                    self.evaluate_drawing()
+                    self.current_task += 1
+                    
+                    if self.current_task >= len(self.tasks):
+                        self.state = "result"
+                    else:
+                        self.reset_canvas()
+                        self.drawing_time = 0
+                        self.color_changes = 0
+                        self.strokes = 0
+        
         elif self.state == "result":
             if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_x, mouse_y = event.pos
-                if hasattr(self, 'continue_button_rect') and self.continue_button_rect.collidepoint(mouse_x, mouse_y):
-                    # Übergang zum nächsten Spiel
+                if self.continue_button_rect.collidepoint(event.pos):
                     self.end_game()
+    
+    def reset_canvas(self):
+        """Setzt das Zeichencanvas zurück"""
+        self.canvas.fill(WHITE)
+        
+        # Stimulus auf das Canvas zeichnen
+        stimulus_img = self.stimuli[self.tasks[self.current_task]["stimulus"]]
+        
+        # Bild an Position (0, 0) zeichnen, um das gesamte Canvas zu füllen
+        self.canvas.blit(stimulus_img, (0, 0))
+    
+    def evaluate_drawing(self):
+        """Wertet die Zeichnung aus und berechnet einen Kreativitätsscore"""
+        # Wenn keine Striche gemacht wurden, sofort 0 Punkte zurückgeben
+        if self.strokes == 0:
+            task_score = 0
+            max_task_score = 25  # Maximale Punktzahl bleibt gleich
+            
+            # Ergebnis mit 0 Punkten speichern
+            self.task_results.append({
+                "task": self.current_task,
+                "score": 0,
+                "max_score": max_task_score,
+                "strokes": 0,
+                "colors": 0,
+                "coverage": 0
+            })
+            
+            # Zum Gesamtscore hinzufügen (0 Punkte)
+            self.openness_score += 0
+            self.max_score += max_task_score
+            return
+        
+        # Normale Bewertung, wenn gemalt wurde
+        # Grundwert basierend auf Aktivität
+        base_score = min(10, self.strokes // 5)  # Max 10 Punkte für Striche
+        
+        # Punkte für Farbwechsel
+        color_score = min(5, self.color_changes)  # Max 5 Punkte für Farbwechsel
+        
+        # Komplexitätsanalyse - wie viele Pixel wurden genutzt
+        non_white_pixels = 0
+        for x in range(self.canvas.get_width()):
+            for y in range(self.canvas.get_height()):
+                if self.canvas.get_at((x, y)) != (255, 255, 255):  # Nicht-weisse Pixel
+                    non_white_pixels += 1
+        
+        coverage = non_white_pixels / (self.canvas.get_width() * self.canvas.get_height())
+        coverage_score = min(10, int(coverage * 100))  # Max 10 Punkte für Flächennutzung
+        
+        # Gesamtscore für diese Zeichnung
+        task_score = base_score + color_score + coverage_score
+        max_task_score = 25  # Maximale Punktzahl pro Aufgabe
+        
+        # Ergebnis speichern
+        self.task_results.append({
+            "task": self.current_task,
+            "score": task_score,
+            "max_score": max_task_score,
+            "strokes": self.strokes,
+            "colors": self.color_changes,
+            "coverage": coverage
+        })
+        
+        # Zum Gesamtscore hinzufügen
+        self.openness_score += task_score
+        self.max_score += max_task_score
     
     def update(self):
         """Aktualisiert den Spielzustand"""
-        if self.state == "pattern":
-            # Überprüfe, ob die Zeit für das aktuelle Muster abgelaufen ist
-            if self.transition_timer > 0:
-                self.transition_timer -= 1
-                if self.transition_timer <= 0:
-                    # Zum nächsten Muster
-                    self.current_pattern += 1
-                    if self.current_pattern >= len(self.patterns):
-                        self.calculate_openness()
-                        self.state = "result"
+        if self.state == "draw":
+            # Zeit im Zeichenmodus tracken
+            self.drawing_time += 1
+            
+            # Aktualisiere die Bewertung kontinuierlich, während der Benutzer zeichnet
+            # Dies ist eine vereinfachte Version der evaluate_drawing Methode
+            if self.strokes > 0:
+                non_white_pixels = 0
+                for x in range(0, self.canvas.get_width(), 10):  # Nur jedes 10. Pixel prüfen für Performance
+                    for y in range(0, self.canvas.get_height(), 10):
+                        if self.canvas.get_at((x, y)) != (255, 255, 255):
+                            non_white_pixels += 1
+                
+                # Aktuelle Bewertung speichern (für UI-Feedback, falls gewünscht)
+                self.current_coverage = non_white_pixels / ((self.canvas.get_width() // 10) * (self.canvas.get_height() // 10))
+            
+            # Automatisch absenden, wenn Zeitlimit erreicht ist
+            if self.drawing_time >= self.tasks[self.current_task]["time_limit"] * 60:  # 60 FPS
+                self.evaluate_drawing()
+                self.current_task += 1
+                
+                if self.current_task >= len(self.tasks):
+                    self.state = "result"
+                else:
+                    self.reset_canvas()
+                    self.drawing_time = 0
+                    self.color_changes = 0
+                    self.strokes = 0
     
     def render(self):
         """Zeichnet den Spielbildschirm"""
         # Hintergrund
         self.game.screen.fill(BACKGROUND)
         
-        # Spieltitel
-        game_title = self.game.font.render("Complete me", True, TEXT_COLOR)
-        self.game.screen.blit(game_title, (SCREEN_WIDTH // 2 - game_title.get_width() // 2, 30))
-        
-        # Benutzername anzeigen
-        name_text = self.game.small_font.render(f"{self.game.user_name}", True, TEXT_COLOR)
-        self.game.screen.blit(name_text, (SCREEN_WIDTH - name_text.get_width() - 20, 35))
-        
+        # Header
+        title = self.game.heading_font_bold.render("CREATIVE EXPLORER", True, TEXT_COLOR)
+        self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, TITLE_Y_POSITION))
+              
         # Verschiedene Bildschirme basierend auf dem Spielzustand
         if self.state == "intro":
             self._render_intro()
-        elif self.state == "pattern":
-            self._render_pattern()
+        elif self.state == "draw":
+            self._render_draw()
         elif self.state == "result":
             self._render_result()
     
     def _render_intro(self):
         """Zeigt den Anweisungsbildschirm für das Kreativitätsspiel"""
         # Titel
-        intro_title = self.game.medium_font.render("Wie kreativ bist du?", True, TEXT_COLOR)
+        intro_title = self.game.subtitle_font.render("Entdecke deine kreative Seite", True, TEXT_COLOR)
         self.game.screen.blit(intro_title, (SCREEN_WIDTH // 2 - intro_title.get_width() // 2, 100))
         
         # Erklärungstext
         explanation_text = [
-            "In diesem Spiel wirst du verschiedene unvollständige Muster sehen.",
-            "Wähle aus, wie du diese Muster vervollständigen würdest.",
-            "Es gibt keine richtigen oder falschen Antworten!",
-            "Wähle einfach die Option, die dir am besten gefällt.",
+            "In diesem Spiel kannst du deine kreative Seite zeigen! Du bekommst verschiedene Zeichenaufgaben und einen Startpunkt.",
+            "Vervollständige die Zeichnungen auf deine eigene, kreative Weise.",
+            "",
+            "Je mehr du experimentierst und deine Fantasie einsetzt, desto mehr zeigst du deine Offenheit für neue Erfahrungen.",
+            "Es gibt keine richtigen oder falschen Lösungen! Lass deiner Kreativität freien Lauf."
         ]
         
         # Zeichne Erklärungstext
-        y_pos = 160
+        y_pos = 150
         for line in explanation_text:
-            line_text = self.game.small_font.render(line, True, TEXT_DARK)
+            line_text = self.game.body_font.render(line, True, TEXT_DARK)
             self.game.screen.blit(line_text, (SCREEN_WIDTH // 2 - line_text.get_width() // 2, y_pos))
             y_pos += 30
         
-        # Start-Button Position
-        button_x = SCREEN_WIDTH // 2
-        button_y = SCREEN_HEIGHT - 150
-        button_width = 200
-        button_height = 50
-
-        # Hover-Effekt prüfen
+        # Beispiele für Werkzeuge
+        tools_title = self.game.body_font.render("Verfügbare Werkzeuge:", True, TEXT_DARK)
+        self.game.screen.blit(tools_title, (SCREEN_WIDTH // 2 - tools_title.get_width() // 2, 360))
+        
+        # Farbpalette-Beispiel
+        for i, color in enumerate(self.colors[:5]):  # Zeige nur 5 Beispielfarben
+            pygame.draw.rect(self.game.screen, color, (SCREEN_WIDTH // 2 - 100 + i * 40, 390, 30, 30))
+            pygame.draw.rect(self.game.screen, TEXT_DARK, (SCREEN_WIDTH // 2 - 100 + i * 40, 390, 30, 30), 1)
+        
+        # Button Hover-Effekt prüfen
         mouse_x, mouse_y = pygame.mouse.get_pos()
         hover = (mouse_x >= button_x - button_width // 2 and 
                 mouse_x <= button_x + button_width // 2 and
                 mouse_y >= button_y - button_height // 2 and 
                 mouse_y <= button_y + button_height // 2)
-
+        
         # Button zeichnen
-        self.game.draw_modern_button(
+        self.game.draw_button(
             "Start", button_x, button_y, button_width, button_height,
-            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, hover
         )
-
+        
         # Rechteck für Klickprüfung speichern
         self.start_button_rect = pygame.Rect(
             button_x - button_width // 2,
@@ -176,87 +299,74 @@ class Game3State:
             button_width,
             button_height
         )
-        
-        # Blob Bild rendern und unten platzieren
-        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2
-        blob_y = SCREEN_HEIGHT - 120
-        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
     
-    def _render_pattern(self):
-        """Zeigt das aktuelle zu vervollständigende Muster"""
-        current = self.patterns[self.current_pattern]
+        # Tiktik rendern und oberhalb des Buttons platzieren
+        tiktik_x = SCREEN_WIDTH // 2 - MALEN_TIKTIK_IMAGE.get_width() // 2 + 400
+        tiktik_y = SCREEN_HEIGHT - 180
+        self.game.screen.blit(MALEN_TIKTIK_IMAGE, (tiktik_x, tiktik_y))
         
-        # Fortschrittsanzeige
-        progress_text = self.game.small_font.render(
-            f"Muster {self.current_pattern + 1} von {len(self.patterns)}", True, TEXT_COLOR)
-        self.game.screen.blit(progress_text, (20, 35))
+    def _render_draw(self):
+        """Zeigt den Zeichenbildschirm mit Canvas und Werkzeugen"""
+        current_task = self.tasks[self.current_task]
         
-        # Fortschrittsbalken
-        self.game.draw_progress_bar(50, 80, SCREEN_WIDTH - 100, 10, self.current_pattern / len(self.patterns), fill_color=RICH_BURGUNDY)
+        # Gemeinsame y-Position für beide Texte
+        text_y_position = 110
+        # Aufgabe anzeigen - links platziert
+        task_text = self.game.body_font.render(current_task["instruction"], True, TEXT_DARK)
+        self.game.screen.blit(task_text, (20, text_y_position))  # 20 Pixel Abstand vom linken Rand
+        # Zeitanzeige - rechts
+        time_left = current_task["time_limit"] - (self.drawing_time // 60)
+        time_color = TEXT_DARK if time_left > 10 else CHERRY_PINK
+        time_text = self.game.small_font.render(f"Verbleibende Zeit: {time_left} Sekunden", True, time_color)
+        self.game.screen.blit(time_text, (SCREEN_WIDTH - time_text.get_width() - 20, text_y_position))
+
+        # Canvas-Hintergrund
+        canvas_rect = pygame.Rect((SCREEN_WIDTH - 600) // 2, 150, 600, 300)
+        pygame.draw.rect(self.game.screen, (240, 240, 240), canvas_rect)
+        pygame.draw.rect(self.game.screen, TEXT_DARK, canvas_rect, 2)
         
-        # Fragenbox
-        self.game.draw_card(100, 130, SCREEN_WIDTH - 200, 50, color=BACKGROUND, shadow=False)
+        # Canvas anzeigen
+        self.game.screen.blit(self.canvas, ((SCREEN_WIDTH - 600) // 2, 150))
         
-        # Fragentext
-        question_text = self.game.medium_font.render(current["question"], True, TEXT_COLOR)
-        self.game.screen.blit(question_text, (SCREEN_WIDTH // 2 - question_text.get_width() // 2, 140))
+        # Farbpalette anzeigen
+        palette_text = self.game.small_font.render("Farbpalette:", True, TEXT_DARK)
+        self.game.screen.blit(palette_text, (50, 490))
         
-        # Musterbild anzeigen
-        pattern_type = current["pattern_type"]
-        pattern_image = self.pattern_images.get(pattern_type, self.pattern_images["weather_sequence"])
-        pattern_x = SCREEN_WIDTH // 2 - pattern_image.get_width() // 2
-        pattern_y = 160
-        
-        # Hintergrund für das Muster
-        self.game.draw_card(pattern_x, pattern_y, pattern_image.get_width(), pattern_image.get_height(), color=WHITE, shadow=False)
-        
-        # Musterbild anzeigen
-        self.game.screen.blit(pattern_image, (pattern_x, pattern_y))
-        
-        # Option-Rechtecke neu definieren für vertikale Anordnung
-        self.option_rects = []
-        for i in range(4):  # Für die 4 Optionen
-            # Alle Boxen zentriert untereinander
-            box_x = SCREEN_WIDTH // 2 - 250
-            box_y = 270 + i * 60
-            self.option_rects.append(pygame.Rect(box_x, box_y, 500, 50))
-        
-        # Optionsboxen
-        for i, option in enumerate(current["options"]):
-            # Karte für die Option zeichnen
-            self.game.draw_card(self.option_rects[i].x, self.option_rects[i].y, 
-                             self.option_rects[i].width, self.option_rects[i].height,
-                             color=WHITE, shadow=False)
+        for i, color in enumerate(self.colors):
+            pygame.draw.rect(self.game.screen, color, self.color_rects[i])
             
-            # Optionsbuchstabe (A, B, C, D)
-            option_letter = self.game.medium_font.render(option["name"] + ":", True, TEXT_COLOR)
-            self.game.screen.blit(option_letter, (self.option_rects[i].x + 15, self.option_rects[i].y + 15))
-            
-            # Optionsbeschreibung
-            option_desc = self.game.small_font.render(option["description"], True, TEXT_DARK)
-            self.game.screen.blit(option_desc, (self.option_rects[i].x + 40, self.option_rects[i].y + 15))
+            # Rahmen um ausgewählte Farbe
+            if color == self.current_color:
+                pygame.draw.rect(self.game.screen, TEXT_COLOR, self.color_rects[i], 3)
+            else:
+                pygame.draw.rect(self.game.screen, TEXT_DARK, self.color_rects[i], 1)
         
-        # Hinweistext und Mini-Blob
-        hint_text = self.game.small_font.render("Wähle die Option, die besser zu dir passt", True, TEXT_COLOR)
+        # Hover-Effekt prüfen
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        hover = (mouse_x >= button_x - button_width // 2 and 
+                mouse_x <= button_x + button_width // 2 and
+                mouse_y >= button_y - button_height // 2 and 
+                mouse_y <= button_y + button_height // 2)
+                
+        # Button zeichnen
+        self.game.draw_button(
+            "Fertig", button_x, button_y, button_width, button_height,
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, hover
+        )
         
-        # Text-Position links vom Blob
-        text_x = SCREEN_WIDTH // 2 - hint_text.get_width() // 2
-        text_y = SCREEN_HEIGHT - 50
-        
-        # Mini Blob
-        blob_mini = pygame.transform.scale(BLOB_IMAGE, (35, 35))
-        blob_x = text_x + hint_text.get_width() + 10
-        blob_y = text_y - 4
-        
-        # Zeichnen
-        self.game.screen.blit(hint_text, (text_x, text_y))
-        self.game.screen.blit(blob_mini, (blob_x, blob_y))
+        # Button-Rechteck aktualisieren
+        self.submit_button_rect = pygame.Rect(
+            button_x - button_width // 2,
+            button_y - button_height // 2,
+            button_width,
+            button_height
+        )
     
     def _render_result(self):
         """Zeigt die Ergebnisseite mit dem Openness-Balken an"""
-        # Titel 
-        title = self.game.medium_font.render("Dein Ergebnis:", True, TEXT_COLOR)
-        self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 130))
+
+        # Offenheit Beschreibung rendern
+        self.draw_openness_description(170)
         
         # Ergebnisbalken
         scale_x = 150
@@ -265,52 +375,43 @@ class Game3State:
         scale_height = 30
         
         # Skala-Hintergrund
-        self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=WHITE, shadow=False)
+        self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=LIGHT_GREY, shadow=False)
         
         # Prozentsatz berechnen
-        max_possible_score = 3 * len(self.patterns)
-        openness_percentage = int((self.openness_score / max_possible_score) * 100)
+        openness_percentage = int((self.openness_score / self.max_score) * 100) if self.max_score > 0 else 50
         
         # Skala-Füllung basierend auf Score
         fill_width = int(scale_width * openness_percentage / 100)
-        pygame.draw.rect(self.game.screen, PLACEBO_MAGENTA, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
+        pygame.draw.rect(self.game.screen, LIGHT_BLUE, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
         
         # Skala-Beschriftungen
         conventional_text = self.game.small_font.render("Konventionell", True, TEXT_DARK)
         creative_text = self.game.small_font.render("Kreativ", True, TEXT_DARK)
-        
         self.game.screen.blit(conventional_text, (scale_x, scale_y + scale_height + 10))
         self.game.screen.blit(creative_text, (scale_x + scale_width - creative_text.get_width(), scale_y + scale_height + 10))
         
         # Openness Beschriftung mittig über dem Balken
-        openness_text = self.game.medium_font.render("Offenheit für Erfahrungen", True, TEXT_COLOR)
+        openness_text = self.game.font_bold.render("Offenheit für Erfahrungen", True, TEXT_COLOR)
         self.game.screen.blit(openness_text, (SCREEN_WIDTH // 2 - openness_text.get_width() // 2, scale_y - 70))
         
         # Prozentsatz über dem Balken
-        percent_text = self.game.medium_font.render(f"{openness_percentage}%", True, TEXT_COLOR)
-        self.game.screen.blit(percent_text, 
-                            (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
+        percent_text = self.game.medium_font.render(f"{openness_percentage}%", True, TEXT_DARK)
+        self.game.screen.blit(percent_text, (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
         
-        # Weiter-Button mit Hover-Effekt
-        button_x = SCREEN_WIDTH // 2
-        button_y = SCREEN_HEIGHT - 80
-        button_width = 200
-        button_height = 50
-        
-        # Prüfen, ob Maus über dem Button ist
+        # Hover-Effekt prüfen
         mouse_x, mouse_y = pygame.mouse.get_pos()
         hover = (mouse_x >= button_x - button_width // 2 and 
                 mouse_x <= button_x + button_width // 2 and
                 mouse_y >= button_y - button_height // 2 and 
                 mouse_y <= button_y + button_height // 2)
         
-        # Button zeichnen mit Hover-Effekt
-        self.game.draw_modern_button(
+        # Button zeichnen
+        self.game.draw_button(
             "Weiter", button_x, button_y, button_width, button_height,
-            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, hover
         )
         
-        # Rechteck für Klickprüfung speichern
+        # Button-Rechteck aktualisieren
         self.continue_button_rect = pygame.Rect(
             button_x - button_width // 2,
             button_y - button_height // 2,
@@ -318,20 +419,19 @@ class Game3State:
             button_height
         )
         
-        # Blob visual am unteren Rand
-        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2 + 200
-        blob_y = SCREEN_HEIGHT - BLOB_IMAGE.get_height() - 20
-        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
-
+        #  Tiktik in der unteren rechten Ecke platzieren
+        tiktik_x = SCREEN_WIDTH - DANCE_TIKTIK_IMAGE.get_width() - 20  # 20px Abstand vom rechten Rand
+        tiktik_y = SCREEN_HEIGHT - DANCE_TIKTIK_IMAGE.get_height() - 20  # 20px Abstand vom unteren Rand
+        self.game.screen.blit(DANCE_TIKTIK_IMAGE, (tiktik_x, tiktik_y))
+    
     def calculate_openness(self):
-        """Berechnet den Offenheits-Score basierend auf den Spielergebnissen"""
-        # Berechnen und speichern des endgültigen Offenheits-Scores als Prozentsatz
-        max_possible_score = 3 * len(self.patterns)
-        openness_percentage = int((self.openness_score / max_possible_score) * 100)
+        """Berechnet den Offenheits-Score basierend auf kreativer Aktivität"""
+        if self.max_score == 0:
+            return 50  # Standardwert, falls keine Aufgaben abgeschlossen wurden
         
-        # Persönlichkeitsmerkmal aktualisieren
+        openness_percentage = int((self.openness_score / self.max_score) * 100)
         return openness_percentage
-
+    
     def end_game(self):
         """Beendet das Spiel und berechnet den Offenheits-Score"""
         openness_score = self.calculate_openness()
@@ -346,3 +446,33 @@ class Game3State:
         # Zum nächsten Spiel
         self.game.transition_to("GAME4")
         self.game.states["GAME4"].initialize()
+
+    def draw_openness_description(self, y_pos):
+        """Zeichnet eine beschreibende Erklärung des Openness-Ergebnisses"""
+        # Text basierend auf dem Score auswählen
+        openness_percentage = self.calculate_openness()
+        
+        if openness_percentage > 75:
+            main_text = "Du zeigst eine hohe Offenheit für neue Erfahrungen und kreative Ideen."
+            detail = "Du geniesst es, Neues auszuprobieren, bist neugierig und schätzt künstlerische oder unkonventionelle Ausdrucksformen."
+        elif openness_percentage > 50:
+            main_text = "Du zeigst eine gute Balance zwischen Kreativität und Struktur."
+            detail = "Du bist offen für neue Ideen, schätzt aber auch bewährte Methoden und Klarheit in deinem Alltag."
+        elif openness_percentage > 25:
+            main_text = "Du bevorzugst tendenziell Bewährtes und klare Strukturen."
+            detail = "Du verlässt dich gerne auf erprobte Methoden, kannst aber bei Bedarf auch kreative Lösungen akzeptieren."
+        else:
+            main_text = "Du schätzt Klarheit, Struktur und bewährte Vorgehensweisen sehr."
+            detail = "Du fühlst dich am wohlsten mit klaren Regeln und Routinen und bevorzugst praktische Lösungen vor experimentellen Ansätzen."
+        
+        # Text rendern - hierfür musst du die render_multiline_text Methode implementieren oder anpassen
+        if hasattr(self, 'render_multiline_text'):
+            self.render_multiline_text(main_text, self.game.body_font, TEXT_DARK, 150, y_pos, SCREEN_WIDTH - 300, 25)
+            self.render_multiline_text(detail, self.game.body_font, TEXT_DARK, 150, y_pos + 30, SCREEN_WIDTH - 300, 25)
+        else:
+            # Alternative, wenn render_multiline_text nicht existiert
+            main_text_surf = self.game.body_font.render(main_text, True, TEXT_DARK)
+            detail_text_surf = self.game.body_font.render(detail, True, TEXT_DARK)
+            
+            self.game.screen.blit(main_text_surf, (SCREEN_WIDTH // 2 - main_text_surf.get_width() // 2, y_pos))
+            self.game.screen.blit(detail_text_surf, (SCREEN_WIDTH // 2 - detail_text_surf.get_width() // 2, y_pos + 30))

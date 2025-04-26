@@ -22,7 +22,7 @@ class Game1State:
         # Setzt alle Spielvariablen und Vorbereitungen für den Start
         self.shapes = []
         self.score = 0
-        self.time = 60 * 60  # 60 Sekunden bei 60 FPS
+        self.time = 90 * 60  # 60 Sekunden bei 90 FPS
         self.last_spawn = 0
         self.spawn_rate = 1200  # ms
         self.correct_clicks = 0
@@ -41,6 +41,14 @@ class Game1State:
             "impulsiveness": 0      # Impulsivität - niedrige Selbstkontrolle
         }
         self.neuroticism_score = 0
+
+        # Spielbereich definieren
+        self.game_area = {
+            'x': 50,
+            'y': 150,
+            'width': SCREEN_WIDTH - 100,
+            'height': SCREEN_HEIGHT - 220
+        }
         
         # Messmechanismen für Neurotizismus-Komponenten
         self.current_phase = "normal"
@@ -60,7 +68,7 @@ class Game1State:
                 "shape_lifespan": (60, 180),  # 1-3 Sekunden
                 "clickable_accuracy": 1.0,    # 100% der Klicks werden registriert
                 "duration": 60 * 10,          # 10 Sekunden
-                "color": BACKGROUND
+                "color": LIGHT_BLUE
             },
             "stress": {
                 "spawn_rate": 400,
@@ -68,7 +76,7 @@ class Game1State:
                 "shape_lifespan": (30, 90),  # 0.75-2 Sekunden
                 "clickable_accuracy": 1.0,
                 "duration": 60 * 8,           # 8 Sekunden
-                "color": ARROWHEAD_WHITE
+                "color": LIGHT_RED
             },
             "recovery": {
                 "spawn_rate": 1500,
@@ -76,15 +84,15 @@ class Game1State:
                 "shape_lifespan": (90, 240),  # 1.5-4 Sekunden
                 "clickable_accuracy": 1.0,
                 "duration": 60 * 6,           # 6 Sekunden
-                "color": PLACEBO_GREEN
+                "color": LIGHT_GREEN
             },
             "frustration": {
                 "spawn_rate": 900,
                 "shape_types": ['circle', 'rect', 'triangle'],
                 "shape_lifespan": (30, 90),   # 0.5-1.5 Sekunden
-                "clickable_accuracy": 0.5,    # Nur 70% der Klicks werden registriert
+                "clickable_accuracy": 0.3,    # Nur 30% der Klicks werden registriert
                 "duration": 60 * 7,           # 7 Sekunden
-                "color": PLACEBO_MAGENTA
+                "color": LIGHT_PINK
             },
             "surprise": {
                 "spawn_rate": 300,
@@ -92,7 +100,7 @@ class Game1State:
                 "shape_lifespan": (20, 60),
                 "clickable_accuracy": 0.8,
                 "duration": 60 * 4,
-                "color": RISING_STAR
+                "color": LIGHT_YELLOW
             }
         }
         
@@ -177,10 +185,15 @@ class Game1State:
                         break
             
             # Spielbereich-Grenzen für Klick-Erfassung
-            game_area = pygame.Rect(50, 110, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 190)
+            game_area_rect = pygame.Rect(
+                self.game_area['x'], 
+                self.game_area['y'], 
+                self.game_area['width'], 
+                self.game_area['height']
+            )
             
             # Prüfe, ob in die Luft geklickt wurde (kein Objekt getroffen)
-            if clicked_shape is None and game_area.collidepoint(mouse_x, mouse_y):
+            if clicked_shape is None and game_area_rect.collidepoint(mouse_x, mouse_y):
                 self.panic_clicks += 1
                 return
                 
@@ -262,15 +275,22 @@ class Game1State:
             # Zufällige Form basierend auf der aktuellen Phase generieren
             shape_type = random.choice(self.phase_config[self.current_phase]["shape_types"])
             
-            # Zufällige Position (nicht zu nah am Rand)
-            x = random.randint(150, SCREEN_WIDTH - 150)
-            y = random.randint(170, SCREEN_HEIGHT - 220)
+            # Zufällige Position (innerhalb des Spielbereichs mit Abstand zum Rand)
+            margin = 40  # Abstand zum Rand
+            x = random.randint(
+                self.game_area['x'] + margin, 
+                self.game_area['x'] + self.game_area['width'] - margin
+            )
+            y = random.randint(
+                self.game_area['y'] + margin, 
+                self.game_area['y'] + self.game_area['height'] - margin
+            )
             
             # Zufällige Grösse
             size = random.randint(20, 40)
             
             # Zufällige Farbe aus der Farbpalette
-            colors = [CHAMELEON_GREEN, VIOLET_VELVET, CLEAN_POOL_BLUE, HONEY_YELLOW, ORANGE_PEACH, CHERRY_PINK]
+            colors = [LIGHT_BLUE, LIGHT_RED, LIGHT_GREEN, LIGHT_PINK, LIGHT_YELLOW, LIGHT_VIOLET]
             color = random.choice(colors)
             
             # Zufällige Lebensdauer basierend auf der Phase
@@ -307,12 +327,17 @@ class Game1State:
                 new_y = shape['pos'][1] + shape['velocity'][1]
                 
                 # Spielbereich-Grenzen einhalten
-                if 100 <= new_x <= SCREEN_WIDTH - 100 and 150 <= new_y <= SCREEN_HEIGHT - 150:
+                min_x = self.game_area['x'] + 10
+                max_x = self.game_area['x'] + self.game_area['width'] - 10
+                min_y = self.game_area['y'] + 10
+                max_y = self.game_area['y'] + self.game_area['height'] - 10
+
+                if min_x <= new_x <= max_x and min_y <= new_y <= max_y:
                     shape['pos'] = (new_x, new_y)
                 else:
                     # Bei Kollision mit Rand umkehren
                     shape['velocity'] = (-shape['velocity'][0], -shape['velocity'][1])
-            
+                            
             # Formen entfernen, die ihre Lebensdauer überschritten haben
             if shape['lifespan'] <= 0:
                 # Wenn es ein Kreis (Ziel) war, zähle es als verpasst
@@ -334,8 +359,8 @@ class Game1State:
             self.game.screen.fill(BACKGROUND)
         
         # Header
-        title = self.game.font.render("Click & React", True, TEXT_COLOR)
-        self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 30))
+        title = self.game.heading_font_bold.render("CLICK & REACT", True, TEXT_COLOR)
+        self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, TITLE_Y_POSITION))
         
         if self.state == "intro":
             self._render_instructions()
@@ -347,48 +372,70 @@ class Game1State:
     def _render_instructions(self):
         """Zeigt die Spielanweisungen vor dem Start an"""      
         # Titel
-        intro_title = self.game.medium_font.render("Reaktions- und Emotionstest", True, TEXT_COLOR)
+        intro_title = self.game.subtitle_font.render("Bereit für das erste Spiel?", True, TEXT_COLOR)
         self.game.screen.blit(intro_title, (SCREEN_WIDTH // 2 - intro_title.get_width() // 2, 100))
         
-        # Erklärungstext
-        explanation_text = [
+        # Einleitungstext
+        intro_text = [
             f"Hallo {self.game.user_name}!",
-            "Bereit für einen kleinen Reaktionstest?",
-            "Klicke nur auf die Kreise - alles andere kannst du ignorieren.",
-            "Das Spiel wechselt zwischen verschiedenen Phasen:",
-            "- Normalphasen: Entspanntes Spielen mit ausgewogenem Tempo",
-            "- Stressphasen: Schnelleres Tempo, mehr Formen",
-            "- Erholungsphasen: Langsameres Tempo, leichtere Herausforderung",
-            "- Frustrationsphasen: Technik 'hakt', manche Klicks werden nicht registriert",
-            "Das Spiel misst, wie du mit den verschiedenen Situationen umgehst."
+            "Klicke nur auf die Kreise - alles andere kannst du ignorieren. Das Spiel wechselt zwischen verschiedenen Phasen:"
         ]
         
-        # Zeichne Erklärungstext
-        y_pos = 150
-        for line in explanation_text:
-            line_text = self.game.small_font.render(line, True, TEXT_DARK)
-            self.game.screen.blit(line_text, (SCREEN_WIDTH // 2 - line_text.get_width() // 2, y_pos))
-            y_pos += 25
+        # Aufzählungspunkte für die Phasen
+        phase_descriptions = [
+            "•  Normalphasen: Entspanntes Spielen mit ausgewogenem Tempo",
+            "•  Stressphasen: Schnelleres Tempo, mehr Formen",
+            "•  Erholungsphasen: Langsameres Tempo, leichtere Herausforderung",
+            "•  Frustrationsphasen: Technik 'hakt', manche Klicks werden nicht registriert"
+        ]
         
-        # Start-Button Position
-        button_x = SCREEN_WIDTH // 2
-        button_y = SCREEN_HEIGHT - 150
-        button_width = 200
-        button_height = 50
+        # Abschlusstext
+        conclusion_text = "Das Spiel misst, wie du mit den verschiedenen Situationen umgehst."
+        
+        # Zeichne Einleitungstext
+        y_pos = 150
+        for line in intro_text:
+            line_text = self.game.body_font.render(line, True, TEXT_DARK)
+            self.game.screen.blit(line_text, (SCREEN_WIDTH // 2 - line_text.get_width() // 2, y_pos))
+            y_pos += 30
+        
+        # Abstand vor den Aufzählungspunkten
+        y_pos += 10
+        
+        # Konstanter Einzug für alle Aufzählungspunkte (30% vom Bildschirm von links)
+        indent_x = int(SCREEN_WIDTH * 0.3)
+        
+        # Zeichne Aufzählungspunkte
+        for phase in phase_descriptions:
+            line_text = self.game.body_font.render(phase, True, TEXT_DARK)
+            self.game.screen.blit(line_text, (indent_x, y_pos))
+            y_pos += 30
+    
+        # Abstand vor dem Abschlusstext
+        y_pos += 10
+        
+        # Zeichne Abschlusstext
+        conclusion_rendered = self.game.body_font.render(conclusion_text, True, TEXT_DARK)
+        self.game.screen.blit(conclusion_rendered, (SCREEN_WIDTH // 2 - conclusion_rendered.get_width() // 2, y_pos))
 
-        # Hover-Effekt prüfen
+        # Tiktik rendern und unten platzieren
+        tiktik_x = SCREEN_WIDTH // 2 - FLIEGEND_TIKTIK_IMAGE.get_width() // 2
+        tiktik_y = SCREEN_HEIGHT - 230
+        self.game.screen.blit(FLIEGEND_TIKTIK_IMAGE, (tiktik_x, tiktik_y))
+        
+        # Button Hover-Effekt prüfen
         mouse_x, mouse_y = pygame.mouse.get_pos()
         hover = (mouse_x >= button_x - button_width // 2 and 
                 mouse_x <= button_x + button_width // 2 and
                 mouse_y >= button_y - button_height // 2 and 
                 mouse_y <= button_y + button_height // 2)
-
+        
         # Button zeichnen
-        self.game.draw_modern_button(
+        self.game.draw_button(
             "Start", button_x, button_y, button_width, button_height,
-            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, hover
         )
-
+        
         # Rechteck für Klickprüfung speichern
         self.start_button_rect = pygame.Rect(
             button_x - button_width // 2,
@@ -396,11 +443,6 @@ class Game1State:
             button_width,
             button_height
         )
-        
-        # Blob Bild rendern und unten platzieren
-        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2
-        blob_y = SCREEN_HEIGHT - 120
-        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
     
     def _render_game(self):
         """Zeichnet das laufende Spiel"""
@@ -415,43 +457,43 @@ class Game1State:
         
         # Phasen-spezifische Anweisungen und Farben
         phase_instructions = {
-            "normal": ("Klicke nur auf die Kreise!", DIVE_BLUE),
-            "stress": ("Schnell! Die Formen bewegen sich!", SHINSHU),
-            "recovery": ("Zeit zum Durchatmen. Sammle Punkte!", BROCCOFLOWER),
-            "frustration": ("System instabil - manche Klicks werden nicht registriert!", VIOLET_VELVET),
-            "surprise": ("Achtung! Unerwartete Änderung!", HONEY_YELLOW)
+            "normal": ("Klicke nur auf die Kreise!", DARK_BLUE),
+            "stress": ("Schnell! Die Formen bewegen sich!", DARK_RED),
+            "recovery": ("Zeit zum Durchatmen. Sammle Punkte!", DARK_GREEN),
+            "frustration": ("System instabil - manche Klicks werden nicht registriert!", DARK_VIOLET),
+            "surprise": ("Achtung! Unerwartete Änderung!", DARK_YELLOW)
         }
         
         # Phasen-Anzeige
-        phase_text = self.game.small_font.render(
-            phase_names[self.current_phase], True, TEXT_COLOR
+        phase_text = self.game.subtitle_font.render(
+            phase_names[self.current_phase], True, TEXT_DARK
         )
-        self.game.screen.blit(phase_text, (SCREEN_WIDTH // 2 - phase_text.get_width() // 2, 70))
+        self.game.screen.blit(phase_text, (SCREEN_WIDTH // 2 - phase_text.get_width() // 2, 90))
         
         # Phasen-spezifische Anweisung
         instruction, color = phase_instructions[self.current_phase]
         instruction_text = self.game.small_font.render(instruction, True, color)
         self.game.screen.blit(instruction_text, 
-                          (SCREEN_WIDTH // 2 - instruction_text.get_width() // 2, 90))
+                        (SCREEN_WIDTH // 2 - instruction_text.get_width() // 2, 120))
         
         # Punktekarte links
-        self.game.draw_card(20, 20, 140, 60, color=WHITE)
+        self.game.draw_card(20, 20, 140, 60, color=WHITE, border_radius=0)
         score_label = self.game.small_font.render("Punkte", True, TEXT_COLOR)
-        score_value = self.game.medium_font.render(f"{self.score}", True, BLACK)
+        score_value = self.game.medium_font.render(f"{self.score}", True, TEXT_DARK)
         self.game.screen.blit(score_label, (30, 25))
         self.game.screen.blit(score_value, (30, 50))
         
         # Zeitkarte rechts
-        self.game.draw_card(SCREEN_WIDTH - 160, 20, 140, 60, color=WHITE)
+        self.game.draw_card(SCREEN_WIDTH - 160, 20, 140, 60, color=WHITE, border_radius=0)
         time_label = self.game.small_font.render("Zeit", True, TEXT_COLOR)
         
         # Zeit-Farbänderung je nach Phase
         time_colors = {
-            "normal": DIVE_BLUE,
-            "stress": SHINSHU,
-            "recovery": BROCCOFLOWER,
-            "frustration": VIOLET_VELVET,
-            "surprise": HONEY_YELLOW
+            "normal": DARK_BLUE,
+            "stress": DARK_RED,
+            "recovery": DARK_GREEN,
+            "frustration": DARK_VIOLET,
+            "surprise": DARK_YELLOW
         }
         
         time_value = self.game.medium_font.render(f"{self.time // 60}", True, time_colors[self.current_phase])
@@ -459,20 +501,21 @@ class Game1State:
         self.game.screen.blit(time_value, (SCREEN_WIDTH - 150, 50))
         
         # Spielbereich-Hintergrund
-        game_area_x = 50
-        game_area_y = 110
-        game_area_width = SCREEN_WIDTH - 100
-        game_area_height = SCREEN_HEIGHT - 190
-        
-        # Phase-spezifischer Spielbereich-Hintergrund
-        self.game.draw_card(game_area_x, game_area_y, game_area_width, game_area_height, color=WHITE)
+        self.game.draw_card(
+            self.game_area['x'], 
+            self.game_area['y'], 
+            self.game_area['width'], 
+            self.game_area['height'], 
+            color=WHITE,
+            border_radius=0
+        )
         
         # Während der Frustration-Phase subtile visuelle Störungen
         if self.current_phase == "frustration" and random.random() < 0.05:
             # Selten auftretende kleine Störlinien
             for _ in range(3):
-                x = random.randint(game_area_x, game_area_x + game_area_width)
-                y = random.randint(game_area_y, game_area_y + game_area_height)
+                x = random.randint(self.game_area['x'], self.game_area['x'] + self.game_area['width'])
+                y = random.randint(self.game_area['y'], self.game_area['y'] + self.game_area['height'])
                 width = random.randint(5, 20)
                 height = random.randint(1, 3)
                 
@@ -492,16 +535,16 @@ class Game1State:
             color = shape['color']
             if shape['flash'] > 0:
                 # Kurzes Aufblitzen bei ignorierten Klicks
-                color = VIOLET_VELVET
+                color = DARK_VIOLET
                 
             if shape['type'] == 'circle':
                 pygame.draw.circle(self.game.screen, color, shape['pos'], 
-                                 shape['size'] + size_modifier)
+                                shape['size'] + size_modifier)
             elif shape['type'] == 'rect':
                 rect = pygame.Rect(shape['pos'][0] - shape['size'] - size_modifier, 
-                                 shape['pos'][1] - shape['size'] - size_modifier,
-                                 (shape['size'] + size_modifier) * 2, 
-                                 (shape['size'] + size_modifier) * 2)
+                                shape['pos'][1] - shape['size'] - size_modifier,
+                                (shape['size'] + size_modifier) * 2, 
+                                (shape['size'] + size_modifier) * 2)
                 pygame.draw.rect(self.game.screen, color, rect)
             elif shape['type'] == 'triangle':
                 x, y = shape['pos']
@@ -513,19 +556,37 @@ class Game1State:
                 ]
                 pygame.draw.polygon(self.game.screen, color, points)
 
-        # Timer-Balken zeichnen
-        progress = self.time / (60 * 60) # Prozent der Zeit übrig
-        
-        # Phasen-spezifischer Balken
-        bar_color = time_colors[self.current_phase]
-        self.game.draw_progress_bar(50, SCREEN_HEIGHT - 50, SCREEN_WIDTH - 100, 10, 
-                                 progress, fill_color=bar_color)
+        # WICHTIG: UI-Elemente NACH dem Zeichnen des Spielbereichs und der Objekte, aber VOR anderen Overlay-Elementen zeichnen-
         
         # Statistiken (Punkte, Klicks)
+        bottom_margin = 60  # Abstand vom unteren Bildschirmrand
         stats_text = self.game.small_font.render(
             f"Korrekt: {self.correct_clicks}   |   Falsch: {self.incorrect_clicks}", True, TEXT_COLOR)
-        self.game.screen.blit(stats_text, (50, SCREEN_HEIGHT - 70))
-    
+        self.game.screen.blit(stats_text, (self.game_area['x'] + 10, SCREEN_HEIGHT - bottom_margin))
+        
+        # Timer-Balken
+        progress = self.time / (90 * 60)  # Prozent der Zeit übrig
+        margin = 70  # Abstand vom Rand (links und rechts)
+        bar_width = SCREEN_WIDTH - (margin * 2)
+        bar_y = SCREEN_HEIGHT - (bottom_margin - 30)
+        bar_color = time_colors[self.current_phase]
+        
+        pygame.draw.rect(
+            self.game.screen, 
+            WHITE,
+            (margin, bar_y, bar_width, 10),
+            border_radius=5
+        )
+        
+        filled_width = int(bar_width * progress)
+        if filled_width > 0:  # Nur zeichnen, wenn Fortschritt > 0
+            pygame.draw.rect(
+                self.game.screen, 
+                bar_color,
+                (margin, bar_y, filled_width, 10),
+                border_radius=5
+            )
+                
     def advance_to_next_phase(self):
         """Wechselt zur nächsten Spielphase"""
         # Zum nächsten Index in der Phasensequenz wechseln
@@ -553,70 +614,8 @@ class Game1State:
             detail = "Auch in stressigen Situationen bleibst du gelassen und findest schnell zu deinem Gleichgewicht zurück."
         
         # Text rendern
-        self.render_multiline_text(main_text, self.game.small_font, TEXT_DARK, 150, y_pos, SCREEN_WIDTH - 300, 25)
-        self.render_multiline_text(detail, self.game.small_font, TEXT_DARK, 150, y_pos + 30, SCREEN_WIDTH - 300, 25)
-    
-    def draw_neuroticism_components(self, center_x, center_y, radius):
-        """Zeichnet ein Radar-Chart mit den Neurotizismus-Komponenten"""
-        # Komponenten und ihre Werte
-        components = [
-            ("Stressreaktion", self.neuroticism_components["vulnerability"]),
-            ("Umgang m. Frustration", self.neuroticism_components["depression"]),
-            ("Impulskontrolle", self.neuroticism_components["impulsiveness"]),
-            ("Anspannung", self.neuroticism_components["anxiety"]),
-            ("Selbstreflektion", self.neuroticism_components["self_consciousness"])
-        ]
-        
-        num_components = len(components)
-        
-        # Hintergrund-Pentagon zeichnen
-        pygame.draw.polygon(self.game.screen, (230, 230, 230), 
-                           [(center_x + radius * math.cos(i * 2 * math.pi / num_components - math.pi/2),
-                             center_y + radius * math.sin(i * 2 * math.pi / num_components - math.pi/2)) 
-                            for i in range(num_components)], 0)
-        
-        # Linien vom Mittelpunkt zu den Ecken
-        for i in range(num_components):
-            angle = i * 2 * math.pi / num_components - math.pi/2
-            end_x = center_x + radius * math.cos(angle)
-            end_y = center_y + radius * math.sin(angle)
-            pygame.draw.line(self.game.screen, (200, 200, 200), (center_x, center_y), (end_x, end_y), 1)
-        
-        # Komponenten-Werte zeichnen
-        points = []
-        for i, (name, value) in enumerate(components):
-            angle = i * 2 * math.pi / num_components - math.pi/2
-            # Radius basierend auf dem Wert skalieren (0-100)
-            point_radius = radius * (value / 100)
-            point_x = center_x + point_radius * math.cos(angle)
-            point_y = center_y + point_radius * math.sin(angle)
-            points.append((point_x, point_y))
-            
-            # Komponenten-Namen zeichnen
-            label_radius = radius + 20  # Etwas ausserhalb des Kreises
-            label_x = center_x + label_radius * math.cos(angle)
-            label_y = center_y + label_radius * math.sin(angle)
-            
-            # Text ausrichten basierend auf Position
-            text = self.game.small_font.render(name, True, TEXT_DARK)
-            text_rect = text.get_rect()
-            
-            # Ausrichtung abhängig vom Winkel
-            if -0.25 * math.pi < angle < 0.25 * math.pi:  # Rechte Seite
-                text_rect.midleft = (label_x, label_y)
-            elif 0.75 * math.pi < angle < 1.25 * math.pi:  # Linke Seite
-                text_rect.midright = (label_x, label_y)
-            elif angle > 0:  # Untere Hälfte
-                text_rect.midtop = (label_x, label_y)
-            else:  # Obere Hälfte
-                text_rect.midbottom = (label_x, label_y)
-                
-            self.game.screen.blit(text, text_rect)
-        
-        # Polygon für die Werte zeichnen
-        if len(points) >= 3:  # Mindestens 3 Punkte für ein Polygon
-            pygame.draw.polygon(self.game.screen, CHERRY_PINK + (100,), points, 0)  # Halbtransparent
-            pygame.draw.polygon(self.game.screen, CHERRY_PINK, points, 2)  # Umriss
+        self.render_multiline_text(main_text, self.game.body_font, TEXT_DARK, 150, y_pos, SCREEN_WIDTH - 300, 25)
+        self.render_multiline_text(detail, self.game.body_font, TEXT_DARK, 150, y_pos + 30, SCREEN_WIDTH - 300, 25)
     
     def calculate_neuroticism(self):
         """Berechnet den Neurotizismus-Score basierend auf verschiedenen Metriken"""
@@ -741,19 +740,20 @@ class Game1State:
     
     def _render_result(self):
         """Zeigt die Ergebnisseite mit dem Neurotizismus-Balken an"""
-        # Titel
-        title = self.game.medium_font.render("Dein Ergebnis:", True, TEXT_COLOR)
-        self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 130))
+        description_x = 150
+
+        # Neurotizismus-Beschreibung
+        self.draw_neuroticism_description(170)
         
         # Ergebnisbalken
         scale_x = 150
-        scale_y = 300
+        scale_y = 350
         scale_width = SCREEN_WIDTH - 300
         scale_height = 30
         
-        self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=WHITE, shadow=False)
+        self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=LIGHT_GREY, shadow=False)
         fill_width = int(scale_width * self.neuroticism_score / 100)
-        pygame.draw.rect(self.game.screen, PLACEBO_MAGENTA,
+        pygame.draw.rect(self.game.screen, LIGHT_BLUE,
                     (scale_x, scale_y, fill_width, scale_height), border_radius=15)
         
         # Labels
@@ -763,31 +763,30 @@ class Game1State:
         self.game.screen.blit(high_text, (scale_x + scale_width - high_text.get_width(), scale_y + scale_height + 10))
         
         # Neurotizismus Beschriftung mittig über dem Balken
-        neuro_text = self.game.medium_font.render("Neurotizismus", True, TEXT_COLOR)
+        neuro_text = self.game.font_bold.render("Neurotizismus", True, TEXT_COLOR)
         self.game.screen.blit(neuro_text, (SCREEN_WIDTH // 2 - neuro_text.get_width() // 2, scale_y - 70))
         
         # Prozentsatz über dem Balken
-        percent_text = self.game.medium_font.render(f"{self.neuroticism_score}%", True, TEXT_COLOR)
+        percent_text = self.game.medium_font.render(f"{self.neuroticism_score}%", True, TEXT_DARK)
         self.game.screen.blit(percent_text,
                             (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
-        
-        # Weiter-Button mit Hover-Effekt
-        button_x = SCREEN_WIDTH // 2
-        button_y = SCREEN_HEIGHT - 80
-        button_width = 200
-        button_height = 50
-        
+
+        # Rechteck für Klickprüfung erstellen
+        button_rect = pygame.Rect(
+        button_x - button_width // 2,
+        button_y - button_height // 2,
+        button_width,
+        button_height
+        )
+
         # Prüfen, ob Maus über dem Button ist
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        hover = (mouse_x >= button_x - button_width // 2 and 
-                mouse_x <= button_x + button_width // 2 and
-                mouse_y >= button_y - button_height // 2 and 
-                mouse_y <= button_y + button_height // 2)
+        hover = button_rect.collidepoint(mouse_x, mouse_y)
         
         # Button zeichnen mit Hover-Effekt
-        self.game.draw_modern_button(
+        self.game.draw_button(
             "Weiter", button_x, button_y, button_width, button_height,
-            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, hover
         )
         
         # Rechteck für Klickprüfung speichern
@@ -797,8 +796,8 @@ class Game1State:
             button_width,
             button_height
         )
-        
-        # Blob visual am unteren Rand
-        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2 + 200
-        blob_y = SCREEN_HEIGHT - BLOB_IMAGE.get_height() - 20
-        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
+
+        # Sitzend Tiktik in der unteren rechten Ecke platzieren
+        tiktik_x = SCREEN_WIDTH - SITZEND_TIKTIK_IMAGE.get_width() - 20  # 20px Abstand vom rechten Rand
+        tiktik_y = SCREEN_HEIGHT - SITZEND_TIKTIK_IMAGE.get_height() - 20  # 20px Abstand vom unteren Rand
+        self.game.screen.blit(SITZEND_TIKTIK_IMAGE, (tiktik_x, tiktik_y))
