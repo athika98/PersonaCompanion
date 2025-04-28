@@ -266,18 +266,18 @@ class Game2State:
         box_margin = 20  # Abstand zwischen den Boxen
         
         # Option A (links) - Introvertierte Option
-        option_a_x = slider["x"] - box_width - box_margin // 2
-        option_a_y = slider["y"] - 260
-        
-        # Option B (rechts) - Extravertierte Option
-        option_b_x = slider["x"] + box_margin // 2
+        option_b_x = slider["x"] - box_width - box_margin // 2
         option_b_y = slider["y"] - 260
         
+        # Option B (rechts) - Extravertierte Option
+        option_a_x = slider["x"] + box_margin // 2
+        option_a_y = slider["y"] - 260
+        
         # Option A Box zeichnen
-        self.game.draw_card(option_a_x, option_a_y, box_width, box_height, color=BACKGROUND, shadow=False)
+        self.game.draw_card(option_b_x, option_b_y, box_width, box_height, color=BACKGROUND, shadow=False)
         
         # Option B Box zeichnen
-        self.game.draw_card(option_b_x, option_b_y, box_width, box_height, color=BACKGROUND, shadow=False)
+        self.game.draw_card(option_a_x, option_a_y, box_width, box_height, color=BACKGROUND, shadow=False)
         
         # Introvert-Bild (Option A)
         if self.current_scenario in GAME2_OPTION_IMAGES and "introvert" in GAME2_OPTION_IMAGES[self.current_scenario]:
@@ -298,36 +298,20 @@ class Game2State:
         image_height = 220  # Bildhöhe
         
         # Bilder links in den Boxen platzieren
-        image_x_a = option_a_x + 20  # Etwas Abstand vom linken Rand
-        image_y_a = option_a_y + (box_height - image_height) // 2  # Vertikal zentriert
-        self.game.screen.blit(introvert_image, (image_x_a, image_y_a))
-        
         image_x_b = option_b_x + 20  # Etwas Abstand vom linken Rand
         image_y_b = option_b_y + (box_height - image_height) // 2  # Vertikal zentriert
-        self.game.screen.blit(extravert_image, (image_x_b, image_y_b))
+        self.game.screen.blit(introvert_image, (image_x_b, image_y_b))
+        
+        image_x_a = option_a_x + 20  # Etwas Abstand vom linken Rand
+        image_y_a = option_a_y + (box_height - image_height) // 2  # Vertikal zentriert
+        self.game.screen.blit(extravert_image, (image_x_a, image_y_a))
         
         # Text rechts neben den Bildern platzieren
         text_width = box_width - image_width - 100  # Textbreite (Box - Bild - Abstände)
         
         # Option A Text (introvertiert)
-        option_a_lines = self._wrap_text(current["option_a"], text_width)
-        line_height = option_a_lines[0].get_height()
-        
-        # Gesamthöhe des Textes berechnen
-        total_text_height_a = line_height * len(option_a_lines)
-        
-        # Text vertikal zentriert neben dem Bild platzieren
-        text_start_y_a = image_y_a + (image_height - total_text_height_a) // 2
-        text_start_x_a = image_x_a + image_width + 20  # Abstand zwischen Bild und Text
-        
-        for i, line in enumerate(option_a_lines):
-            self.game.screen.blit(
-                line, 
-                (text_start_x_a, text_start_y_a + i * line_height)
-            )
-        
-        # Option B Text (extravertiert)
         option_b_lines = self._wrap_text(current["option_b"], text_width)
+        line_height = option_b_lines[0].get_height()
         
         # Gesamthöhe des Textes berechnen
         total_text_height_b = line_height * len(option_b_lines)
@@ -340,6 +324,22 @@ class Game2State:
             self.game.screen.blit(
                 line, 
                 (text_start_x_b, text_start_y_b + i * line_height)
+            )
+        
+        # Option B Text (extravertiert)
+        option_a_lines = self._wrap_text(current["option_a"], text_width)
+        
+        # Gesamthöhe des Textes berechnen
+        total_text_height_a = line_height * len(option_a_lines)
+        
+        # Text vertikal zentriert neben dem Bild platzieren
+        text_start_y_a = image_y_a + (image_height - total_text_height_a) // 2
+        text_start_x_a = image_x_a + image_width + 20  # Abstand zwischen Bild und Text
+        
+        for i, line in enumerate(option_a_lines):
+            self.game.screen.blit(
+                line, 
+                (text_start_x_a, text_start_y_a + i * line_height)
             )
         
         # Schieberegler zeichnen
@@ -368,11 +368,11 @@ class Game2State:
         else:
             tendency_text = "Starke Tendenz zu Option B"
 
-        option_a_label = self.game.small_font.render("Option A", True, TEXT_DARK)
-        option_b_label = self.game.small_font.render("Option B", True, TEXT_DARK)
+        option_b_label = self.game.small_font.render("Option A", True, TEXT_DARK)
+        option_a_label = self.game.small_font.render("Option B", True, TEXT_DARK)
         
-        self.game.screen.blit(option_a_label, (slider_start_x - option_a_label.get_width() // 2, slider["y"] + 25))
-        self.game.screen.blit(option_b_label, (slider_end_x - option_b_label.get_width() // 2, slider["y"] + 25))
+        self.game.screen.blit(option_b_label, (slider_start_x - option_b_label.get_width() // 2, slider["y"] + 25))
+        self.game.screen.blit(option_a_label, (slider_end_x - option_a_label.get_width() // 2, slider["y"] + 25))
         
         # Aktuelle Position visualisieren
         # Aktuelle Position und Tendenz nebeneinander darstellen
