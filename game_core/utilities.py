@@ -180,7 +180,8 @@ def determine_persona_type(personality_traits):
         personality_traits (dict): Die Persönlichkeitsmerkmale mit Scores
         
     Returns:
-        tuple: (persona_name, persona_desc, companion_type, companion_desc, companion_color)
+        tuple: (persona_name, persona_desc, persona_profile, persona_needs, persona_challenges,
+                companion_type, companion_desc, companion_color)
     """
     #  Klassifizierung der Score-Werte in Kategorien
     trait_categories = {}
@@ -194,21 +195,24 @@ def determine_persona_type(personality_traits):
         else:
             trait_categories[trait] = "low"
     
-    # Definition der fünf Personas mit den zugehörigen Persönlichkeitsprofilen
+    # Definition der fünf Personas mit den zugehörigen Persönlichkeitsprofilen und erweiterten Informationen
     personas = {
         "Strukturorientierter Planer": {
             "profile": {
                 "conscientiousness": ["high", "medium_high"],
-                "verträglichkeit": ["medium_high", "medium_low"],
+                "agreeableness": ["medium_high", "medium_low"],
                 "extraversion": ["medium_low", "low"],
                 "openness": ["medium_high", "medium_low"],
                 "neuroticism": ["medium_low", "low"]
             },
-            "description": "Du bist strukturiert, planst sorgfältig und bevorzugst klare Strukturen. Du bist kooperativ, aber auch bestimmt in deinen eigenen Bedürfnissen. Du bevorzugst kleinere, bedeutungsvolle soziale Interaktionen und bist offen für neue Ansätze, wenn deren Nutzen erkennbar ist.",
+            "description": "Du bist strukturiert, planst sorgfältig und bevorzugst klare Strukturen.",
+            "persona_profile": "Hohe Gewissenhaftigkeit, moderate Verträglichkeit, niedrige Extraversion, moderate Offenheit und geringe Neurotizismus. Du planst sorgfältig, bist bestimmt in deinen Bedürfnissen und bevorzugst bedeutungsvolle Interaktionen.",
+            "persona_needs": "Du benötigst Struktur, Transparenz und regelmässiges Feedback zu deinen Fortschritten.",
+            "persona_challenges": "Bei Unterbrechung deiner Routinen oder fehlender Struktur kann dein Perfektionismus zu Frustration führen.",
             "companion": {
-                "type": "Organisationssystem",
-                "description": "Ein minimalistisches, symmetrisches digitales Objekt mit klaren Linien und harmonischen Proportionen. Es verwendet beruhigende Blau- und Grautöne und zeigt sanfte, vorhersehbare Bewegungsmuster.",
-                "color": CLEAN_POOL_BLUE
+                "type": "Der Architektonische Turm",
+                "description": "Ein modularer, aufsteigender Turm mit präzise angeordneten geometrischen Elementen, der mit jedem Therapieerfolg neue Stockwerke und Strukturen entwickelt.",
+                "color": DARK_BLUE
             }
         },
         "Sozialer Enthusiast": {
@@ -219,10 +223,13 @@ def determine_persona_type(personality_traits):
                 "conscientiousness": ["medium_high", "medium_low"],
                 "neuroticism": ["medium_low", "low"]
             },
-            "description": "Du geniesst soziale Interaktionen und teilst gerne Erfahrungen. Du bist kooperativ und harmoniebedürftig. Du bist offen für neue Erfahrungen, besonders in sozialen Kontexten und kannst organisiert sein, lässt dich aber auch leicht ablenken.",
+            "description": "Du geniesst soziale Interaktionen und teilst gerne Erfahrungen.",
+            "persona_profile": "Hohe Extraversion und Verträglichkeit, moderate Offenheit und Gewissenhaftigkeit. Du bist positiv gestimmt, harmonieorientiert und kannst dich in sozialen Kontexten gut anpassen.",
+            "persona_needs": "Du suchst soziale Verbindung, möchtest Erfahrungen teilen und schätzt Anerkennung.",
+            "persona_challenges": "Du kannst Therapieelemente vernachlässigen, die nicht sozial integrierbar sind, und bei fehlender sozialer Unterstützung die Motivation verlieren.",
             "companion": {
-                "type": "Interaktives Wesen",
-                "description": "Ein interaktives, emotionales Wesen mit ausdrucksstarker Mimik und Gestik, das auf dich reagiert und eine persönliche Bindung aufbaut. Es verwendet warme, lebendige Farben wie Orange und Gelb und zeigt dynamische, responsive Bewegungen.",
+                "type": "Der Evolutionäre Begleiter Evo",
+                "description": "Ein freundliches, interaktives Wesen, das durch Therapieadhärenz mehrere klar definierte Evolutions-stufen durchläuft und dabei visuell wächst, neue Fähigkeiten entwickelt und soziale Verbindungen aufbaut.",
                 "color": DARK_YELLOW
             }
         },
@@ -234,11 +241,14 @@ def determine_persona_type(personality_traits):
                 "agreeableness": ["medium_high", "medium_low"],
                 "openness": ["low", "medium_low"]
             },
-            "description": "Du neigst zu Sorgen und intensiven emotionalen Reaktionen. Du bevorzugst ruhige, kontrollierte Umgebungen. Du kannst sorgfältig sein, wirst aber durch Ängste abgelenkt. Du bist grundsätzlich kooperativ, kannst aber zurückhaltend sein.",
+            "description": "Du neigst zu emotionalen Reaktionen und bevorzugst ruhige, kontrollierte Umgebungen.",
+            "persona_profile": "Hoher Neurotizismus, niedrige Extraversion, moderate Gewissenhaftigkeit und Verträglichkeit. Du bist sorgfältig aber manchmal zurückhaltend und bevorzugst das Bekannte.",
+            "persona_needs": "Du benötigst Sicherheit, klare Anweisungen und behutsames Feedback.",
+            "persona_challenges": "Ängste können dich blockieren, und bei Unsicherheit unterbrichst du eher die Therapie statt nachzufragen.",
             "companion": {
-                "type": "Beruhigende Umgebung",
-                "description": "Eine beruhigende, naturinspirierte Umgebung mit sanften Elementen, die auf Interaktion reagieren, ohne zu überfordern. Sie verwendet kühle, beruhigende Blau- und Grüntöne und zeigt langsame, fliessende Bewegungen.",
-                "color": CHAMELEON_GREEN
+                "type": "Der Schützende Kristallbaum",
+                "description": "Ein langsam wachsender, leuchtender Kristallbaum, der in einem geschützten Raum behutsam Zwei-ge, Kristallblüten und schützende Elemente entwickelt und dabei Sicherheit und Stabilität vermittelt.",
+                "color": DARK_GREEN
             }
         },
         "Kreativer Entdecker": {
@@ -249,11 +259,14 @@ def determine_persona_type(personality_traits):
                 "conscientiousness": ["low", "medium_low"],
                 "agreeableness": ["medium_high", "medium_low"]
             },
-            "description": "Du suchst neue Erfahrungen und kreative Ansätze. Du geniesst den Austausch von Ideen und Erfahrungen. Du bist emotional responsiv, aber nicht übermässig besorgt. Du bist spontan und flexibel, manchmal auf Kosten von Struktur.",
+            "description": "Du suchst neue Erfahrungen und kreative Ansätze zu Problemen.",
+            "persona_profile": "Hohe Offenheit, moderate Extraversion und Neurotizismus, niedrige Gewissenhaftigkeit. Du bist emotional responsiv, flexibel und schätzt kreative Freiheit.",
+            "persona_needs": "Du suchst Stimulation, Freiheit für eigene Gestaltung und kreative Herausforderungen.",
+            "persona_challenges": "Bei monotonen Therapieelementen verlierst du schnell das Interesse und experimentierst lieber als strikt zu folgen.",
             "companion": {
-                "type": "Transformierendes Objekt",
-                "description": "Ein sich ständig entwickelndes, transformierendes Objekt, das unerwartete Formen annimmt und auf kreative Interaktion reagiert. Es zeigt abstrakte, fliessende Formen mit ungewöhnlichen Texturen und dynamischen Farbwechseln.",
-                "color": CHERRY_PINK
+                "type": "Der Wandelnde Traumkristall",
+                "description": "Ein sich ständig verändernder, facettenreicher Kristall, der unerwartete Transformationen durchläuft und neue Welten und Dimensionen erschliesst.",
+                "color": DARK_PINK
             }
         },
         "Leistungsorientierter Optimierer": {
@@ -264,11 +277,14 @@ def determine_persona_type(personality_traits):
                 "openness": ["medium_high", "medium_low"],
                 "agreeableness": ["low", "medium_low"]
             },
-            "description": "Du bist zielorientiert und diszipliniert. Du bist energiegeladen und durchsetzungsfähig, dabei emotional stabil und belastbar. Du bist offen für neue Ansätze, wenn sie Effizienz versprechen, und eher wettbewerbsorientiert als kooperativ.",
+            "description": "Du bist zielorientiert und energiegeladen, dabei emotional stabil und belastbar.",
+            "persona_profile": "Hohe Gewissenhaftigkeit, moderate Extraversion, niedrige Neurotizismus und Verträglichkeit. Du bist diszipliniert, durchsetzungsfähig und eher wettbewerbsorientiert.",
+            "persona_needs": "Du suchst Herausforderungen, messbare Erfolge und kontinuierliche Optimierung.",
+            "persona_challenges": "Du kannst ungeduldig werden, wenn Ergebnisse nicht schnell sichtbar sind, und ruhigere Therapieaspekte vernachlässigen.",
             "companion": {
-                "type": "Leistungssystem",
-                "description": "Ein dynamisches, leistungsbezogenes System mit klaren Metriken, Zielen und Fortschrittsvisualisierungen. Es verwendet energetisierende Farben wie Rot und Blau und zeigt schnelle, präzise Bewegungen, die Kraft und Dynamik vermitteln.",
-                "color": POMEGRANATE
+                "type": "Der Dynamische Leistungsroboter",
+                "description": "Ein hocheffizient konstruierter, anpassbarer Roboter, der sich durch Leistung und Therapietreue kon-tinuierlich verbessert und optimiert.",
+                "color": DARK_VIOLET
             }
         }
     }
@@ -278,9 +294,7 @@ def determine_persona_type(personality_traits):
     for name, persona in personas.items():
         score = 0
         for trait, categories in persona["profile"].items():
-            # Korrigieren Sie 'verträglichkeit' zu 'agreeableness', falls nötig
-            trait_key = "agreeableness" if trait == "verträglichkeit" else trait
-            if trait_key in trait_categories and trait_categories[trait_key] in categories:
+            if trait in trait_categories and trait_categories[trait] in categories:
                 score += 1
         persona_scores[name] = score
     
@@ -292,81 +306,46 @@ def determine_persona_type(personality_traits):
     return (
         best_persona_name,
         best_persona["description"],
+        best_persona["persona_profile"],
+        best_persona["persona_needs"],
+        best_persona["persona_challenges"],
         best_persona["companion"]["type"],
         best_persona["companion"]["description"],
         best_persona["companion"]["color"]
     )
-
 # =============================================================================
-# Automatisches Speichern der Benutzerdaten
+# Automatisches Speichern der Spielergebnisse
 # =============================================================================
 
 def auto_save_data(game):
     """
-    Speichert automatisch alle Benutzerdaten im CSV-Format ohne Benutzerinteraktion.
+    Speichert automatisch die Spielerdaten und Persönlichkeitsmerkmale in eine JSON-Datei
     
     Args:
-        game: Das Spiel-Objekt mit allen relevanten Daten
-    
-    Returns:
-        str: Pfad zur gespeicherten Datei oder None bei Fehler
+        game: Das Spielobjekt mit allen relevanten Daten
     """
     try:
-        # Überprüfen, ob es genug Daten zum Speichern gibt
-        if not game.user_name or not hasattr(game, 'personality_traits'):
-            return None
-            
-        # Wenn die Persönlichkeitswerte alle 0 sind, lohnt es sich nicht zu speichern
-        values_sum = sum(game.personality_traits.values())
-        if values_sum == 0:
-            return None
-        
-        # Erstelle ein Dictionary mit allen relevanten Daten
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        username = game.user_name if game.user_name else "anonymer_benutzer"
-        
-        # Erstelle das data Directory falls es nicht existiert
+        # Sicherstellen, dass das Verzeichnis existiert
         os.makedirs("data", exist_ok=True)
         
-        # Erstellen und Prüfen der CSV-Datei
-        csv_file = "data/persona_companion_daten.csv"
-        file_exists = os.path.exists(csv_file)
+        # Aktuelles Datum und Uhrzeit für den Dateinamen
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        # Bestimme den Persona-Typ und Begleiter auf Basis der Persönlichkeitswerte
-        from game_core.utilities import determine_persona_type
-        persona_name, persona_desc, companion_type, companion_desc, companion_color = determine_persona_type(game.personality_traits)
-        
-        # Flache Struktur für CSV erstellen
-        flat_data = {
-            "timestamp": timestamp,
+        # Vorbereiten der zu speichernden Daten
+        data = {
             "user_name": game.user_name,
-            "user_age": game.user_age if hasattr(game, "user_age") else "",
-            "user_gender": game.user_gender if hasattr(game, "user_gender") else "",
-            "neuroticism": game.personality_traits.get("neuroticism", ""),
-            "extraversion": game.personality_traits.get("extraversion", ""),
-            "openness": game.personality_traits.get("openness", ""),
-            "conscientiousness": game.personality_traits.get("conscientiousness", ""),
-            "agreeableness": game.personality_traits.get("agreeableness", ""),
-            "bfi_neuroticism": game.bfi_scores.get("neuroticism", "") if hasattr(game, "bfi_scores") else "",
-            "bfi_extraversion": game.bfi_scores.get("extraversion", "") if hasattr(game, "bfi_scores") else "",
-            "bfi_openness": game.bfi_scores.get("openness", "") if hasattr(game, "bfi_scores") else "",
-            "bfi_conscientiousness": game.bfi_scores.get("conscientiousness", "") if hasattr(game, "bfi_scores") else "",
-            "bfi_agreeableness": game.bfi_scores.get("agreeableness", "") if hasattr(game, "bfi_scores") else "",
-            "persona_name": persona_name,
-            "companion_type": companion_type
+            "personality_traits": game.personality_traits,
+            "timestamp": timestamp
         }
         
-        # In CSV-Datei schreiben (anhängen oder neu erstellen)
-        with open(csv_file, 'a', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=flat_data.keys())
-            
-            # Schreibe Header nur, wenn die Datei neu erstellt wurde
-            if not file_exists:
-                writer.writeheader()
-                
-            writer.writerow(flat_data)
+        # In eine JSON-Datei speichern
+        filename = f"data/{game.user_name}_{timestamp}.json"
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
         
-        return csv_file
+        print(f"Daten erfolgreich in {filename} gespeichert")
+        return True
+        
     except Exception as e:
-        print(f"Fehler bei der automatischen Speicherung: {str(e)}")
-        return None
+        print(f"Fehler beim Speichern der Daten: {e}")
+        return False

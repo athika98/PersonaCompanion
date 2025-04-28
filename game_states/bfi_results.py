@@ -45,7 +45,7 @@ class BFIResultsState:
         
         # Titel
         title_text = "Vergleich: Spielergebnis vs. BFI-10"
-        title_surf = self.game.title_font.render(title_text, True, TEXT_COLOR)
+        title_surf = self.game.title_font_bold.render(title_text, True, TEXT_COLOR)
         title_rect = title_surf.get_rect(center=(SCREEN_WIDTH // 2, 40))  # Nach oben verschoben
         self.game.screen.blit(title_surf, title_rect)
         
@@ -74,8 +74,8 @@ class BFIResultsState:
         
         # Visualisierung: Für jeden Trait eine Vergleichskarte zeichnen
         y_pos = 85
-        card_spacing = 65  
-        card_height = 60
+        card_spacing = 70  
+        card_height = 70
         
         for trait, values in self.comparison_results.items():
             # Erstelle eine Karte für jedes Persönlichkeitsmerkmal
@@ -83,21 +83,21 @@ class BFIResultsState:
             pygame.draw.rect(self.game.screen, WHITE, card_rect, border_radius=8)
             
             # Merkmalname
-            trait_text = self.game.small_font.render(f"{trait}:", True, TEXT_DARK)
+            trait_text = self.game.body_font.render(f"{trait}:", True, TEXT_DARK)
             self.game.screen.blit(trait_text, (70, y_pos + 10))
             
             # Spielergebnis
-            game_score_text = self.game.small_font.render(f"Spiel: {values['game']:.1f}", True, TEXT_DARK)
+            game_score_text = self.game.body_font.render(f"Spiel: {values['game']:.1f}", True, TEXT_DARK)
             self.game.screen.blit(game_score_text, (250, y_pos + 10))
             
             # BFI-10 Ergebnis
-            bfi_score_text = self.game.small_font.render(f"BFI-10: {values['bfi']:.1f}", True, TEXT_DARK)
+            bfi_score_text = self.game.body_font.render(f"BFI-10: {values['bfi']:.1f}", True, TEXT_DARK)
             self.game.screen.blit(bfi_score_text, (400, y_pos + 10))
             
             # Übereinstimmung
             match_score = 100 - min(100, abs(values['game'] - values['bfi']) * 20)  # Prozentuale Übereinstimmung
             match_color = self.get_match_color(match_score)
-            match_text = self.game.small_font.render(f"Übereinstimmung: {match_score:.0f}%", True, match_color)
+            match_text = self.game.body_font.render(f"Übereinstimmung: {match_score:.0f}%", True, match_color)
             self.game.screen.blit(match_text, (600, y_pos + 10))
             
             # Zeichne Übereinstimmungsbalken
@@ -107,7 +107,7 @@ class BFIResultsState:
             bar_y = y_pos + 38
             
             # Hintergrund
-            pygame.draw.rect(self.game.screen, NEUTRAL_LIGHT, pygame.Rect(bar_x, bar_y, bar_width, bar_height), border_radius=4)
+            pygame.draw.rect(self.game.screen, BACKGROUND, pygame.Rect(bar_x, bar_y, bar_width, bar_height), border_radius=4)
             
             # Füllstand
             fill_width = int(bar_width * (match_score / 100))
@@ -124,7 +124,7 @@ class BFIResultsState:
         card_rect = pygame.Rect(50, y_pos, SCREEN_WIDTH - 100, 60)
         pygame.draw.rect(self.game.screen, BACKGROUND, card_rect, border_radius=8)
         
-        total_text = self.game.medium_font.render(f"Gesamtübereinstimmung: {total_match:.0f}%", True, TEXT_DARK)
+        total_text = self.game.font_bold.render(f"Gesamtübereinstimmung: {total_match:.0f}%", True, TEXT_DARK)
         total_rect = total_text.get_rect(center=(SCREEN_WIDTH // 2, y_pos + 30))
         self.game.screen.blit(total_text, total_rect)
         
@@ -132,20 +132,19 @@ class BFIResultsState:
         self.back_button = self.game.draw_button(
             "Zurück zum Menü", 
             SCREEN_WIDTH // 2, 
-            y_pos + 80,
+            SCREEN_HEIGHT - 50,
             200, 
             50,
             TEXT_COLOR,
             TEXT_LIGHT,
             self.game.medium_font,
-            border_radius=15
+            border_radius=0
         )
 
-        # Mini Blob anzeigen
-        blob_mini = pygame.transform.scale(BLOB_IMAGE, (60, 60))
-        blob_x = SCREEN_WIDTH - blob_mini.get_width() - 15  # 15 Pixel vom rechten Rand
-        blob_y = SCREEN_HEIGHT - blob_mini.get_height() - 20  # 20 Pixel vom unteren Rand
-        self.game.screen.blit(blob_mini, (blob_x, blob_y))
+        # Sitzend Tiktik in der unteren rechten Ecke platzieren
+        tiktik_x = SCREEN_WIDTH - END_TIKTIK_IMAGE.get_width() - 20  # 20px Abstand vom rechten Rand
+        tiktik_y = SCREEN_HEIGHT - END_TIKTIK_IMAGE.get_height() - 20  # 20px Abstand vom unteren Rand
+        self.game.screen.blit(END_TIKTIK_IMAGE, (tiktik_x, tiktik_y))
     
     def compare_results(self):
         """Vergleicht die Spielergebnisse mit den BFI-10 Ergebnissen"""
@@ -217,8 +216,8 @@ class BFIResultsState:
         if match_score >= 80:
             return CHAMELEON_GREEN  # Sehr gut
         elif match_score >= 60:
-            return DARK_YELLOW  # Gut
+            return LEMON_YELLOW  # Gut
         elif match_score >= 40:
             return ORANGE_PEACH  # Mittelmässig
         else:
-            return POMEGRANATE  # Schlecht
+            return DARK_RED  # Schlecht

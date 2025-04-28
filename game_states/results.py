@@ -31,9 +31,12 @@ class ResultsState:
         self.validate_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 50, 200, 40)
         
         # Persona und Begleiter bestimmen
-        persona_name, persona_desc, companion_type, companion_desc, companion_color = determine_persona_type(self.game.personality_traits)
+        persona_name, persona_desc, persona_profile, persona_needs, persona_challenges, companion_type, companion_desc, companion_color = determine_persona_type(self.game.personality_traits)
         self.persona_name = persona_name
         self.persona_desc = persona_desc
+        self.persona_profile = persona_profile
+        self.persona_needs = persona_needs
+        self.persona_challenges = persona_challenges
         self.companion_type = companion_type
         self.companion_desc = companion_desc
         self.companion_color = companion_color
@@ -82,24 +85,12 @@ class ResultsState:
         # Hintergrund
         self.game.screen.fill(BACKGROUND)
         
-        # Subtiles Konfetti im Hintergrund
-        for i in range(50):
-            x = random.randint(0, SCREEN_WIDTH)
-            y = random.randint(0, SCREEN_HEIGHT)
-            size = random.randint(2, 5)
-            color_index = random.randint(0, 7)
-            sundae_colors = [DARK_VIOLET, CLEAN_POOL_BLUE, CHAMELEON_GREEN, DARK_YELLOW, 
-                          LEMON_YELLOW, ORANGE_PEACH, POMEGRANATE, CHERRY_PINK]
-            color = list(sundae_colors[color_index])
-            color = (color[0], color[1], color[2], 150)  # Transparenz hinzufügen
-            pygame.draw.circle(self.game.screen, color, (x, y), size)
-        
         # Header-Box
         header_rect = pygame.Rect(50, 20, SCREEN_WIDTH - 100, 50)
         self.game.draw_card(header_rect.x, header_rect.y, header_rect.width, header_rect.height, color=BACKGROUND)
         
         # Titel
-        title = self.game.font.render("Persönlichkeitsprofil", True, TEXT_COLOR)
+        title = self.game.heading_font_bold.render("Persönlichkeitsprofil", True, TEXT_COLOR)
         self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 30))
     
     def _render_page1(self):
@@ -108,9 +99,12 @@ class ResultsState:
         result_box = pygame.Rect(50, 80, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 140)
         self.game.draw_card(result_box.x, result_box.y, result_box.width, result_box.height, color=BACKGROUND)
         
-        # Benutzername
-        name_text = self.game.medium_font.render(f"Hallo {self.game.user_name}!", True, TEXT_DARK)
-        self.game.screen.blit(name_text, (SCREEN_WIDTH // 2 - name_text.get_width() // 2, 100))
+        # Einen informativeren und gratulierenden Text hinzufügen:
+        congratulation_text = self.game.body_font.render(f"Gratulation, {self.game.user_name}!", True, TEXT_DARK)
+        self.game.screen.blit(congratulation_text, (SCREEN_WIDTH // 2 - congratulation_text.get_width() // 2, 100))
+
+        result_intro_text = self.game.body_font.render("Du hast alle Aufgaben erfolgreich abgeschlossen. Hier ist dein persönliches Ergebnis:", True, TEXT_DARK)
+        self.game.screen.blit(result_intro_text, (SCREEN_WIDTH // 2 - result_intro_text.get_width() // 2, 130))
         
         # Persönlichkeits-Scores erhalten
         neuroticism_score = self.game.personality_traits["neuroticism"]
@@ -120,8 +114,8 @@ class ResultsState:
         agreeableness_score = self.game.personality_traits["agreeableness"]
         
         # Persönlichkeitsmerkmale anzeigen
-        y_offset = 135
-        bar_spacing = 50
+        y_offset = 180
+        bar_spacing = 55
         
         # Helper function to draw a trait bar
         def draw_trait_bar(name, score, y_pos, color, left_label, right_label):
@@ -149,19 +143,19 @@ class ResultsState:
             self.game.screen.blit(right_text, (bar_x + bar_width + 10, y_pos + 25 + 3))
         
         # Draw Neuroticism bar
-        draw_trait_bar("Reaktionsstil", neuroticism_score, y_offset, DARK_BLUE, "Spontan", "Bedacht")
+        draw_trait_bar("Reaktionsstil", neuroticism_score, y_offset, LIGHT_BLUE, "Spontan", "Bedacht")
         
         # Draw Extraversion bar
-        draw_trait_bar("Soziale Orientierung", extraversion_score, y_offset + bar_spacing, POMEGRANATE, "Introvertiert", "Extravertiert")
+        draw_trait_bar("Soziale Orientierung", extraversion_score, y_offset + bar_spacing, LIGHT_YELLOW, "Introvertiert", "Extravertiert")
         
         # Draw Openness bar
-        draw_trait_bar("Kreativität", openness_score, y_offset + bar_spacing * 2, CHERRY_PINK, "Konventionell", "Kreativ")
+        draw_trait_bar("Kreativität", openness_score, y_offset + bar_spacing * 2, LIGHT_GREEN, "Konventionell", "Kreativ")
         
         # Draw Conscientiousness bar
-        draw_trait_bar("Organisation", conscientiousness_score, y_offset + bar_spacing * 3, CHAMELEON_GREEN, "Flexibel", "Strukturiert")
+        draw_trait_bar("Organisation", conscientiousness_score, y_offset + bar_spacing * 3, LIGHT_PINK, "Flexibel", "Strukturiert")
         
         # Draw Agreeableness bar
-        draw_trait_bar("Kooperationsverhalten", agreeableness_score, y_offset + bar_spacing * 4, DARK_YELLOW, "Wettbewerbsorientiert", "Kooperativ")
+        draw_trait_bar("Kooperationsverhalten", agreeableness_score, y_offset + bar_spacing * 4, LIGHT_VIOLET, "Wettbewerbsorientiert", "Kooperativ")
         
         # Kurzübersicht zum Persönlichkeitstyp
         y_section = y_offset + bar_spacing * 5 + 20
@@ -169,13 +163,38 @@ class ResultsState:
             f"Dein dominanter Persönlichkeitstyp: {self.persona_name}", True, self.companion_color)
         self.game.screen.blit(summary_text, (SCREEN_WIDTH // 2 - summary_text.get_width() // 2, y_section))
         
-        # Weiter-Button zur zweiten Seite
-        next_button = self.game.draw_button(
-            "Weiter", SCREEN_WIDTH - 90, SCREEN_HEIGHT - 30, 120, 40,
-            TEXT_COLOR, TEXT_LIGHT, self.game.small_font, 20, hover=False
+        # Button-Positionen und Grössen
+        button_x_next = SCREEN_WIDTH // 2
+        button_y_next = SCREEN_HEIGHT - 50
+        button_width_next = 200
+        button_height_next = 50
+        
+        # Button Hover-Effekt prüfen
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        hover_next = (mouse_x >= button_x_next - button_width_next // 2 and 
+                    mouse_x <= button_x_next + button_width_next // 2 and
+                    mouse_y >= button_y_next - button_height_next // 2 and 
+                    mouse_y <= button_y_next + button_height_next // 2)
+
+        # Button zeichnen
+        self.game.draw_button(
+            "Weiter", button_x_next, button_y_next, button_width_next, button_height_next,
+            TEXT_COLOR, TEXT_LIGHT, self.game.small_font, hover_next
+        )
+
+        # Rechteck für Klickprüfung speichern
+        self.next_page_button_rect = pygame.Rect(
+            button_x_next - button_width_next // 2,
+            button_y_next - button_height_next // 2,
+            button_width_next,
+            button_height_next
         )
         
-    
+        # Tiktik rendern und unten platzieren
+        tiktik_x = SCREEN_WIDTH // 2 + 280  # Mehr nach rechts verschoben
+        tiktik_y = SCREEN_HEIGHT - 280
+        self.game.screen.blit(CONGRATS_TIKTIK_IMAGE, (tiktik_x, tiktik_y))
+        
     def _render_page2(self):
         """Zeichnet die zweite Seite mit der Persona und dem Begleiter"""
         # Ergebnis-Box für die zweite Seite
@@ -194,12 +213,28 @@ class ResultsState:
         self.game.screen.blit(persona_title, (persona_box.x + persona_box.width // 2 - persona_title.get_width() // 2, persona_box.y + 20))
         
         # Persona-Typ
-        persona_type_text = self.game.medium_font.render(self.persona_name, True, self.companion_color)
-        self.game.screen.blit(persona_type_text, (persona_box.x + persona_box.width // 2 - persona_type_text.get_width() // 2, persona_box.y + 60))
+        persona_type_text = self.game.body_font.render(self.persona_name, True, self.companion_color)
+        self.game.screen.blit(persona_type_text, (persona_box.x + persona_box.width // 2 - persona_type_text.get_width() // 2, persona_box.y + 50))
         
-        # Persönlichkeitsbeschreibung
-        self._render_multiline_text(self.persona_desc, persona_box.x + 20, persona_box.y + 100, persona_box.width - 40)
-        
+        # Persönlichkeitsprofil
+        profile_title = self.game.small_font.render("Persönlichkeitsprofil:", True, TEXT_COLOR)
+        self.game.screen.blit(profile_title, (persona_box.x + 20, persona_box.y + 80))
+        next_y = self._render_multiline_text_with_height(self.persona_profile, persona_box.x + 20, persona_box.y + 100, persona_box.width - 40)
+
+        # Emotionale Bedürfnisse
+        next_y += 10  # Füge etwas Abstand hinzu
+        needs_title = self.game.small_font.render("Emotionale Bedürfnisse:", True, TEXT_COLOR)
+        self.game.screen.blit(needs_title, (persona_box.x + 20, next_y))
+        next_y += 20  # Abstand für den Titel
+        next_y = self._render_multiline_text_with_height(self.persona_needs, persona_box.x + 20, next_y, persona_box.width - 40)
+
+        # Herausforderungen bei der Therapieadhärenz
+        next_y += 10  # Füge etwas Abstand hinzu
+        challenges_title = self.game.small_font.render("Herausforderungen bei der Therapieadhärenz:", True, TEXT_COLOR)
+        self.game.screen.blit(challenges_title, (persona_box.x + 20, next_y))
+        next_y += 20  # Abstand für den Titel
+        self._render_multiline_text_with_height(self.persona_challenges, persona_box.x + 20, next_y, persona_box.width - 40)
+
         # Begleiter-Bereich (rechts)
         companion_box = pygame.Rect(result_box.x + half_width + 20, result_box.y + 20, half_width, result_box.height - 60)
         self.game.draw_card(companion_box.x, companion_box.y, companion_box.width, companion_box.height, color=BACKGROUND, shadow=False)
@@ -209,31 +244,71 @@ class ResultsState:
         self.game.screen.blit(companion_title, (companion_box.x + companion_box.width // 2 - companion_title.get_width() // 2, companion_box.y + 20))
         
         # Begleiter-Typ
-        companion_type_text = self.game.medium_font.render(self.companion_type, True, self.companion_color)
+        companion_type_text = self.game.body_font.render(self.companion_type, True, self.companion_color)
         self.game.screen.blit(companion_type_text, (companion_box.x + companion_box.width // 2 - companion_type_text.get_width() // 2, companion_box.y + 60))
         
         # Begleiter-Beschreibung
-        self._render_multiline_text(self.companion_desc, companion_box.x + 20, companion_box.y + 100, companion_box.width - 40)
+        self._render_multiline_text_with_height(self.companion_desc, companion_box.x + 20, companion_box.y + 100, companion_box.width - 40)
         
         # Begleiter-Bild
         # Skaliere das Bild, falls nötig
-        scaled_image = pygame.transform.scale(self.companion_image, (120, 120))
+        scaled_image = pygame.transform.scale(self.companion_image, (150, 150))
         image_x = companion_box.x + companion_box.width // 2 - scaled_image.get_width() // 2
         image_y = companion_box.y + companion_box.height - scaled_image.get_height() - 30
         self.game.screen.blit(scaled_image, (image_x, image_y))
         
-        # Zurück-Button zur ersten Seite
-        prev_button = self.game.draw_button(
-            "Zurück", 90, SCREEN_HEIGHT - 30, 120, 40,
-            TEXT_COLOR, TEXT_LIGHT, self.game.small_font, 20, hover=False
+        # Button-Positionen und Grössen
+        back_button_x = 120
+        back_button_y = SCREEN_HEIGHT - 30
+        back_button_width = 120
+        back_button_height = 40
+
+        bfi_button_x = SCREEN_WIDTH // 2 + 100
+        bfi_button_y = SCREEN_HEIGHT - 30
+        bfi_button_width = 200
+        bfi_button_height = 40
+
+        # Button Hover-Effekt prüfen
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        # Hover-Effekt für Zurück-Button
+        hover_back = (mouse_x >= back_button_x - back_button_width // 2 and 
+                    mouse_x <= back_button_x + back_button_width // 2 and
+                    mouse_y >= back_button_y - back_button_height // 2 and 
+                    mouse_y <= back_button_y + back_button_height // 2)
+
+        # Hover-Effekt für BFI-10-Button
+        hover_bfi = (mouse_x >= bfi_button_x - bfi_button_width // 2 and 
+                    mouse_x <= bfi_button_x + bfi_button_width // 2 and
+                    mouse_y >= bfi_button_y - bfi_button_height // 2 and 
+                    mouse_y <= bfi_button_y + bfi_button_height // 2)
+
+        # Zurück-Button zeichnen
+        self.game.draw_button(
+            "Zurück", back_button_x, back_button_y, back_button_width, back_button_height,
+            TEXT_COLOR, TEXT_LIGHT, self.game.small_font, hover_back
         )
-        
-        # BFI-10 Validierungsbutton
-        validate_button = self.game.draw_button(
-            "Mit BFI-10 validieren", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30, 200, 40,
-            TEXT_COLOR, TEXT_LIGHT, self.game.small_font, 20, hover=False
+
+        # BFI-10 Validierungsbutton zeichnen
+        self.game.draw_button(
+            "Mit BFI-10 validieren", bfi_button_x, bfi_button_y, bfi_button_width, bfi_button_height,
+            TEXT_COLOR, TEXT_LIGHT, self.game.small_font, hover_bfi
         )
-    
+
+        # Rechtecke für Klickprüfung speichern
+        self.back_button_rect = pygame.Rect(
+            back_button_x - back_button_width // 2,
+            back_button_y - back_button_height // 2,
+            back_button_width,
+            back_button_height
+        )
+
+        self.bfi_button_rect = pygame.Rect(
+            bfi_button_x - bfi_button_width // 2,
+            bfi_button_y - bfi_button_height // 2,
+            bfi_button_width,
+            bfi_button_height
+        )
     def _render_multiline_text(self, text, x, y, max_width):
         """Rendert mehrzeiligen Text mit Zeilenumbrüchen"""
         words = text.split()
@@ -261,13 +336,52 @@ class ResultsState:
     def _get_companion_image(self, companion_type):
         """Lädt das passende Begleiter-Bild basierend auf dem Companion-Typ"""
         # Mapping von Companion-Typen zu Bildern aus constants.py
+        # Wenn z.B. companion_type = "Strukturierter Begleiter" statt "Organisationssystem" ist
         image_mapping = {
-            "Organisationssystem": COMPANION_ORGANIZATION_IMAGE,
-            "Interaktives Wesen": COMPANION_INTERACTIVE_IMAGE,
-            "Beruhigende Umgebung": COMPANION_CALMING_IMAGE,
-            "Transformierendes Objekt": COMPANION_CREATIVE_IMAGE,
-            "Leistungssystem": COMPANION_PERFORMANCE_IMAGE
+            "Der Architektonische Turm": COMPANION_ORGANIZATION_IMAGE,
+            "Der Evolutionäre Begleiter Evo": COMPANION_INTERACTIVE_IMAGE,
+            "Der Schützende Kristallbaum": COMPANION_CALMING_IMAGE,
+            "Der Wandelnde Traumkristall": COMPANION_CREATIVE_IMAGE,
+            "Der Dynamische Leistungsroboter": COMPANION_PERFORMANCE_IMAGE
         }
         
         # Verwende das zugeordnete Bild oder BLOB_IMAGE als Fallback
         return image_mapping.get(companion_type, BLOB_IMAGE)
+
+    def _render_multiline_text_with_height(self, text, x, y, max_width):
+        """
+        Rendert mehrzeiligen Text mit Zeilenumbrüchen und gibt die Höhe des gerenderten Texts zurück
+        
+        Args:
+            text (str): Der zu rendernde Text
+            x (int): X-Koordinate des Texts
+            y (int): Y-Koordinate des Texts
+            max_width (int): Maximale Breite für Zeilenumbrüche
+            
+        Returns:
+            int: Die gesamte Höhe des gerenderten Texts
+        """
+        words = text.split()
+        lines = []
+        current_line = ""
+        
+        for word in words:
+            test_line = current_line + " " + word if current_line else word
+            test_width = self.game.small_font.size(test_line)[0]
+            
+            if test_width <= max_width:
+                current_line = test_line
+            else:
+                lines.append(current_line)
+                current_line = word
+        
+        if current_line:
+            lines.append(current_line)
+        
+        line_height = self.game.small_font.get_height() + 5
+        for i, line in enumerate(lines):
+            text_surface = self.game.small_font.render(line, True, TEXT_DARK)
+            self.game.screen.blit(text_surface, (x, y + i * line_height))
+        
+        # Gesamthöhe des gerenderten Texts zurückgeben
+        return y + len(lines) * line_height

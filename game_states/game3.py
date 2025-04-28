@@ -68,9 +68,9 @@ class Game3State:
             self.tasks.append(task_copy)
         
         # Button-Rechtecke
-        self.start_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 150, 200, 50)
-        self.submit_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
-        self.continue_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+        #self.start_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 150, 200, 50)
+        #self.submit_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+        #self.continue_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
     
     def handle_event(self, event):
         """Verarbeitet Benutzereingaben"""
@@ -370,21 +370,19 @@ class Game3State:
         
         # Ergebnisbalken
         scale_x = 150
-        scale_y = 300
+        scale_y = 350
         scale_width = SCREEN_WIDTH - 300
         scale_height = 30
-        
-        # Skala-Hintergrund
-        self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=LIGHT_GREY, shadow=False)
-        
+
         # Prozentsatz berechnen
         openness_percentage = int((self.openness_score / self.max_score) * 100) if self.max_score > 0 else 50
         
-        # Skala-Füllung basierend auf Score
+        # Skala-Hintergrund
+        self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=LIGHT_GREY, shadow=False)
         fill_width = int(scale_width * openness_percentage / 100)
         pygame.draw.rect(self.game.screen, LIGHT_BLUE, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
         
-        # Skala-Beschriftungen
+        # Labels
         conventional_text = self.game.small_font.render("Konventionell", True, TEXT_DARK)
         creative_text = self.game.small_font.render("Kreativ", True, TEXT_DARK)
         self.game.screen.blit(conventional_text, (scale_x, scale_y + scale_height + 10))
@@ -465,14 +463,23 @@ class Game3State:
             main_text = "Du schätzt Klarheit, Struktur und bewährte Vorgehensweisen sehr."
             detail = "Du fühlst dich am wohlsten mit klaren Regeln und Routinen und bevorzugst praktische Lösungen vor experimentellen Ansätzen."
         
-        # Text rendern - hierfür musst du die render_multiline_text Methode implementieren oder anpassen
-        if hasattr(self, 'render_multiline_text'):
-            self.render_multiline_text(main_text, self.game.body_font, TEXT_DARK, 150, y_pos, SCREEN_WIDTH - 300, 25)
-            self.render_multiline_text(detail, self.game.body_font, TEXT_DARK, 150, y_pos + 30, SCREEN_WIDTH - 300, 25)
-        else:
-            # Alternative, wenn render_multiline_text nicht existiert
-            main_text_surf = self.game.body_font.render(main_text, True, TEXT_DARK)
-            detail_text_surf = self.game.body_font.render(detail, True, TEXT_DARK)
-            
-            self.game.screen.blit(main_text_surf, (SCREEN_WIDTH // 2 - main_text_surf.get_width() // 2, y_pos))
-            self.game.screen.blit(detail_text_surf, (SCREEN_WIDTH // 2 - detail_text_surf.get_width() // 2, y_pos + 30))
+        # Text rendern
+        self.render_multiline_text(main_text, self.game.body_font, TEXT_DARK, 150, y_pos, SCREEN_WIDTH - 300, 25)
+        self.render_multiline_text(detail, self.game.body_font, TEXT_DARK, 150, y_pos + 30, SCREEN_WIDTH - 300, 25)
+
+    def render_multiline_text(self, text, font, color, x, y, max_width, line_height):
+        """Zeichnet mehrzeiligen Text automatisch umgebrochen"""
+        words = text.split()
+        line = ""
+        for word in words:
+            test_line = f"{line} {word}".strip()
+            if font.size(test_line)[0] <= max_width:
+                line = test_line
+            else:
+                rendered = font.render(line, True, color)
+                self.game.screen.blit(rendered, (x, y))
+                y += line_height
+                line = word
+        if line:
+            rendered = font.render(line, True, color)
+            self.game.screen.blit(rendered, (x, y))

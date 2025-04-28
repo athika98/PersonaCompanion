@@ -17,7 +17,6 @@ class Game4State:
     priorisieren und strukturieren muss, was die Gewissenhaftigkeit misst.
     """
     def __init__(self, game):
-        """Initialisiert den Spielzustand mit einer Referenz auf das Hauptspiel"""
         self.game = game
         self.initialize()
     
@@ -34,35 +33,35 @@ class Game4State:
         self.timer_active = False
         
         # Button-Rechtecke für die Klickerkennung definieren
-        self.start_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50)
-        self.continue_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
+        #self.start_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50)
+        #self.continue_button_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 80, 200, 50)
         
-        # Container für organisierte Aufgaben
+        # Container für organisierte Aufgaben - angepasst für grösseren Bildschirm
         self.containers = [
-            {"name": "Hohe Priorität", "color": POMEGRANATE, "rect": pygame.Rect(100, 200, 250, 150)},
-            {"name": "Mittlere Priorität", "color": DARK_YELLOW, "rect": pygame.Rect(400, 200, 250, 150)},
-            {"name": "Niedrige Priorität", "color": CLEAN_POOL_BLUE, "rect": pygame.Rect(100, 400, 250, 150)},
-            {"name": "Delegieren/Verschieben", "color": CHAMELEON_GREEN, "rect": pygame.Rect(400, 400, 250, 150)}
+            {"name": "Hohe Priorität", "color": LIGHT_RED, "rect": pygame.Rect(150, 200, 400, 150)},
+            {"name": "Mittlere Priorität", "color": LIGHT_YELLOW, "rect": pygame.Rect(650, 200, 400, 150)},
+            {"name": "Niedrige Priorität", "color": LIGHT_BLUE, "rect": pygame.Rect(150, 400, 400, 150)},
+            {"name": "Delegieren/Verschieben", "color": LIGHT_GREEN, "rect": pygame.Rect(650, 400, 400, 150)}
         ]
         
         # Verfügbare Aufgaben generieren
         self.available_tasks = [
             {"id": 1, "name": "Dringende E-Mail beantworten", "importance": 8, "urgency": 9, 
-             "ideal_category": "Hohe Priorität", "color": DARK_RED},
+             "ideal_category": "Hohe Priorität", "color": DARK_BLUE},
             {"id": 2, "name": "Bericht für nächsten Monat", "importance": 7, "urgency": 3, 
-             "ideal_category": "Mittlere Priorität", "color": RICH_BURGUNDY},
-            {"id": 3, "name": "Routine-Meeting", "importance": 4, "urgency": 6, 
-             "ideal_category": "Mittlere Priorität", "color": CLEAN_POOL_BLUE},
-            {"id": 4, "name": "Langfristiges Projekt planen", "importance": 9, "urgency": 2, 
              "ideal_category": "Mittlere Priorität", "color": DARK_RED},
+            {"id": 3, "name": "Routine-Meeting", "importance": 4, "urgency": 6, 
+             "ideal_category": "Mittlere Priorität", "color": DARK_GREEN},
+            {"id": 4, "name": "Langfristiges Projekt planen", "importance": 9, "urgency": 2, 
+             "ideal_category": "Mittlere Priorität", "color": DARK_VIOLET},
             {"id": 5, "name": "Kaffeepause", "importance": 2, "urgency": 3, 
-             "ideal_category": "Niedrige Priorität", "color": ORANGE_PEACH},
+             "ideal_category": "Niedrige Priorität", "color": DARK_YELLOW},
             {"id": 6, "name": "Social Media checken", "importance": 1, "urgency": 2, 
-             "ideal_category": "Delegieren/Verschieben", "color": CHERRY_PINK},
+             "ideal_category": "Delegieren/Verschieben", "color": DARK_PINK},
             {"id": 7, "name": "Präsentation für morgen", "importance": 9, "urgency": 8, 
-             "ideal_category": "Hohe Priorität", "color": POMEGRANATE},
+             "ideal_category": "Hohe Priorität", "color": DARK_ORANGE},
             {"id": 8, "name": "Kollegin bei Aufgabe helfen", "importance": 5, "urgency": 7, 
-             "ideal_category": "Mittlere Priorität", "color": DARK_VIOLET}
+             "ideal_category": "Mittlere Priorität", "color": DARK_TURQUIOISE}
         ]
         
         # Zufällige Auswahl von Aufgaben für dieses Spiel
@@ -70,14 +69,12 @@ class Game4State:
         
         # Aufgaben mit Positionen initialisieren
         self.tasks = []
-        task_spacing = (SCREEN_WIDTH - 200) // 3
+        task_spacing = (SCREEN_WIDTH - 300) // 6  # Mehr Platz für Aufgaben
         for i, task in enumerate(selected_tasks):
             task_copy = task.copy()
-            # Positioniere Aufgaben in zwei Reihen
-            row = i // 3
-            col = i % 3
-            task_copy["pos"] = [100 + col * task_spacing, 130 + row * 60]
-            task_copy["size"] = [task_spacing - 20, 50]
+            # Positioniere Aufgaben in einer Reihe oben
+            task_copy["pos"] = [150 + i * task_spacing, 130]
+            task_copy["size"] = [task_spacing - 20, 60]
             task_copy["container"] = None
             self.tasks.append(task_copy)
         
@@ -194,18 +191,9 @@ class Game4State:
         # Grundhintergrund
         self.game.screen.fill(BACKGROUND)
         
-        # Subtiles Raster im Hintergrund
-        for x in range(0, SCREEN_WIDTH, 20):
-            for y in range(0, SCREEN_HEIGHT, 20):
-                pygame.draw.circle(self.game.screen, (225, 235, 245), (x, y), 1)
-        
         # Spieltitel
-        game_title = self.game.font.render("Organisations-Challenge", True, TEXT_COLOR)
-        self.game.screen.blit(game_title, (SCREEN_WIDTH // 2 - game_title.get_width() // 2, 30))
-        
-        # Benutzername anzeigen
-        name_text = self.game.small_font.render(f"Spieler: {self.game.user_name}", True, TEXT_COLOR)
-        self.game.screen.blit(name_text, (SCREEN_WIDTH - 20 - name_text.get_width(), 35))
+        title = self.game.heading_font_bold.render("ORGANISATIONS-CHALLENGE", True, TEXT_COLOR)
+        self.game.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, TITLE_Y_POSITION))
         
         # Verschiedene Bildschirme basierend auf dem Spielzustand
         if self.state == "instruction":
@@ -217,111 +205,217 @@ class Game4State:
     
     def _render_instructions(self):
         """Zeigt den Anweisungsbildschirm für das Organisationsspiel"""
-        # Anweisungsbox
-        instruction_rect = pygame.Rect(100, 100, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 230)
-        self.game.draw_card(instruction_rect.x, instruction_rect.y, instruction_rect.width, instruction_rect.height, color=BACKGROUND)
-        
+
         # Titel
-        instruction_title = self.game.medium_font.render("Organisiere deinen Tag!", True, TEXT_COLOR)
-        self.game.screen.blit(instruction_title, (SCREEN_WIDTH // 2 - instruction_title.get_width() // 2, 120))
-        
-        # Anweisungstext
-        instructions = [
+        intro_title = self.game.subtitle_font.render("Organisiere deinen Tag!", True, TEXT_COLOR)
+        self.game.screen.blit(intro_title, (SCREEN_WIDTH // 2 - intro_title.get_width() // 2, 100))
+
+        # Einleitungstext
+        intro_text = [
             "In diesem Spiel geht es darum, wie gut du Aufgaben organisieren und priorisieren kannst.",
             "Du bekommst verschiedene Aufgaben, die du in vier Kategorien einordnen sollst:",
-            "",
-            "· Hohe Priorität: Wichtige und dringende Aufgaben",
-            "· Mittlere Priorität: Wichtige oder dringende Aufgaben",
-            "· Niedrige Priorität: Weniger wichtige/dringende Aufgaben",
-            "· Delegieren/Verschieben: Aufgaben, die warten können oder abgegeben werden sollten",
-            "",
-            "Ziehe die Aufgaben in die entsprechenden Kategorien. Du hast 60 Sekunden Zeit."
+
+        ]
+
+        # Aufzählungspunkte für die Aufgaben
+        phase_descriptions = [
+            "•  Hohe Priorität: Wichtige und dringende Aufgaben",
+            "•  Mittlere Priorität: Wichtige oder dringende Aufgaben",
+            "•  Niedrige Priorität: Weniger wichtige/dringende Aufgaben",
+            "•  Delegieren/Verschieben: Aufgaben, die warten können oder abgegeben werden sollten"
         ]
         
-        y_pos = 160
-        for line in instructions:
-            text = self.game.small_font.render(line, True, TEXT_DARK)
-            self.game.screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, y_pos))
+        # Abschlusstext
+        conclusion_text = "Ziehe die Aufgaben in die entsprechenden Kategorien. Du hast 60 Sekunden Zeit."
+
+        # Zeichne Einleitungstext
+        y_pos = 150
+        for line in intro_text:
+            line_text = self.game.body_font.render(line, True, TEXT_DARK)
+            self.game.screen.blit(line_text, (SCREEN_WIDTH // 2 - line_text.get_width() // 2, y_pos))
             y_pos += 30
         
-        # Beispiel zeichnen
-        example_text = self.game.small_font.render("Beispiel:", True, TEXT_DARK)
-        self.game.screen.blit(example_text, (150, 400))
+        # Abstand vor den Aufzählungspunkten
+        y_pos += 10
+
+        # Konstanter Einzug für alle Aufzählungspunkte (30% vom Bildschirm von links)
+        indent_x = int(SCREEN_WIDTH * 0.3)
         
-        # Beispielaufgabe
-        example_rect = pygame.Rect(150, 430, 180, 60)
-        pygame.draw.rect(self.game.screen, DARK_RED, example_rect, border_radius=10)
-        pygame.draw.rect(self.game.screen, TEXT_COLOR, example_rect, 2, border_radius=10)
-        example_task = self.game.small_font.render("Beispielaufgabe", True, TEXT_LIGHT)
-        self.game.screen.blit(example_task, (example_rect.x + 10, example_rect.y + 20))
+        # Zeichne Aufzählungspunkte
+        for phase in phase_descriptions:
+            line_text = self.game.body_font.render(phase, True, TEXT_DARK)
+            self.game.screen.blit(line_text, (indent_x, y_pos))
+            y_pos += 30
         
-        # Beispielpfeil
-        pygame.draw.line(self.game.screen, TEXT_DARK, (350, 460), (450, 460), 2)
-        pygame.draw.polygon(self.game.screen, TEXT_DARK, [(440, 450), (450, 460), (440, 470)])
+        # Abstand vor dem Abschlusstext
+        y_pos += 10
         
-        # Beispielcontainer
-        example_container = pygame.Rect(470, 430, 180, 60)
-        pygame.draw.rect(self.game.screen, DARK_YELLOW, example_container, border_radius=10)
-        pygame.draw.rect(self.game.screen, TEXT_COLOR, example_container, 2, border_radius=10)
-        container_text = self.game.small_font.render("Mittlere Priorität", True, TEXT_COLOR)
-        self.game.screen.blit(container_text, (example_container.x + 10, example_container.y + 20))
+        # Zeichne Abschlusstext
+        conclusion_rendered = self.game.body_font.render(conclusion_text, True, TEXT_DARK)
+        self.game.screen.blit(conclusion_rendered, (SCREEN_WIDTH // 2 - conclusion_rendered.get_width() // 2, y_pos))
+
+        # Tiktik rendern und unten platzieren
+        tiktik_x = SCREEN_WIDTH // 2 - ORGANISE_TIKTIK_IMAGE.get_width() // 2
+        tiktik_y = SCREEN_HEIGHT - 230
+        self.game.screen.blit(ORGANISE_TIKTIK_IMAGE, (tiktik_x, tiktik_y))
         
-        # Start-Button
+        # Button Hover-Effekt prüfen
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        hover = (mouse_x >= button_x - button_width // 2 and 
+                mouse_x <= button_x + button_width // 2 and
+                mouse_y >= button_y - button_height // 2 and 
+                mouse_y <= button_y + button_height // 2)
+        
+        # Button zeichnen
         self.game.draw_button(
-            "Start", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100, 200, 50,
-            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover=False
+            "Start", button_x, button_y, button_width, button_height,
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, hover
+        )
+        
+        # Rechteck für Klickprüfung speichern
+        self.start_button_rect = pygame.Rect(
+            button_x - button_width // 2,
+            button_y - button_height // 2,
+            button_width,
+            button_height
         )
     
     def _render_organize(self):
         """Zeigt den Organisationsbildschirm mit Aufgaben und Containern"""
         # Timer anzeigen
-        time_text = self.game.medium_font.render(f"Zeit: {self.time_remaining // 60} Sekunden", True, TEXT_COLOR)
+        time_text = self.game.small_font.render(f"Zeit: {self.time_remaining // 60} Sekunden", True, TEXT_DARK)
         self.game.screen.blit(time_text, (20, 80))
         
         # Fortschrittsbalken für die Zeit
         self.game.draw_progress_bar(50, SCREEN_HEIGHT - 30, SCREEN_WIDTH - 100, 10, 
-                                  self.time_remaining / (60 * 60), fill_color=POMEGRANATE)
+                                self.time_remaining / (60 * 60), fill_color=LIGHT_PINK)
         
         # Container für Aufgabenkategorien zeichnen
         for container in self.containers:
             self.game.draw_card(container["rect"].x, container["rect"].y, 
-                              container["rect"].width, container["rect"].height, 
-                              color=container["color"])
+                            container["rect"].width, container["rect"].height, 
+                            color=container["color"], border_radius=0)
             
             # Kategoriename
-            container_text = self.game.small_font.render(container["name"], True, TEXT_COLOR)
+            container_text = self.game.body_font.render(container["name"], True, TEXT_DARK)
             self.game.screen.blit(container_text, (container["rect"].x + container["rect"].width // 2 - container_text.get_width() // 2, 
-                                                 container["rect"].y + 10))
+                                                container["rect"].y + 10))
         
         # Aufgaben zeichnen
         for task in self.tasks:
             # Aufgaben-Rechteck
             task_rect = pygame.Rect(task["pos"][0], task["pos"][1], task["size"][0], task["size"][1])
-            pygame.draw.rect(self.game.screen, task["color"], task_rect, border_radius=10)
-            pygame.draw.rect(self.game.screen, TEXT_COLOR, task_rect, 2, border_radius=10)
+            pygame.draw.rect(self.game.screen, task["color"], task_rect, border_radius=0)
+            pygame.draw.rect(self.game.screen, LIGHT_GREY, task_rect, 2, border_radius=0)
             
-            # Aufgabenname (gekürzt, wenn nötig)
-            task_name = task["name"] if len(task["name"]) < 25 else task["name"][:22] + "..."
-            task_text = self.game.small_font.render(task_name, True, TEXT_LIGHT)
-            
-            # Zentrieren des Textes in der Aufgabe
-            self.game.screen.blit(task_text, (task["pos"][0] + task["size"][0] // 2 - task_text.get_width() // 2, 
-                                            task["pos"][1] + task["size"][1] // 2 - task_text.get_height() // 2))
+            # Aufgabenname - mehrzeilige Darstellung für längere Texte
+            self.render_task_name(task["name"], task["pos"][0], task["pos"][1], task["size"][0], task["size"][1])
         
         # Anweisungstext
-        instruction_text = self.game.small_font.render("Ziehe die Aufgaben in die passenden Kategorien!", True, TEXT_COLOR)
+        instruction_text = self.game.body_font.render("Ziehe die Aufgaben in die passenden Kategorien!", True, TEXT_DARK)
         self.game.screen.blit(instruction_text, (SCREEN_WIDTH // 2 - instruction_text.get_width() // 2, 80))
+
+    def render_task_name(self, task_name, x, y, width, height):
+        """Rendert den Aufgabennamen mehrzeilig, wenn nötig"""
+        # Kleinere Schrift für Aufgabentexte verwenden
+        task_font = self.game.small_font
+        
+        # Prüfen, ob der Text in eine Zeile passt
+        if task_font.size(task_name)[0] <= width - 20:  # 10px Rand auf jeder Seite
+            # Einzeilige Darstellung
+            task_text = task_font.render(task_name, True, TEXT_LIGHT)
+            self.game.screen.blit(task_text, 
+                            (x + width // 2 - task_text.get_width() // 2, 
+                                y + height // 2 - task_text.get_height() // 2))
+        else:
+            # Mehrzeilige Darstellung
+            words = task_name.split()
+            lines = []
+            current_line = ""
+            
+            for word in words:
+                test_line = current_line + " " + word if current_line else word
+                if task_font.size(test_line)[0] <= width - 20:
+                    current_line = test_line
+                else:
+                    lines.append(current_line)
+                    current_line = word
+            
+            if current_line:
+                lines.append(current_line)
+            
+            # Zeilen rendern
+            total_height = len(lines) * task_font.get_height()
+            start_y = y + (height - total_height) // 2
+            
+            for i, line in enumerate(lines):
+                line_text = task_font.render(line, True, TEXT_LIGHT)
+                self.game.screen.blit(line_text, 
+                                (x + width // 2 - line_text.get_width() // 2, 
+                                    start_y + i * task_font.get_height()))
     
     def _render_result(self):
         """Zeigt die Ergebnisse des Organisationsspiels"""
         # Ergebnisbox
-        results_rect = pygame.Rect(100, 130, SCREEN_WIDTH - 200, SCREEN_HEIGHT - 250)
+        results_rect = pygame.Rect(150, 130, SCREEN_WIDTH - 300, SCREEN_HEIGHT - 250)
         self.game.draw_card(results_rect.x, results_rect.y, results_rect.width, results_rect.height, color=BACKGROUND)
         
-        # Titel
-        result_title = self.game.medium_font.render("Deine Organisationsfähigkeit", True, TEXT_COLOR)
-        self.game.screen.blit(result_title, (SCREEN_WIDTH // 2 - result_title.get_width() // 2, 150))
+        # Organisations-Beschreibung
+        self.draw_conscientiousness_description(170)
         
+        # Ergebnisbalken
+        scale_x = 150
+        scale_y = 350
+        scale_width = SCREEN_WIDTH - 300
+        scale_height = 30
+        
+        # Organisations Beschriftung mittig über dem Balken
+        conscientiousness_text = self.game.font_bold.render("Gewissenhaftigkeit", True, TEXT_COLOR)
+        self.game.screen.blit(conscientiousness_text, (SCREEN_WIDTH // 2 - conscientiousness_text.get_width() // 2, scale_y - 70))
+        
+        # Skala-Hintergrund
+        self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=LIGHT_GREY, shadow=False)
+        fill_width = int(scale_width * self.conscientiousness_score / 100)
+        pygame.draw.rect(self.game.screen, LIGHT_BLUE, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
+        
+        # Labels
+        flexible_text = self.game.small_font.render("Flexibel", True, TEXT_DARK)
+        structured_text = self.game.small_font.render("Strukturiert", True, TEXT_DARK)
+        self.game.screen.blit(flexible_text, (scale_x, scale_y + scale_height + 10))
+        self.game.screen.blit(structured_text, (scale_x + scale_width - structured_text.get_width(), scale_y + scale_height + 10))
+        
+        # Prozentsatz anzeigen
+        percent_text = self.game.medium_font.render(f"{int(self.conscientiousness_score)}%", True, TEXT_DARK)
+        self.game.screen.blit(percent_text, (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
+        
+        # Button-Position aus constants.py verwenden
+        # Prüfen, ob Maus über dem Button ist
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        hover = (mouse_x >= button_x - button_width // 2 and 
+                mouse_x <= button_x + button_width // 2 and
+                mouse_y >= button_y - button_height // 2 and 
+                mouse_y <= button_y + button_height // 2)
+        
+        # Button zeichnen
+        self.game.draw_button(
+            "Weiter", button_x, button_y, button_width, button_height,
+            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, hover
+        )
+        
+        # Rechteck für Klickprüfung speichern
+        self.continue_button_rect = pygame.Rect(
+            button_x - button_width // 2,
+            button_y - button_height // 2,
+            button_width,
+            button_height
+        )
+
+        # Sitzend Tiktik in der unteren rechten Ecke platzieren
+        tiktik_x = SCREEN_WIDTH - LAPTOP_TIKTIK_IMAGE.get_width() - 20
+        tiktik_y = SCREEN_HEIGHT - LAPTOP_TIKTIK_IMAGE.get_height() - 20
+        self.game.screen.blit(LAPTOP_TIKTIK_IMAGE, (tiktik_x, tiktik_y))
+
+    def draw_conscientiousness_description(self, y_pos):
         # Organisationslevel und Beschreibung bestimmen
         if self.conscientiousness_score > 75:
             organization_level = "Sehr strukturiert und organisiert"
@@ -340,50 +434,9 @@ class Game4State:
             description = "Du organisierst auf eine freie, unkonventionelle Weise."
             details = "Deine Kategorien zeigen ein kreatives, weniger strukturiertes Denken."
         
-        # Ergebnistext rendern
-        level_text = self.game.medium_font.render(organization_level, True, TEXT_COLOR)
-        self.game.screen.blit(level_text, (SCREEN_WIDTH // 2 - level_text.get_width() // 2, 190))
-        
-        description_text = self.game.small_font.render(description, True, TEXT_DARK)
-        self.game.screen.blit(description_text, (SCREEN_WIDTH // 2 - description_text.get_width() // 2, 230))
-        
-        details_text = self.game.small_font.render(details, True, TEXT_DARK)
-        self.game.screen.blit(details_text, (SCREEN_WIDTH // 2 - details_text.get_width() // 2, 260))
-        
-        # Organisations-Skala zeichnen
-        scale_width = SCREEN_WIDTH - 300
-        scale_height = 30
-        scale_x = 150
-        scale_y = 350
-        
-        # Skala-Hintergrund
-        self.game.draw_card(scale_x, scale_y, scale_width, scale_height, color=CLEAN_POOL_BLUE, shadow=False)
-        
-        # Skala-Füllung basierend auf Score
-        fill_width = int(scale_width * self.conscientiousness_score / 100)
-        pygame.draw.rect(self.game.screen, POMEGRANATE, (scale_x, scale_y, fill_width, scale_height), border_radius=15)
-        
-        # Skala-Beschriftungen
-        flexible_text = self.game.small_font.render("Flexibel", True, TEXT_DARK)
-        structured_text = self.game.small_font.render("Strukturiert", True, TEXT_DARK)
-        
-        self.game.screen.blit(flexible_text, (scale_x, scale_y + scale_height + 10))
-        self.game.screen.blit(structured_text, (scale_x + scale_width - structured_text.get_width(), scale_y + scale_height + 10))
-        
-        # Prozentsatz anzeigen
-        percent_text = self.game.medium_font.render(f"{int(self.conscientiousness_score)}%", True, TEXT_COLOR)
-        self.game.screen.blit(percent_text, (scale_x + fill_width - percent_text.get_width() // 2, scale_y - 40))
-        
-        # Weiter-Button
-        self.game.draw_button(
-            "Weiter", SCREEN_WIDTH // 2, SCREEN_HEIGHT - 80, 200, 50,
-            TEXT_COLOR, TEXT_LIGHT, self.game.medium_font, 25, hover=False
-        )
-
-        # Blob visual am unteren Rand
-        blob_x = SCREEN_WIDTH // 2 - BLOB_IMAGE.get_width() // 2 + 200
-        blob_y = SCREEN_HEIGHT - BLOB_IMAGE.get_height() - 20
-        self.game.screen.blit(BLOB_IMAGE, (blob_x, blob_y))
+        self.render_multiline_text(organization_level, self.game.body_font, TEXT_DARK, 150, y_pos, SCREEN_WIDTH - 300, 25)
+        self.render_multiline_text(description, self.game.body_font, TEXT_DARK, 150, y_pos + 30, SCREEN_WIDTH - 300, 25)
+        self.render_multiline_text(details, self.game.body_font, TEXT_DARK, 150, y_pos + 60, SCREEN_WIDTH - 300, 25)
     
     def calculate_conscientiousness(self):
         """Berechnet den Gewissenhaftigkeitswert basierend auf der Organisation"""
@@ -431,3 +484,20 @@ class Game4State:
         # Zum nächsten Spiel
         self.game.transition_to("GAME5")
         self.game.states["GAME5"].initialize()
+    
+    def render_multiline_text(self, text, font, color, x, y, max_width, line_height):
+        """Zeichnet mehrzeiligen Text automatisch umgebrochen"""
+        words = text.split()
+        line = ""
+        for word in words:
+            test_line = f"{line} {word}".strip()
+            if font.size(test_line)[0] <= max_width:
+                line = test_line
+            else:
+                rendered = font.render(line, True, color)
+                self.game.screen.blit(rendered, (x, y))
+                y += line_height
+                line = word
+        if line:
+            rendered = font.render(line, True, color)
+            self.game.screen.blit(rendered, (x, y))

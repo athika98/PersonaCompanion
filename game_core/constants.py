@@ -28,24 +28,26 @@ BACKGROUND = (253,252,251)
 TEXT_COLOR = (1,32,95)
 TEXT_DARK = (15, 23, 42)
 TEXT_LIGHT = (248, 250, 252)
-WHITE = (255, 255, 255)
-LIGHT_GREY = (244, 244, 244)	
 SCALE_COLOR = (173, 202, 230)	
 
 # Game 1
 # Farben für die verschiedenen Spielmodi 
+WHITE = (255, 255, 255)
 LIGHT_BLUE = (234,246,255)
 LIGHT_RED = (250, 235, 235)
 LIGHT_GREEN = (235, 250, 235)
 LIGHT_PINK = (250, 235, 245)
 LIGHT_YELLOW = (250, 250, 220)
-LIGHT_VIOLET = (255, 234, 0)
-
+LIGHT_VIOLET = (241, 234, 255)
+LIGHT_GREY = (244, 244, 244)	
 DARK_BLUE = (31, 63, 116)
 DARK_RED = (143, 30, 30)
 DARK_GREEN = (2, 75, 48)
 DARK_VIOLET = (136, 101, 198)
-DARK_YELLOW = (232, 187, 118)  
+DARK_YELLOW = (232, 187, 118)
+DARK_PINK = (234, 100, 144)
+DARK_ORANGE = (255, 140, 0)
+DARK_TURQUIOISE = (0, 206, 209)
 
 # Weitere Farben
 CHAMELEON_GREEN = (203, 216, 172)
@@ -56,13 +58,10 @@ POMEGRANATE = (239, 148, 135)
 CHERRY_PINK = (243, 167, 192)
 CARD_BG = (250, 250, 250)
 RICH_BURGUNDY = (43, 82, 136)
-
-DARK_GREEN = (147, 160, 121)
 PRIMARY = (79, 70, 229)
 SECONDARY = (16, 185, 129)
 NEUTRAL = (71, 85, 105)
 NEUTRAL_LIGHT = (203, 213, 225)
-WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 # Dateipfad für die Schriftart
@@ -93,6 +92,18 @@ MALEN_TIKTIK_IMAGE = pygame.image.load("assets/images/malen_tiktik.png")
 MALEN_TIKTIK_IMAGE = pygame.transform.smoothscale(MALEN_TIKTIK_IMAGE, (150, 150))
 DANCE_TIKTIK_IMAGE = pygame.image.load("assets/images/dance_tiktik.png")
 DANCE_TIKTIK_IMAGE = pygame.transform.smoothscale(DANCE_TIKTIK_IMAGE, (150, 150))
+ORGANISE_TIKTIK_IMAGE = pygame.image.load("assets/images/organise_tiktik.png")
+ORGANISE_TIKTIK_IMAGE = pygame.transform.smoothscale(ORGANISE_TIKTIK_IMAGE, (150, 150))
+LAPTOP_TIKTIK_IMAGE = pygame.image.load("assets/images/laptop_tiktik.png")
+LAPTOP_TIKTIK_IMAGE = pygame.transform.smoothscale(LAPTOP_TIKTIK_IMAGE, (150, 150))
+BIRD_TIKTIK_IMAGE = pygame.image.load("assets/images/bird_tiktik.png")
+BIRD_TIKTIK_IMAGE = pygame.transform.smoothscale(BIRD_TIKTIK_IMAGE, (150, 150))
+FLOWER_TIKTIK_IMAGE = pygame.image.load("assets/images/flower_tiktik.png")
+FLOWER_TIKTIK_IMAGE = pygame.transform.smoothscale(FLOWER_TIKTIK_IMAGE, (150, 150))
+CONGRATS_TIKTIK_IMAGE = pygame.image.load("assets/images/congrats_tiktik.png")
+CONGRATS_TIKTIK_IMAGE = pygame.transform.smoothscale(CONGRATS_TIKTIK_IMAGE, (150, 150))
+END_TIKTIK_IMAGE = pygame.image.load("assets/images/end_tiktik.png")
+END_TIKTIK_IMAGE = pygame.transform.smoothscale(END_TIKTIK_IMAGE, (150, 150))
 
 BLOB_IMAGE = pygame.image.load("assets/images/happy_blob2.png")
 BLOB_IMAGE = pygame.transform.smoothscale(BLOB_IMAGE, (150, 150))  # Grösse anpassen
@@ -297,107 +308,53 @@ for key in SCENARIO_IMAGES:
         (600, 300)  # Alle Szenariobilder auf die gleiche Grösse skalieren
     )
 
-"""
 # SPIEL 5: Szenarien zur Messung von "Verträglichkeit"
 # Wie viel gibst du ab vs. wie viel behältst du?
 GAME5_SCENARIOS = [
     {
-        "title": "Eiscreme-Sundae Party",
-        "description": "Du organisierst eine Sundae-Party! Wie verteilst du die Toppings?",
-        "resource": "Schokoladensosse",
-        "left_label": "Mehr für andere",
-        "right_label": "Mehr für dich",
-        "self_image": "self_icecream",  # Platzhalter für Bilder
+        "title": "Festliches Buffet",
+        "description": "Bei einem Buffet gibt es nur noch eine begrenzte Menge an deinem Lieblingsdessert. Du bist einer der ersten in der Schlange.",
+        "resource": "Dein Lieblingsdessert",
+        "left_label": "Kleine Portion nehmen, damit für alle reicht",
+        "right_label": "Grosszügig zugreifen, da ich früh da bin",
+        "self_image": "self_icecream",
         "other_image": "others_icecream"
     },
     {
-        "title": "Projekt im Team",
-        "description": "Ihr habt ein Gruppenprojekt erfolgreich abgeschlossen. Wie verteilst du die Anerkennung?",
-        "resource": "Anerkennung",
-        "left_label": "Teamleistung betonen",
-        "right_label": "Eigene Leistung betonen",
+        "title": "Teamarbeit & Anerkennung",
+        "description": "Euer Team hat ein schwieriges Projekt erfolgreich abgeschlossen. Du hast besonders viel geleistet, aber alle haben beigetragen.",
+        "resource": "Anerkennung & Lob",
+        "left_label": "Die Teamleistung in den Vordergrund stellen",
+        "right_label": "Deinen überdurchschnittlichen Beitrag betonen",
         "self_image": "self_project",
         "other_image": "team_project"
     },
     {
-        "title": "Spieleabend",
-        "description": "Bei einem Spieleabend kannst du Punkte mit anderen teilen. Wie entscheidest du?",
-        "resource": "Spielpunkte",
-        "left_label": "Punkte teilen",
-        "right_label": "Punkte behalten",
+        "title": "Seltene Gelegenheit",
+        "description": "Du entdeckst eine fantastische, aber begrenzte Gelegenheit (Job, Praktikum, Reise). Ein Freund sucht nach genau so etwas.",
+        "resource": "Wertvolle Information",
+        "left_label": "Sofort mit dem Freund teilen",
+        "right_label": "Erst selbst bewerben, dann eventuell teilen",
+        "self_image": "self_knowledge",
+        "other_image": "others_knowledge"
+    },
+    {
+        "title": "Gruppenpräsentation",
+        "description": "Nach einer erfolgreichen Präsentation stellt der Dozent Fragen. Du kennst alle Antworten, andere im Team sind unsicher.",
+        "resource": "Redeanteil & Präsentationszeit",
+        "left_label": "Teammitglieder zum Antworten ermutigen",
+        "right_label": "Die Fragen selbst beantworten",
         "self_image": "self_game",
         "other_image": "others_game"
     },
     {
-        "title": "Gemeinsames Kochen",
-        "description": "Beim gemeinsamen Kochen bleiben wenige Zutaten übrig. Wie verteilst du sie?",
-        "resource": "Leckere Zutaten",
-        "left_label": "Grosszügig abgeben",
-        "right_label": "Für sich behalten",
+        "title": "Gemeinsame Ressourcen",
+        "description": "In einer WG/Büro hat jemand die letzten gemeinsamen Vorräte (Kaffee, Papier, etc.) aufgebraucht, ohne Ersatz zu kaufen.",
+        "resource": "Verantwortung für Nachkauf",
+        "left_label": "Selbst nachkaufen ohne zu diskutieren",
+        "right_label": "Ansprechen und Ersatz einfordern",
         "self_image": "self_cooking",
         "other_image": "others_cooking"
-    },
-    {
-        "title": "Wissensaustausch",
-        "description": "Du hast wichtige Informationen, die anderen helfen könnten. Wie verhältst du dich?",
-        "resource": "Wertvolles Wissen",
-        "left_label": "Offen teilen",
-        "right_label": "Zurückhalten",
-        "self_image": "self_knowledge",
-        "other_image": "others_knowledge"
     }
 ]
-"""
 # Szenarien für Game5 (Konfliktlösungsspiel für Verträglichkeit)
-GAME5_SCENARIOS = [
-    {
-        "title": "Projektarbeit im Team",
-        "description": "In deinem Team gibt es Unstimmigkeiten darüber, wie ein wichtiges Projekt umgesetzt werden soll. Person A bevorzugt einen bewährten Ansatz, während Person B eine innovative, aber riskantere Methode vorschlägt.",
-        "options": [
-            {"text": "Einen Kompromiss vorschlagen, der Elemente beider Ansätze kombiniert", "value": 90},
-            {"text": "Den Ansatz unterstützen, der fachlich überzeugender ist, und sachlich argumentieren", "value": 60},
-            {"text": "Deine eigene, dritte Lösung vorschlagen und dafür werben", "value": 40},
-            {"text": "Vorschlagen, dass jedes Teammitglied seine Präferenz in einem Teilbereich umsetzen kann", "value": 70}
-        ]
-    },
-    {
-        "title": "Ressourcenverteilung",
-        "description": "In deiner Abteilung stehen begrenzte Ressourcen zur Verfügung (Budget, Zeit, Personal). Zwei Kollegen streiten darüber, welches ihrer Projekte Vorrang haben sollte.",
-        "options": [
-            {"text": "Gemeinsam objektive Kriterien entwickeln, nach denen die Ressourcen fair verteilt werden", "value": 85},
-            {"text": "Das Projekt unterstützen, das den grösseren Nutzen für das Unternehmen verspricht", "value": 50},
-            {"text": "Vorschlagen, die Ressourcen für dein eigenes, drittes Projekt zu verwenden", "value": 20},
-            {"text": "Ein Treffen mit allen Beteiligten organisieren, um einen Konsens zu finden", "value": 95}
-        ]
-    },
-    {
-        "title": "Meinungsverschiedenheit unter Freunden",
-        "description": "Zwei deiner engen Freunde haben unterschiedliche Meinungen zu einem kontroversen Thema und geraten in einen hitzigen Streit. Beide erwarten deine Unterstützung.",
-        "options": [
-            {"text": "Als neutraler Vermittler agieren und beiden helfen, die Perspektive des anderen zu verstehen", "value": 90},
-            {"text": "Die Position unterstützen, die du für richtiger hältst", "value": 50},
-            {"text": "Dich aus dem Streit heraushalten, um deine Beziehung zu beiden nicht zu gefährden", "value": 40},
-            {"text": "Das Thema wechseln und eine gemeinsame Aktivität vorschlagen, um die Situation zu entspannen", "value": 70}
-        ]
-    },
-    {
-        "title": "Konkurrierende Ideen",
-        "description": "In einer Brainstorming-Sitzung stellen zwei Kollegen konkurrierende Ideen vor. Beide sind überzeugt, dass ihr Vorschlag der beste ist, und die Diskussion wird zunehmend angespannt.",
-        "options": [
-            {"text": "Helfen, die Stärken beider Ideen zu identifizieren und zu einer Synthese zu führen", "value": 100},
-            {"text": "Die Gruppe bitten, beide Ideen nach objektiven Kriterien zu bewerten", "value": 80},
-            {"text": "Für die Idee stimmen, die du persönlich besser findest", "value": 55},
-            {"text": "Eine eigene, dritte Idee einbringen, die die Diskussion in eine neue Richtung lenkt", "value": 30}
-        ]
-    },
-    {
-        "title": "Familienkonflikt",
-        "description": "Bei einem Familientreffen sind zwei Verwandte unterschiedlicher Meinung über die Planung eines wichtigen Ereignisses. Die Stimmung wird zunehmend angespannt.",
-        "options": [
-            {"text": "Aktiv zuhören und gemeinsame Interessen identifizieren, um einen Kompromiss zu finden", "value": 95},
-            {"text": "Den Standpunkt unterstützen, der für die Mehrheit der Familie besser erscheint", "value": 65},
-            {"text": "Einen eigenen Vorschlag machen, der deine persönlichen Präferenzen berücksichtigt", "value": 35},
-            {"text": "Das Thema auf später verschieben, wenn die Emotionen weniger hochkochen", "value": 75}
-        ]
-    }
-]
